@@ -13,7 +13,7 @@ interface Sidebar {
   expansions_name: string
   name: string
   icon: string
-  commond: string
+  command: string
 }
 
 const createTextHtmlURL = (html: string) =>
@@ -31,11 +31,11 @@ export default function Webviews() {
 
   // 点击侧边栏
   const handleSidebarClick = (viewItem: Sidebar) => {
-    if (viewItem.commond === command.name) {
+    if (viewItem.command === command.name) {
       return
     }
     // 记录当前的命令
-    dispatch(setCommand(viewItem.commond))
+    dispatch(setCommand(viewItem.command))
   }
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function Webviews() {
     const sidebarsItem =
       expansions.package?.flatMap(item => {
         return (
-          item.alemonjs?.desktop?.sidebars?.map((sidebar: { name: string; commond: string }) => ({
+          item.alemonjs?.desktop?.sidebars?.map((sidebar: { name: string; command: string }) => ({
             ...sidebar,
             expansions_name: item.name
           })) || []
@@ -141,7 +141,7 @@ export default function Webviews() {
                   onClick={() => handleSidebarClick(viewItem)}
                   className={classNames(
                     'p-1 size-[3.28rem] rounded-md border text-sm relative flex cursor-pointer justify-center items-center duration-700 transition-all  ',
-                    { 'bg-secondary-bg': viewItem.commond === command.name }
+                    { 'bg-secondary-bg': viewItem.command === command.name }
                   )}
                 >
                   {createIcon(viewItem)}

@@ -9,6 +9,8 @@ import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import GuideCommon from '../Guide/Common'
+import { AppExists, AppGetConfig, AppSetConfig } from '@wailsjs/go/windowapp/App'
+import { GetVersions } from '@wailsjs/go/windowcontroller/App'
 
 const Common = () => {
   const app = useSelector((state: RootState) => state.app)
@@ -21,7 +23,7 @@ const Common = () => {
 
   // 初始化更新
   const initUpdate = async () => {
-    window.app.getConfig(['AUTO_LAUNCH', 'AUTO_INSTALL', 'AUTO_RUN_EXTENSION']).then(T => {
+    AppGetConfig(['AUTO_LAUNCH', 'AUTO_INSTALL', 'AUTO_RUN_EXTENSION']).then(T => {
       setDesktopChecked({
         autoLaunch: T[0],
         autoCheck: T[1],
@@ -31,7 +33,8 @@ const Common = () => {
   }
 
   const update = _.throttle(async (key: string, checked: boolean) => {
-    const T = (await window.app.setConfig(key, checked)) as boolean
+    // const T = (await window.app.setConfig(key, checked)) as boolean
+    const T = await AppSetConfig(key, checked)
     if (T) {
       const map: {
         [key: string]: string
@@ -68,19 +71,19 @@ const Common = () => {
       code: 0,
       onConfirm: () => {
         console.log('重置')
-        window.app.resetTemplate()
+        // window.app.resetTemplate()
       }
     })
   }
 
+  const [commandKey, setCommandKey] = useState('ctrl')
+
   useEffect(() => {
     initUpdate()
+    GetVersions().then(res => {
+      setCommandKey(res.platform == 'darwin' ? 'command' : 'ctrl')
+    })
   }, [])
-
-  // 按键
-  const getKeys = () => {
-    return window.versions.platform == 'darwin' ? 'command' : 'ctrl'
-  }
 
   return (
     <div className="animate__animated animate__fadeIn flex-1 flex-col flex">
@@ -129,12 +132,13 @@ const Common = () => {
                     className="px-2 rounded-md border"
                     onClick={async () => {
                       const dir = `${app.userDataTemplatePath}/yarn.lock`
-                      const T = await window.app.exists(dir)
+                      // const T = await window.app.exists(dir)
+                      const T = await AppExists(dir)
                       if (!T) {
                         notification('yarn.lock不存在')
                         return
                       }
-                      window.app.downloadFiles(dir)
+                      // window.app.downloadFiles(dir)
                     }}
                   >
                     下载
@@ -150,7 +154,7 @@ const Common = () => {
                     onClick={() => {
                       const dir = app.logMainPath
                       console.log('dir', app)
-                      window.app.downloadFiles(dir)
+                      // window.app.downloadFiles(dir)
                     }}
                   >
                     下载
@@ -192,12 +196,12 @@ const Common = () => {
                     <Button
                       className="px-2 rounded-md border  steps-common-2"
                       onClick={() => {
-                        window.app.selectDirectory().then(dir => {
-                          const path = dir[0]
-                          if (typeof path === 'string') {
-                            window.app.reStart(path)
-                          }
-                        })
+                        // window.app.selectDirectory().then(dir => {
+                        //   const path = dir[0]
+                        //   if (typeof path === 'string') {
+                        //     window.app.reStart(path)
+                        //   }
+                        // })
                       }}
                     >
                       选择
@@ -223,7 +227,7 @@ const Common = () => {
                   title: '放大窗口',
                   children: (
                     <div className="flex gap-1">
-                      <div className="border px-2 rounded-md">{getKeys()}</div>
+                      <div className="border px-2 rounded-md">{commandKey}</div>
                       <div className="border px-2 rounded-md">++</div>
                     </div>
                   )
@@ -232,7 +236,7 @@ const Common = () => {
                   title: '缩小窗口',
                   children: (
                     <div className="flex gap-1">
-                      <div className="border px-2 rounded-md">{getKeys()}</div>
+                      <div className="border px-2 rounded-md">{commandKey}</div>
                       <div className="border px-2 rounded-md">--</div>
                     </div>
                   )
@@ -241,7 +245,7 @@ const Common = () => {
                   title: '开发者工具',
                   children: (
                     <div className="flex gap-1">
-                      <div className="border px-2 rounded-md">{getKeys()}</div>
+                      <div className="border px-2 rounded-md">{commandKey}</div>
                       <div className="border px-2 rounded-md">F12</div>
                     </div>
                   )

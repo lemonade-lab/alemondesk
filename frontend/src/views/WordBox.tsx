@@ -18,7 +18,7 @@ interface Sidebar {
   expansions_name: string
   name: string
   icon: string
-  commond: string
+  command: string
 }
 
 export default function WordBox() {
@@ -30,7 +30,7 @@ export default function WordBox() {
   const app = useSelector((state: RootState) => state.app)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
-  const [conmond, setCommond] = useState<Sidebar[]>([])
+  const [conmond, setcommand] = useState<Sidebar[]>([])
   const dropdownRef = useRef<HTMLDivElement | null>(null)
 
   const [view, setView] = useState('')
@@ -57,16 +57,16 @@ export default function WordBox() {
   }, [])
 
   useEffect(() => {
-    const commondItem =
+    const commandItem =
       expansions.package?.flatMap((item: any) => {
         return (
-          item.alemonjs?.desktop?.commond?.map((sidebar: any) => ({
+          item.alemonjs?.desktop?.command?.map((sidebar: any) => ({
             ...sidebar,
             expansions_name: item.name
           })) || []
         )
       }) || []
-    setCommond(commondItem)
+    setcommand(commandItem)
   }, [expansions.package])
 
   const { networkSpeed } = useNetworkSpeed()
@@ -125,7 +125,7 @@ export default function WordBox() {
                     if (!modules.nodeModulesStatus) return
 
                     // 记录当前的命令
-                    dispatch(setCommand(item.commond))
+                    dispatch(setCommand(item.command))
 
                     // 关闭下拉菜单
                     setIsDropdownOpen(false)
@@ -138,7 +138,7 @@ export default function WordBox() {
                     <div className="flex items-center justify-center ">{createIcon(item)}</div>
                     <div className="flex items-center justify-center ">{item.name}</div>
                   </div>
-                  <div className="text-secondary-text">{item.commond}</div>
+                  <div className="text-secondary-text">{item.command}</div>
                 </PrimaryDiv>
               ))}
             </div>

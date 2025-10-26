@@ -84,7 +84,7 @@ func main() {
 		appOptions.Mac = &mac.Options{
 			TitleBar: &mac.TitleBar{
 				TitlebarAppearsTransparent: true,  // 标题栏透明
-				HideTitle:                  false, // 显示标题
+				HideTitle:                  true,  // 隐藏标题
 				HideTitleBar:               false, // 显示标题栏
 				FullSizeContent:            false, // 不使用全尺寸内容
 				UseToolbar:                 false, // 不使用工具栏
@@ -94,8 +94,8 @@ func main() {
 			WebviewIsTransparent: false,
 			WindowIsTranslucent:  false,
 			About: &mac.AboutInfo{
-				Title:   "LearnWails",
-				Message: "基于 Wails 构建的应用",
+				Title:   "ALemonDesk",
+				Message: "阿柠檬桌面应用",
 				Icon:    nil,
 			},
 		}
