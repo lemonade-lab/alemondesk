@@ -1,0 +1,38 @@
+@import 'animate.css';
+@import url('./assets/css/scrollbar.scss');
+// root
+@import './assets/css/root.css';
+// tailwind
+@import './assets/css/tailwind.css';
+
+// 清除tailwindcss带来的默认样式
+* {
+  outline: none;
+}
+
+// 可拖拽区域
+.drag-area {
+  -webkit-app-region: drag;
+}
+
+// 阴影
+.shadow-content {
+  box-shadow: 0px 0px 8.7px rgba(56, 56, 56, 0.11);
+}
+
+// 禁用图片的所有鼠标事件
+img {
+  pointer-events: none;
+}
+
+.animate__animated.animate__fadeIn.duration-3000 {
+  --animate-duration: 3s;
+}
+
+.animate__animated.animate__zoomIn.duration-1500 {
+  --animate-duration: 1.5s;
+}
+
+.animate__animated.animate__fadeInRight.duration-500 {
+  --animate-duration: 0.5s;
+}
