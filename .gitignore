@@ -42,4 +42,4 @@ pnpm-lock.yaml
 _logs
 config*.yaml
 .env
-# /work
+/work

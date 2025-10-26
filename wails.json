@@ -1,18 +1,26 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "LearnWails",
-  "outputfilename": "LearnWails",
+  "name": "ALemonDesk",
+  "outputfilename": "ALemonDesk",
   "frontend:install": "yarn install",
-  "frontend:build": "yarn build",
+  "frontend:build": "yarn build", 
   "frontend:dev:watcher": "yarn dev",
   "frontend:dev:serverUrl": "auto",
   "author": {
     "name": "ningmengchongshui",
     "email": "ningmengchongshui@gmail.com"
   },
+  "info": {
+    "companyName": "LEMONADE",
+    "productName": "ALemonDesk",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright © 2024 LEMONADE",
+    "comments": "阿柠檬桌面客户端",
+    "fileDescription": "ALemonDesk - 阿柠檬桌面客户端"
+  },
   "nodejs": {
     "embed": true,
-    "bin": "node",      
+    "bin": "node",
     "version": "22.14.0"
   }
 }
