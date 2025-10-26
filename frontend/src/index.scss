@@ -12,7 +12,8 @@
 
 // 可拖拽区域
 .drag-area {
-  -webkit-app-region: drag;
+  // -webkit-app-region: drag;
+  --wails-draggable:drag;
 }
 
 // 阴影

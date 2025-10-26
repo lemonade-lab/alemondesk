@@ -9,5 +9,10 @@
   "author": {
     "name": "ningmengchongshui",
     "email": "ningmengchongshui@gmail.com"
+  },
+  "nodejs": {
+    "embed": true,
+    "bin": "node",      
+    "version": "22.14.0"
   }
 }

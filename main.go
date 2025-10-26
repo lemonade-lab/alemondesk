@@ -13,11 +13,13 @@ import (
 	"embed"
 	"log"
 	"os"
+	"runtime"
 
 	"github.com/joho/godotenv"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
 //go:embed all:frontend/dist
@@ -38,33 +40,25 @@ func main() {
 
 	// Create an instance of the app structure
 	wbot := windowbot.NewApp()
-
 	wapp := windowapp.NewApp()
-
 	wtheme := windowtheme.NewApp()
-
 	wcontroller := windowcontroller.NewApp()
-
 	wexpansions := windowexpansions.NewApp()
-
 	wyarn := windowyarn.NewApp()
-
 	wgit := windowgit.NewApp()
 
-	// Create application with options
-	err = wails.Run(&options.App{
+	// 创建应用选项
+	appOptions := &options.App{
 		Title:  "LearnWails",
 		Width:  1024,
 		Height: 768,
 		Debug: options.Debug{
-			// 启用开发者工具
 			OpenInspectorOnStartup: os.Getenv("WAILS_DEV") == "true",
 		},
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		Frameless: true,
-		// BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		Frameless: false, // 关键：不使用无边框
 		OnStartup: func(ctx context.Context) {
 			wbot.Startup(ctx)
 			wapp.Startup(ctx)
@@ -83,8 +77,31 @@ func main() {
 			wyarn,
 			wgit,
 		},
-	})
+	}
 
+	// macOS 特定配置 - 启用原生标题栏和交通灯按钮
+	if runtime.GOOS == "darwin" {
+		appOptions.Mac = &mac.Options{
+			TitleBar: &mac.TitleBar{
+				TitlebarAppearsTransparent: true,  // 标题栏透明
+				HideTitle:                  false, // 显示标题
+				HideTitleBar:               false, // 显示标题栏
+				FullSizeContent:            false, // 不使用全尺寸内容
+				UseToolbar:                 false, // 不使用工具栏
+				HideToolbarSeparator:       true,  // 隐藏工具栏分隔符
+			},
+			Appearance:           mac.DefaultAppearance, // 系统外观
+			WebviewIsTransparent: false,
+			WindowIsTranslucent:  false,
+			About: &mac.AboutInfo{
+				Title:   "LearnWails",
+				Message: "基于 Wails 构建的应用",
+				Icon:    nil,
+			},
+		}
+	}
+
+	err = wails.Run(appOptions)
 	if err != nil {
 		println("Error:", err.Error())
 	}

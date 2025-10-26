@@ -2,11 +2,7 @@ import { memo, PropsWithChildren, ReactNode, useEffect, useState } from 'react'
 import classNames from 'classnames'
 import { HeaderDiv } from '@alemonjs/react-ui'
 import { Close, Maximize, Minimize } from '@/common/Icons'
-import {
-  ControllerMinimize,
-  ControllerClose,
-  ControllerMaximize
-} from '@wailsjs/go/windowcontroller/App'
+import { WindowHide, WindowMaximise, WindowMinimise } from '@wailsjs/runtime/runtime'
 
 type HeaderProps = PropsWithChildren<{
   LeftSlot?: ReactNode
@@ -41,7 +37,7 @@ export default memo(function Header({ children }: HeaderProps) {
               className={classNames(
                 'cursor-pointer hover:bg-slate-300  rounded-sm px-1  hover:text-gray-900 transition-all duration-300'
               )}
-              onClick={() => ControllerMinimize()}
+              onClick={() => WindowMinimise()}
             >
               <Minimize />
             </span>
@@ -49,7 +45,7 @@ export default memo(function Header({ children }: HeaderProps) {
               className={classNames(
                 'cursor-pointer hover:bg-slate-300  rounded-sm px-1  hover:text-gray-900 transition-all duration-300'
               )}
-              onClick={() => ControllerMaximize()}
+              onClick={() => WindowMaximise()}
             >
               <Maximize />
             </span>
@@ -57,7 +53,7 @@ export default memo(function Header({ children }: HeaderProps) {
               className={classNames(
                 'cursor-pointer hover:bg-red-600  hover:text-white  rounded-sm px-1   transition-all duration-300'
               )}
-              onClick={() => ControllerClose()}
+              onClick={() => WindowHide()}
             >
               <Close />
             </span>
