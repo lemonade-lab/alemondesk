@@ -22,7 +22,7 @@ import WordBox from '@/views/WordBox'
 import GuideMain from '@/views/Guide/Main'
 //
 import Header from '@/common/Header'
-import { ExpansionsPostMessage ,ExpansionsRun} from '@wailsjs/go/windowexpansions/App'
+import { ExpansionsPostMessage, ExpansionsRun } from '@wailsjs/go/windowexpansions/App'
 import { AppGetConfig } from '@wailsjs/go/windowapp/App'
 import { ThemeLoadVariables, ThemeMode } from '@wailsjs/go/windowtheme/App'
 import { EventsOn } from '@wailsjs/runtime/runtime'
@@ -44,8 +44,8 @@ export default (function App() {
     // 加载css变量
     ThemeLoadVariables()
     // 监听 css 变量
-    EventsOn('theme',cssVariables => {
-      console.log('收到 css 变量',cssVariables)
+    EventsOn('theme', cssVariables => {
+      console.log('收到 css 变量', cssVariables)
       try {
         const vars = JSON.parse(cssVariables)
         Object.keys(vars).forEach(key => {
@@ -57,7 +57,7 @@ export default (function App() {
     })
 
     // 加载主题
-   ThemeMode().then(res => {
+    ThemeMode().then(res => {
       if (res === 'dark') {
         document.documentElement.classList.add('dark')
       } else {
@@ -74,7 +74,7 @@ export default (function App() {
         // 自定加载依赖
         YarnCommands({
           type: 'install',
-          args:[  '--ignore-warnings']
+          args: ['--ignore-warnings']
         })
       } else {
         setStep(1)
@@ -82,9 +82,8 @@ export default (function App() {
     })
 
     // 监听依赖安装状态 0 失败 1 成功
-    EventsOn('yarn',data => {
+    EventsOn('yarn', data => {
       const value = data.value
-      console.log('收到依赖安装状态', data)
       if (data.type == 'install') {
         if (value == 0) {
           notification('依赖初始化失败', 'error')
@@ -95,10 +94,12 @@ export default (function App() {
           })
         )
       }
+      //
     })
 
     // 监听 bot 状态
-    EventsOn('bot', (value: number) => {
+    EventsOn('bot', (data ) => {
+      const value = data.value
       dispatch(
         setBotStatus({
           runStatus: value == 0 ? false : true
@@ -107,12 +108,14 @@ export default (function App() {
     })
 
     // 监听 通知消息
-    EventsOn('notification', (value: any) => {
-      notification(value)
+    EventsOn('notification', (data) => {
+      const value = data.value
+      const type = data.type
+      notification(value, type || 'info')
     })
 
     // 监听 expansions消息
-    EventsOn('expansions', (data: any) => {
+    EventsOn('expansions', (data) => {
       try {
         if (/^action:/.test(data.type)) {
           const actions = data.type.split(':')
@@ -142,7 +145,8 @@ export default (function App() {
     })
 
     // 监听 expansions状态
-    EventsOn('expansions-status', (value: number) => {
+    EventsOn('expansions-status', (data) => {
+      const value = data.value
       if (value == 0) {
         notification('扩展器已停止', 'warning')
       } else {
@@ -156,12 +160,12 @@ export default (function App() {
     })
 
     // 监听 log
-    EventsOn('terminal', (message: string) => {
-      dispatch(postMessage(message))
+    EventsOn('terminal', (data: any) => {
+      dispatch(postMessage(data))
     })
 
     // 监听  modal
-    EventsOn('controller', (data: any) => {
+    EventsOn('controller', (data) => {
       if (data.open) {
         setPopValue({
           open: true,

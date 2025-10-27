@@ -18,6 +18,12 @@ func GetBotEntryFilePath(botName string) string {
 	return filepath.Join(botPath, "alemonjs", "index.js")
 }
 
+// 得到机器人桌面入口文件
+func GetBotDesktopEntryFilePath(botName string) string {
+	botPath := CreateBotPath(botName)
+	return filepath.Join(botPath, "alemonjs", "desktop.js")
+}
+
 // 得到机器人依赖文件路径
 func GetBotDependencyPath(botName string) string {
 	botPath := CreateBotPath(botName)

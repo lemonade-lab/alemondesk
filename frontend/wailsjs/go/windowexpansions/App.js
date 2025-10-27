@@ -14,6 +14,10 @@ export function ExpansionsRun(arg1) {
   return window['go']['windowexpansions']['App']['ExpansionsRun'](arg1);
 }
 
+export function ExpansionsStatus() {
+  return window['go']['windowexpansions']['App']['ExpansionsStatus']();
+}
+
 export function Startup(arg1) {
   return window['go']['windowexpansions']['App']['Startup'](arg1);
 }

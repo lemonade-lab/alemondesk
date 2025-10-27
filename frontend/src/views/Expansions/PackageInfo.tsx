@@ -130,7 +130,6 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
   // 控制提交
   useEffect(() => {
     EventsOn('yarn', data => {
-      console.log('yarn on', data)
       const type = data.type
       const value = data.value
       //
@@ -233,10 +232,8 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
   const loadVersion: MouseEventHandler<HTMLSelectElement> = async e => {
     e.stopPropagation()
     if (options.length > 1) return
-    // notification(`开始获取${pkgInfo.name}版本`)
     // 获取最新版本
     const info = await fetchPackageInfo(pkgInfo.name)
-    console.log('info', info)
     setOptions(info.versions)
   }
 

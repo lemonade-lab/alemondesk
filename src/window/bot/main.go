@@ -6,6 +6,8 @@ import (
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
 	"context"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -31,6 +33,9 @@ func (a *App) BotRun(p1 []string) bool {
 	if err != nil {
 		return false
 	}
+	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+		"data": 1,
+	})
 	_ = msg
 	return true
 }
@@ -45,6 +50,9 @@ func (a *App) BotClose() bool {
 	if err != nil {
 		return false
 	}
+	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+		"data": 0,
+	})
 	_ = msg
 	return true
 }

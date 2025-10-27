@@ -3,10 +3,12 @@
 import {windowexpansions} from '../models';
 import {context} from '../models';
 
-export function ExpansionsClose():Promise<void>;
+export function ExpansionsClose():Promise<boolean>;
 
 export function ExpansionsPostMessage(arg1:windowexpansions.ExpansionsPostMessageParams):Promise<void>;
 
-export function ExpansionsRun(arg1:Array<string>):Promise<void>;
+export function ExpansionsRun(arg1:Array<string>):Promise<boolean>;
+
+export function ExpansionsStatus():Promise<boolean>;
 
 export function Startup(arg1:context.Context):Promise<void>;
