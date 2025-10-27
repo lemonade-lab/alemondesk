@@ -30,7 +30,6 @@ func GetStoragePath() string {
 
 // YARN文件
 func GetNodeYarnScriptFilePath() string {
-	workPath := GetResourcePath()
-	filePath := filepath.Join(workPath, "yarn", "bin", "yarn.js")
-	return filePath
+	// 相对于当前机器人的
+	return filepath.Join("..", "..", "yarn", "bin", "yarn.cjs")
 }

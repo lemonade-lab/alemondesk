@@ -74,7 +74,7 @@ export default (function App() {
         // 自定加载依赖
         YarnCommands({
           type: 'install',
-          value: ['install', '--ignore-warnings']
+          args:[  '--ignore-warnings']
         })
       } else {
         setStep(1)
@@ -84,6 +84,7 @@ export default (function App() {
     // 监听依赖安装状态 0 失败 1 成功
     EventsOn('yarn',data => {
       const value = data.value
+      console.log('收到依赖安装状态', data)
       if (data.type == 'install') {
         if (value == 0) {
           notification('依赖初始化失败', 'error')

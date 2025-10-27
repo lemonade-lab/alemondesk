@@ -50,13 +50,5 @@ func (a *App) BotClose() bool {
 }
 
 func (a *App) BotStatus() bool {
-	botPath := paths.GetBotPath(config.BotName)
-	if !utils.ExistsPath([]string{botPath}) {
-		return false
-	}
-	res, err := logic.Info(config.BotName)
-	if err != nil {
-		return false
-	}
-	return res.Data.Pid != 0
+	return logic.IsRunning(config.BotName)
 }

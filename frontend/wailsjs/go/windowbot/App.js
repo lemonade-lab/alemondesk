@@ -10,16 +10,8 @@ export function BotRun(arg1) {
   return window['go']['windowbot']['App']['BotRun'](arg1);
 }
 
-export function BotStart() {
-  return window['go']['windowbot']['App']['BotStart']();
-}
-
 export function BotStatus() {
   return window['go']['windowbot']['App']['BotStatus']();
-}
-
-export function BotStop() {
-  return window['go']['windowbot']['App']['BotStop']();
 }
 
 export function Startup(arg1) {

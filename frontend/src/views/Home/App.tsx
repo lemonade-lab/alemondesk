@@ -10,7 +10,7 @@ const MainView = () => {
   const onInstall = () => {
     YarnCommands({
       type: 'install',
-      value: ['install', '--ignore-warnings']
+      args:[  '--ignore-warnings']
     })
   }
   const [count, setCount] = useState(0)

@@ -1,7 +1,10 @@
 package main
 
 import (
+	"alemonapp/src/config"
 	files "alemonapp/src/files"
+	"alemonapp/src/paths"
+	"alemonapp/src/utils"
 	windowapp "alemonapp/src/window/app"
 	windowbot "alemonapp/src/window/bot"
 	windowcontroller "alemonapp/src/window/controller"
@@ -33,6 +36,9 @@ func main() {
 
 	// 初始化文件资源
 	files.Create(ResourcesFiles)
+
+	// 创建默认机器人
+	utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))
 
 	// Create an instance of the app structure
 	wbot := windowbot.NewApp()

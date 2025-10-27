@@ -48,12 +48,12 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
     if (pkgInfo['isLink']) {
       YarnCommands({
         type: `link`,
-        value: ['link', name]
+        args:[name]
       })
     } else {
       YarnCommands({
         type: `add`,
-        value: ['add', name, '-W']
+        args:[name, '-W']
       })
     }
   }
@@ -83,7 +83,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
           //
           YarnCommands({
             type: `upgrade`,
-            value: ['upgrade', `${pkgInfo.name}@${version}`, '-W']
+            value: [  `${pkgInfo.name}@${version}`, '-W']
           })
         } else {
           notification(`当前已是最新版本`, 'default')
@@ -108,7 +108,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
     if (item.isLink) {
       YarnCommands({
         type: `unlink`,
-        value: ['unlink', item.name]
+        args: [item.name]
       })
       notification(`开始卸载${item.name}`)
     } else if (item.isGit) {
@@ -117,7 +117,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
       notification(`开始卸载${item.name}`)
       YarnCommands({
         type: `remove`,
-        value: ['remove', item.name, '-W']
+        args: [item.name, '-W']
       })
     }
   }
@@ -266,7 +266,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
     //
     YarnCommands({
       type: `upgrade`,
-      value: ['upgrade', `${pkgInfo.name}@${version}`, '-W']
+      args:[ `${pkgInfo.name}@${version}`, '-W']
     })
   }
 

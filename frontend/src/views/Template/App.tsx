@@ -60,7 +60,7 @@ export default function Template() {
       setSubmit(true)
       YarnCommands({
         type: `cmd`,
-        value: [value]
+        args:[value]
       })
       return
     }
@@ -82,7 +82,7 @@ export default function Template() {
 
     YarnCommands({
       type: `cmd`,
-      value: cmd
+      args:cmd
     })
   }
 

@@ -4,6 +4,7 @@ import (
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 
@@ -82,27 +83,29 @@ func Add(name string, args []string) (string, error) {
 }
 
 // 加载依赖
-func Install(name string) (string, error) {
+func Install(name string) (bool, error) {
 	// 检查系统是否安装了 Node.js
 	if _, err := exec.LookPath("node"); err != nil {
-		return "未找到NodeJS", err
+		log.Println("unable to find node:", err)
+		return false, err
 	}
 	if IsRunning(name) {
-		return "机器人在运行", os.ErrExist
+		log.Println("机器人在运行")
+		return false, os.ErrExist
 	}
 	// yarn.cjs
 	cliDir := paths.GetNodeYarnScriptFilePath()
-	// yanr install
+	// yarn install
 	cmd := utils.Command("node", cliDir, "install", "--ignore-engines")
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
-	// cmd.Stdout = os.Stdout
-	// cmd.Stderr = os.Stderr
-	var l = new(zapcore.Level)
-	confLogLevel := os.Getenv("APP_LOG_LEVEL")
-	if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
-		fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
-	}
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	// var l = new(zapcore.Level)
+	// confLogLevel := os.Getenv("APP_LOG_LEVEL")
+	// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
+	// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
+	// }
 
 	// botLogger, err := logger.GetOrCreateBotLogger(name, *l)
 	// if err != nil {
@@ -127,11 +130,14 @@ func Install(name string) (string, error) {
 	if err := cmd.Run(); err != nil {
 		// 分析错误。如果只是依赖的一些警告不应当做为错误
 		if exitError, ok := err.(*exec.ExitError); ok && exitError.ExitCode() == 0 {
-			return "依赖安装成功 (Dependencies installed successfully)", nil
+			log.Println("依赖安装完成，存在警告信息")
+			return false, nil
 		}
-		return fmt.Sprintf("依赖安装异常: %v (Dependency installation failed: %v)", err, err), err
+		log.Println("依赖安装失败:", err)
+		return false, err
 	}
-	return "依赖安装成功 (Dependencies installed successfully)", nil
+	log.Println("依赖安装成功")
+	return true, nil
 }
 
 // 移除依赖

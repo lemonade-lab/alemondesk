@@ -42,7 +42,7 @@ export namespace windowyarn {
 	
 	export class YarnCommandsParams {
 	    type: string;
-	    value?: string[];
+	    args?: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new YarnCommandsParams(source);
@@ -51,7 +51,7 @@ export namespace windowyarn {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.type = source["type"];
-	        this.value = source["value"];
+	        this.args = source["args"];
 	    }
 	}
 
