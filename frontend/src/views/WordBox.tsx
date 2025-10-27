@@ -107,7 +107,7 @@ export default function WordBox() {
                   setIsDropdownOpen(false)
                 }
               }}
-              placeholder="input command"
+              placeholder="请输入指令"
               className="border rounded-md min-w-72 px-2 py-1"
               aria-label="Command Input"
             />
@@ -169,7 +169,7 @@ export default function WordBox() {
               role="button"
             >
               <SecondaryDiv className="text-sm  cursor-pointer border flex justify-center items-center h-[1.1rem] rounded-md">
-                <span className="">input command</span>
+                <span className="">输入指令</span>
               </SecondaryDiv>
             </div>
           </div>

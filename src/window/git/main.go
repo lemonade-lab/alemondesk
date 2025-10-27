@@ -49,8 +49,6 @@ func (a *App) GitReposList(name string) ([]GitRepoInfo, error) {
 		log.Println("读取目录错误:", path, err)
 		return repos, err
 	}
-	log.Println("读取目录成功:", path)
-	log.Println("目录内容:", entries)
 
 	for _, entry := range entries {
 		if entry.IsDir() {

@@ -19,6 +19,11 @@ import { useSelector } from 'react-redux'
 const initialSpace = 'packages'
 const spaceOptions = [initialSpace, 'plugins']
 
+const spaceMap: { [key: string]: string } = {
+  packages: '扩展包',
+  plugins: '插件'
+}
+
 export default function Expansions() {
   const [select, setSelect] = useState('')
   const [searchValue, setSearchValue] = useState('')
@@ -68,7 +73,7 @@ export default function Expansions() {
         notification('添加成功')
         // 更新列表
         GitReposList(space).then(res => {
-          setData(res)
+          setData(res || [])
         })
       })
     } catch (error: any) {
@@ -114,7 +119,7 @@ export default function Expansions() {
       notification('删除成功')
       // 更新列表
       GitReposList(space).then(res => {
-        setData(res)
+        setData(res || [])
       })
     }
 
@@ -131,7 +136,7 @@ export default function Expansions() {
 
   useEffect(() => {
     GitReposList(space).then(res => {
-      setData(res)
+      setData(res || [])
     })
   }, [space])
 
@@ -176,7 +181,7 @@ export default function Expansions() {
                 }
                 return (
                   <option key={index} value={item}>
-                    {item}
+                    {spaceMap[item]}
                   </option>
                 )
               })}

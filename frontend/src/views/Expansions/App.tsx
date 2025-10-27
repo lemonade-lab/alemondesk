@@ -169,6 +169,17 @@ export default function Expansions() {
     })
   }, [])
 
+  const selectsMap: {
+    [key: string]: string
+  } = {
+    add: '添加',
+    remove: '移除',
+    link: '链接',
+    unlink: '取消链接',
+    install: '安装',
+    list: '列表'
+  }
+
   return (
     <section className=" flex flex-row flex-1 h-full shadow-md">
       <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1">
@@ -181,7 +192,7 @@ export default function Expansions() {
             <Select onChange={onSelect} className="rounded-md px-2">
               {selects.map((v, i) => (
                 <option key={i} value={v}>
-                  {v}
+                  {selectsMap[v]}
                 </option>
               ))}
             </Select>
