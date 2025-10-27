@@ -3,16 +3,17 @@ import { debounce } from 'lodash'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useNotification } from '@/context/Notification'
-import { SecondaryDiv } from '@alemonjs/react-ui'
+import { SecondaryDiv, Select, Tooltip } from '@alemonjs/react-ui'
 import { SidebarDiv } from '@alemonjs/react-ui'
 import { Input } from '@alemonjs/react-ui'
-import { fetchPackageInfo, getPackages } from '@/api'
 import PackageInfo, { PackageInfoType } from './PackageInfo'
 import ExpansionsCard from './ExpansionsCard'
 import Init from './Init'
 import { SyncOutlined } from '@ant-design/icons'
-import {AppReadFiles} from "@wailsjs/go/windowapp/App";
-import {ExpansionsPostMessage} from "@wailsjs/go/windowexpansions/App";
+import { AppReadFiles } from '@wailsjs/go/windowapp/App'
+import { ExpansionsPostMessage } from '@wailsjs/go/windowexpansions/App'
+import { YarnCommands } from '@wailsjs/go/windowyarn/App'
+import { EventsOn } from '@wailsjs/runtime/runtime'
 
 export default function Expansions() {
   const app = useSelector((state: RootState) => state.app)
@@ -21,9 +22,12 @@ export default function Expansions() {
   const notification = useNotification()
   const [select, setSelect] = useState('')
   const expansions = useSelector((state: RootState) => state.expansions)
-  const [npms, setNpms] = useState<typeof expansions.package>([])
-  const [packages, setPackages] = useState<typeof expansions.package>([])
-  const [searchValue, setSearchValue] = useState('')
+  const [inputValue, setIputValue] = useState('')
+  const [submit, setSubmit] = useState(false)
+  const fromNameRef = useRef('')
+  const noValueSelect = ['install', 'list']
+  const selects = ['add', 'remove', 'link', 'unlink', ...noValueSelect]
+  const [value, setValue] = useState(selects[0])
 
   // 查看扩展信息
   const handlePackageClick = debounce(async (packageName: string) => {
@@ -64,53 +68,104 @@ export default function Expansions() {
     setPackageInfo(data)
   }, 500)
 
-  // 查看扩展信息
-  const handleNpmJSPackageClick = debounce(async (packageName: string) => {
-    try {
-      const info = await fetchPackageInfo(packageName)
-      const data = {
-        'name': info?.name || '',
-        'description': info?.description || '',
-        'author': info?.author || null,
-        'dist-tags': info['dist-tags'],
-        'version': info['dist-tags'].latest,
-        'readme': info.readme || '',
-        '__logo_url': info?.__logo_url || null,
-        '__icon': info?.__icon || null
-      }
-      setPackageInfo(data)
-    } catch (err) {
-      console.error(err)
-    }
-  }, 500)
-
   useEffect(() => {
     if (packageInfo) packageInfoRef.current = packageInfo
     if (packageInfo) setSelect('shoping')
   }, [packageInfo])
 
-  const onClickRefresh = () => {
-    ExpansionsPostMessage({ type: 'get-expansions' })
+  /**
+   * @param e
+   * @returns
+   */
+  const onSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // 选择版本,立即切换到该版本
+    const value = e.target.value
+    setValue(value)
+  }
+
+  /**
+   *
+   * @param e
+   */
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIputValue(e.target.value)
+  }
+
+  /**
+   *
+   * @param e
+   * @returns
+   */
+  const onClickSync = () => {
+    //
+    if (submit) {
+      notification('正在执行中，请稍后', 'warning')
+      return
+    }
+
+    if (!value) return
+
+    if (noValueSelect.includes(value)) {
+      setSubmit(true)
+      YarnCommands({
+        type: `cmd`,
+        args: [value]
+      })
+      return
+    }
+
+    if (!inputValue || inputValue == '') return
+
+    const inputValues = inputValue.split(' ')
+
+    setSubmit(true)
+
+    if (value == 'add') {
+      // 没有参数的时候，自动添加 -W
+      if (!inputValues.includes('-W')) {
+        inputValues.push('-W')
+      }
+    }
+
+    const cmd = [value].concat(inputValues)
+
+    YarnCommands({
+      type: `cmd`,
+      args: cmd
+    })
   }
 
   useEffect(() => {
-    if (searchValue === '') {
-      setPackages([])
-      return
-    }
-    const reg = new RegExp(searchValue, 'i')
-    const data = npms.filter(v => reg.test(v.name))
-    setPackages(data)
-  }, [searchValue])
+    fromNameRef.current = `${value} ${inputValue}`
+  }, [value, inputValue])
 
-  // 控制提交
   useEffect(() => {
-    // 获取alemonjs相关包
-    getPackages().then(data => {
-      if (data.objects) {
-        console.log('data.objects', data.objects)
-        setNpms(data.objects.map((v: any) => v.package))
+    // 监听 yarn 命令
+    EventsOn('yarn', data => {
+      if (!data || !data.type || data.type != 'cmd') return
+
+      //  结束加载状态
+      setSubmit(false)
+
+      const value = data.value
+      if (value == 0) {
+        notification(`yarn ${fromNameRef.current} 失败`, 'warning')
+        return
       }
+
+      // 成功
+      notification(`yarn ${fromNameRef.current} 完成`)
+
+      // 匹配到有关更改包的都重新获取扩展列表。
+      if (!fromNameRef.current.match(/(add|remove|link|unlink)/)) {
+        return
+      }
+
+      // 重新获取扩展列表
+      ExpansionsPostMessage({
+        type: 'get-expansions',
+        data: {}
+      })
     })
   }, [])
 
@@ -123,39 +178,42 @@ export default function Expansions() {
       <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col  w-72 xl:w-80 border-l h-full">
         <div className="flex justify-between px-2 py-1">
           <div className=" cursor-pointer" onClick={() => setSelect('')}>
-            扩展列表
+            包管理器
           </div>
           <div className="text-[0.7rem] flex gap-2 items-center justify-center ">
-            <div onClick={onClickRefresh} className=" cursor-pointer">
-              <SyncOutlined />
-            </div>
+            <Select onChange={onSelect} className="rounded-md px-2">
+              {selects.map((v, i) => (
+                <option key={i} value={v}>
+                  {v}
+                </option>
+              ))}
+            </Select>
           </div>
         </div>
-        <div className="">
+        <div className="flex items-center">
           <Input
-            value={searchValue}
-            onChange={e => setSearchValue(e.target.value)}
-            placeholder="在应用商店中搜索扩展"
+            type="text"
+            name="name"
+            placeholder="alemonjs"
+            value={inputValue}
+            onChange={handleChange}
             className="w-full px-2 py-1 rounded-sm"
           />
+          <Tooltip text="同步执行">
+            <div className="px-2" onClick={onClickSync}>
+              <SyncOutlined />
+            </div>
+          </Tooltip>
         </div>
         <div className="flex-1 ">
           <SecondaryDiv className="flex flex-col gap-1  border-t py-2 overflow-auto  h-[calc(100vh-5.9rem)]">
-            {packages.length > 0
-              ? packages.map(item => (
-                  <ExpansionsCard
-                    item={item}
-                    key={item.name}
-                    handlePackageClick={name => handleNpmJSPackageClick(name)}
-                  />
-                ))
-              : expansions.package.map(item => (
-                  <ExpansionsCard
-                    item={item}
-                    key={item.name}
-                    handlePackageClick={name => handlePackageClick(name)}
-                  />
-                ))}
+            {expansions.package.map(item => (
+              <ExpansionsCard
+                item={item}
+                key={item.name}
+                handlePackageClick={name => handlePackageClick(name)}
+              />
+            ))}
           </SecondaryDiv>
         </div>
       </SidebarDiv>
