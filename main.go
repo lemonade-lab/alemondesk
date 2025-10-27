@@ -15,6 +15,7 @@ import (
 	windowyarn "alemonapp/src/window/yarn"
 	"context"
 	"embed"
+	"os"
 	"runtime"
 
 	"github.com/wailsapp/wails/v2"
@@ -34,7 +35,11 @@ func main() {
 	files.Create(ResourcesFiles)
 
 	// 创建默认机器人
-	utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))
+	// 前提是机器人目录不存在
+	botPath := paths.CreateBotPath(config.BotName)
+	if _, err := os.Stat(botPath); os.IsNotExist(err) {
+		utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))
+	}
 
 	// Create an instance of the app structure
 	wbot := windowbot.NewApp()
@@ -59,13 +64,13 @@ func main() {
 		// 仅 Windows 和 Linux 下启用无边框窗口
 		Frameless: runtime.GOOS == "windows" || runtime.GOOS == "linux",
 		OnStartup: func(ctx context.Context) {
+			wgit.Startup(ctx)
 			wbot.Startup(ctx)
 			wapp.Startup(ctx)
 			wtheme.Startup(ctx)
 			wcontroller.Startup(ctx)
 			wexpansions.Startup(ctx)
 			wyarn.Startup(ctx)
-			wgit.Startup(ctx)
 		},
 		Bind: []interface{}{
 			wbot,

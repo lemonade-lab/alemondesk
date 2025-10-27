@@ -4,16 +4,10 @@ import Joyride from 'react-joyride'
 // 引导
 const KEY = 'FIRST_GUIDE'
 // 条件
-const KEY_DATA = '2'
+const KEY_DATA = '1'
 
 // 定义引导步骤
 const steps = [
-  {
-    target: '.steps-1',
-    content:
-      '这是“加载依赖”按钮。依赖是机器人运行所需要的软件包。可不进行加载，但会无法使用和“机器人”相关的功能',
-    disableBeacon: true
-  },
   {
     target: '.steps-2',
     content:
@@ -51,9 +45,7 @@ export default function GuideMain({ stepIndex }: { stepIndex: number }) {
 
   // 引导回调函数
   const handleJoyrideCallback = (data: { action: string; index: number; type: string }) => {
-    console.log('Joyride:', data)
     if (data.action == 'skip' && data.type == 'tour:end') {
-      console.log('跳过')
       localStorage.setItem(KEY, KEY_DATA)
     }
   }

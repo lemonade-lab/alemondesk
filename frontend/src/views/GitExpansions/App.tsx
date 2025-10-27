@@ -3,37 +3,32 @@ import Init from './Init'
 import { SecondaryDiv } from '@alemonjs/react-ui'
 import { SidebarDiv } from '@alemonjs/react-ui'
 import { Input } from '@alemonjs/react-ui'
-import { FolderAddOutlined } from '@ant-design/icons'
-import Info from './GitInfo'
+import { DeleteFilled, FolderAddOutlined } from '@ant-design/icons'
 import CodeDiff from './CodeDiff'
-// import { RootState } from '@/store'
-// import { useSelector } from 'react-redux'
 import { useNotification } from '@/context/Notification'
 import { extractRepoInfo, isGitRepositoryFormat } from '@/api'
 import Markdown from '@/common/Markdown'
 import { Tooltip } from '@alemonjs/react-ui'
 import { Select } from '@alemonjs/react-ui'
-import { GitClone, GitDelete, GitDiff, GitFetch, GitGetWordSpaces, GitReposList, GitSetWordSpaces, GitShow } from '@wailsjs/go/windowgit/App'
+import { GitClone, GitDelete, GitReposList } from '@wailsjs/go/windowgit/App'
+import { windowgit } from '@wailsjs/go/models'
+import { AppExists, AppReadFiles } from '@wailsjs/go/windowapp/App'
+import { RootState } from '@/store'
+import { useSelector } from 'react-redux'
+
+const initialSpace = 'packages'
+const spaceOptions = [initialSpace, 'plugins']
 
 export default function Expansions() {
-  // const app = useSelector((state: RootState) => state.app)
   const [select, setSelect] = useState('')
   const [searchValue, setSearchValue] = useState('')
   const notification = useNotification()
-  const [data, setData] = useState<string[]>([])
+  const [data, setData] = useState<windowgit.GitRepoInfo[]>([])
   const [sub, setSub] = useState(false)
-
-  const [viewName, setViewName] = useState('')
+  const [space, setSpace] = useState(initialSpace)
   const [readme, setReadme] = useState('')
   const [diffedCode, setdiffedCode] = useState('')
-
-  // const listRef = useRef<string[]>([])
-
-  const initData = async () => {
-    GitReposList('').then(res => {
-      setData(res)
-    })
-  }
+  const app = useSelector((state: RootState) => state.app)
 
   /**
    *
@@ -49,38 +44,38 @@ export default function Expansions() {
       // 正在提交
       return
     }
-    setSub(true)
+    try {
+      setSub(true)
 
-    // const exists = data.some(existingItem => existingItem.path === searchValue)
-    // if (exists) {
-    //   notification('该仓库已存在', 'warning')
-    //   setSub(false)
-    //   return
-    // }
+      if (!isGitRepositoryFormat(value)) {
+        notification('格式错误', 'warning')
+        setSub(false)
+        return
+      }
 
-    if (!isGitRepositoryFormat(value)) {
-      notification('格式错误', 'warning')
+      // 根据 url 解析成仓库地址
+      const { username, repository, platform } = extractRepoInfo(value)
+
+      if (data.find(item => item.Name === repository)) {
+        notification('该仓库已存在', 'warning')
+        setSub(false)
+        return
+      }
+
+      notification('正在添加仓库..')
+
+      await GitClone(space, value).then(res => {
+        notification('添加成功')
+        // 更新列表
+        GitReposList(space).then(res => {
+          setData(res)
+        })
+      })
+    } catch (error: any) {
+      notification('操作失败:' + error.message, 'error')
+    } finally {
       setSub(false)
-      return
     }
-
-    // 根据 url 解析成仓库地址
-    const { username, repository, platform } = extractRepoInfo(value)
-
-    if (data.find(name => name === repository)) {
-      notification('该仓库已存在', 'warning')
-      setSub(false)
-      return
-    }
-
-    notification('正在添加仓库..')
-
-    await GitClone(value,'').then(res => {
-      setData([...data, repository])
-      notification('添加成功')
-    })
-
-    setSub(false)
   }
 
   /**
@@ -95,13 +90,6 @@ export default function Expansions() {
     setSub(true)
 
     notification('开始同步所有分支..')
-
-    await GitFetch(item).then(res => {
-      console.log(res)
-      // const db = data.filter(v => v !== item)
-      // setData(db)
-      // notification('删除成功')
-    })
 
     setSub(false)
   }
@@ -121,11 +109,14 @@ export default function Expansions() {
 
     notification('正在删除仓库..')
 
-    await GitDelete(item).then(() => {
-      const db = data.filter(v => v !== item)
-      setData(db)
+    const T = await GitDelete(space, item)
+    if (T) {
       notification('删除成功')
-    })
+      // 更新列表
+      GitReposList(space).then(res => {
+        setData(res)
+      })
+    }
 
     setSub(false)
   }
@@ -136,31 +127,13 @@ export default function Expansions() {
     }
   }, [readme])
 
-  const onShowReadme = (item: { name: string; hash: string }) => {
-   GitShow(item.name, item.hash).then((res: any) => {
-      setReadme(res)
-      setSelect('readme')
-    })
-  }
-
-  const onShowCodeDiff = (item: { name: string; hash: string }) => {
-    GitDiff(item.name, item.hash).then((res: any) => {
-      setdiffedCode(res)
-      setSelect('diffcode')
-    })
-  }
-
   const [selectValue, setSelectValue] = useState('')
 
   useEffect(() => {
-    initData()
-  }, [])
-
-  useEffect(() => {
-    GitGetWordSpaces().then(value => {
-      setSelectValue(value)
+    GitReposList(space).then(res => {
+      setData(res)
     })
-  }, [])
+  }, [space])
 
   return (
     <section className=" flex flex-row flex-1 h-full shadow-md">
@@ -187,14 +160,13 @@ export default function Expansions() {
           <div className="text-[0.7rem] flex gap-2 items-center justify-center ">
             <Select
               className="rounded-md"
+              value={space}
               onChange={(e: any) => {
-                const value = e.target.value
-                GitSetWordSpaces(value).then(() => {
-                  initData()
-                })
+                const value = e.target?.value
+                setSpace(value ?? initialSpace)
               }}
             >
-              {['packages', 'plugins'].map((item, index) => {
+              {spaceOptions.map((item, index) => {
                 if (item == selectValue) {
                   return (
                     <option key={index} value={item} selected>
@@ -226,13 +198,44 @@ export default function Expansions() {
         </div>
         <div className="flex-1 ">
           <SecondaryDiv className="flex flex-col gap-1  border-t py-2  overflow-auto  h-[calc(100vh-5.9rem)]">
-            <Info
-              data={data}
-              onDelete={onDelete}
-              onShowCodeDiff={onShowCodeDiff}
-              onShowReadme={onShowReadme}
-              onFetch={onFetch}
-            />
+            {data.map((item, index) => (
+              <div
+                key={index}
+                className="flex justify-between items-center px-2 py-1 hover:bg-gray-100 rounded-md cursor-pointer"
+              >
+                <div
+                  onClick={async () => {
+                    if (!item.IsFullRepo) {
+                      notification('该仓库损坏，无法查看', 'warning')
+                      return
+                    }
+                    const dir = `${app.userDataTemplatePath}/${space}/${item.Name}/README.md`
+                    const T = await AppExists(dir)
+                    if (!T) {
+                      notification('该仓库没有README.md文件', 'warning')
+                      return
+                    }
+                    const data = await AppReadFiles(dir)
+                    setSelect('readme')
+                    setReadme(data)
+                  }}
+                >
+                  {item.Name}
+                  {!item.IsFullRepo && '(损坏)'}
+                </div>
+                <div className="flex gap-2">
+                  <div
+                    className="text-red-500"
+                    onClick={e => {
+                      e.stopPropagation()
+                      onDelete(item.Name)
+                    }}
+                  >
+                   <DeleteFilled />
+                  </div>
+                </div>
+              </div>
+            ))}
           </SecondaryDiv>
         </div>
       </SidebarDiv>

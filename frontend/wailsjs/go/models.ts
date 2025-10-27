@@ -67,6 +67,31 @@ export namespace windowexpansions {
 
 }
 
+export namespace windowgit {
+	
+	export class GitRepoInfo {
+	    Name: string;
+	    IsFullRepo: boolean;
+	    RemoteURL: string;
+	    Branch: string;
+	    LastCommit: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new GitRepoInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.IsFullRepo = source["IsFullRepo"];
+	        this.RemoteURL = source["RemoteURL"];
+	        this.Branch = source["Branch"];
+	        this.LastCommit = source["LastCommit"];
+	    }
+	}
+
+}
+
 export namespace windowyarn {
 	
 	export class YarnCommandsParams {

@@ -11,37 +11,43 @@ export default function Template() {
 
   const pages = [
     {
-      title: 'npmrc',
-      value: 'npmrc',
-      mode: null,
-      dir: app.userDataTemplatePath + '/.npmrc'
-    },
-    {
-      title: 'package.json',
-      value: 'package',
-      mode: 'application/json',
-      dir: app.userDataTemplatePath + '/package.json'
-    },
-    {
       title: 'alemon.config.yaml',
+      name: "机器人配置",
       value: 'config',
       mode: 'yaml',
       dir: app.userDataTemplatePath + '/alemon.config.yaml'
     },
     {
+      title: 'package.json',
+      name: "包管理配置",
+      value: 'package',
+      mode: 'application/json',
+      dir: app.userDataTemplatePath + '/package.json'
+    },
+    {
+      title: 'npmrc',
+      name: "依赖配置",
+      value: 'npmrc',
+      mode: null,
+      dir: app.userDataTemplatePath + '/.npmrc'
+    },
+    {
       title: '.puppeteerrc.cjs',
+      name: "浏览器配置",
       value: 'puppeteerrc',
       mode: 'javascript',
       dir: app.userDataTemplatePath + '/.puppeteerrc.cjs'
     },
     {
       title: 'index.js',
+      name: "机器人脚本",
       value: 'index',
       mode: 'javascript',
       dir: app.userDataTemplatePath + '/alemonjs/index.js'
     },
     {
       title: 'desktop.js',
+      name: "扩展器脚本",
       value: 'desktop',
       mode: 'javascript',
       dir: app.userDataTemplatePath + '/alemonjs/desktop.js'
@@ -66,7 +72,7 @@ export default function Template() {
             className="flex flex-col gap-2 px-2 cursor-pointer"
             onClick={() => setSelect(item.value)}
           >
-            {item.title}
+            {item.name}
           </div>
         ))}
       </SidebarDiv>
