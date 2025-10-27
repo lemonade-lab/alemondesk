@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo, createElement } from 'react'
+import { useEffect, useState } from 'react'
 import classNames from 'classnames'
 import { RootState } from '@/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -8,6 +8,7 @@ import { SecondaryDiv } from '@alemonjs/react-ui'
 import { SidebarDiv } from '@alemonjs/react-ui'
 import { TagDiv } from '@alemonjs/react-ui'
 import { AntdIcon } from '@/common/AntdIcon'
+import WebView from '@/common/WebView'
 
 interface Sidebar {
   expansions_name: string
@@ -26,7 +27,6 @@ export default function Webviews() {
   const command = useSelector((state: RootState) => state.command)
   const app = useSelector((state: RootState) => state.app)
   const [viewSidebars, setViewSidebars] = useState<Sidebar[]>([])
-  const viewRef = useRef<HTMLWebViewElement>(null)
   const [view, setView] = useState('')
 
   // 点击侧边栏
@@ -56,25 +56,6 @@ export default function Webviews() {
       }) || []
     setViewSidebars(sidebarsItem)
   }, [expansions.package])
-
-  useEffect(() => {
-    if (view && viewRef.current) {
-      const handleConsoleMessage = (e: any) => {
-        if (e.level === 1) {
-          console.log(e.message)
-        } else if (e.level === 2) {
-          console.warn(e.message)
-        } else {
-          console.error(e.message)
-        }
-      }
-      viewRef.current.addEventListener('console-message', handleConsoleMessage)
-      return () => {
-        viewRef.current &&
-          viewRef.current.removeEventListener('console-message', handleConsoleMessage)
-      }
-    }
-  }, [view])
 
   // 创建图标地址
   const createIconURL = (viewItem: Sidebar) => {
@@ -110,14 +91,7 @@ export default function Webviews() {
               </div>
             </div>
           )} */}
-          {view && (
-            <webview
-              ref={viewRef}
-              preload={`file://${app.preloadPath}/webview.js`}
-              src={createTextHtmlURL(view)}
-              className="w-full h-full"
-            />
-          )}
+          {view && <WebView src={createTextHtmlURL(view)} />}
           {!view && (
             <div className="flex-1 flex justify-center items-center">
               <div className="flex-col flex justify-center items-center">

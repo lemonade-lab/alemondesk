@@ -10,28 +10,16 @@ export function AppExists(arg1) {
   return window['go']['windowapp']['App']['AppExists'](arg1);
 }
 
-export function AppFetch(arg1, arg2) {
-  return window['go']['windowapp']['App']['AppFetch'](arg1, arg2);
-}
-
 export function AppGetConfig(arg1) {
   return window['go']['windowapp']['App']['AppGetConfig'](arg1);
 }
 
-export function AppReStart() {
-  return window['go']['windowapp']['App']['AppReStart']();
+export function AppGetPathsState() {
+  return window['go']['windowapp']['App']['AppGetPathsState']();
 }
 
 export function AppReadFiles(arg1) {
   return window['go']['windowapp']['App']['AppReadFiles'](arg1);
-}
-
-export function AppResetTemplate() {
-  return window['go']['windowapp']['App']['AppResetTemplate']();
-}
-
-export function AppSelectDirectory() {
-  return window['go']['windowapp']['App']['AppSelectDirectory']();
 }
 
 export function AppSetConfig(arg1, arg2) {

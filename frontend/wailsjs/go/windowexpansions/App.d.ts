@@ -3,6 +3,12 @@
 import {windowexpansions} from '../models';
 import {context} from '../models';
 
+export function CreateDesktopAPI(arg1:string):Promise<Record<string, any>>;
+
+export function CreateDesktopHideAPI(arg1:string):Promise<Record<string, any>>;
+
+export function CreateHideWebview(arg1:string):Promise<void>;
+
 export function ExpansionsClose():Promise<boolean>;
 
 export function ExpansionsPostMessage(arg1:windowexpansions.ExpansionsPostMessageParams):Promise<void>;
@@ -10,5 +16,11 @@ export function ExpansionsPostMessage(arg1:windowexpansions.ExpansionsPostMessag
 export function ExpansionsRun(arg1:Array<string>):Promise<boolean>;
 
 export function ExpansionsStatus():Promise<boolean>;
+
+export function GetExpansionList(arg1:string):Promise<Array<any>>;
+
+export function SendHideMessage(arg1:string,arg2:Record<string, any>):Promise<void>;
+
+export function SetThemeVariables(arg1:string,arg2:Record<string, any>):Promise<void>;
 
 export function Startup(arg1:context.Context):Promise<void>;

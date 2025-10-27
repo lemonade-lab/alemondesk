@@ -23,7 +23,7 @@ import GuideMain from '@/views/Guide/Main'
 //
 import Header from '@/common/Header'
 import { ExpansionsPostMessage, ExpansionsRun } from '@wailsjs/go/windowexpansions/App'
-import { AppGetConfig } from '@wailsjs/go/windowapp/App'
+import { AppGetConfig, AppGetPathsState } from '@wailsjs/go/windowapp/App'
 import { ThemeLoadVariables, ThemeMode } from '@wailsjs/go/windowtheme/App'
 import { EventsOn } from '@wailsjs/runtime/runtime'
 import { YarnCommands } from '@wailsjs/go/windowyarn/App'
@@ -65,20 +65,8 @@ export default (function App() {
       }
     })
 
-    // 获取配置
-    AppGetConfig(['APP_PATH', 'AUTO_INSTALL', 'AUTO_RUN_EXTENSION']).then(res => {
-      const paths = res[0]
+    AppGetPathsState().then(paths => {
       dispatch(setPath(paths))
-      if (res[1] | res[2]) {
-        setStep(2)
-        // 自定加载依赖
-        YarnCommands({
-          type: 'install',
-          args: ['--ignore-warnings']
-        })
-      } else {
-        setStep(1)
-      }
     })
 
     // 监听依赖安装状态 0 失败 1 成功

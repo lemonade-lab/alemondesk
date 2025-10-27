@@ -1,6 +1,7 @@
 package main
 
 import (
+	assetServer "alemonapp/src/assetServer"
 	"alemonapp/src/config"
 	files "alemonapp/src/files"
 	"alemonapp/src/paths"
@@ -20,7 +21,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
@@ -57,9 +57,7 @@ func main() {
 		Debug: options.Debug{
 			OpenInspectorOnStartup: os.Getenv("APP_WAILS_DEV") == "true",
 		},
-		AssetServer: &assetserver.Options{
-			Assets: assets,
-		},
+		AssetServer: assetServer.CreateAssetServer(&assets),
 		// 仅 Windows 和 Linux 下启用无边框窗口
 		Frameless: runtime.GOOS == "windows" || runtime.GOOS == "linux",
 		OnStartup: func(ctx context.Context) {

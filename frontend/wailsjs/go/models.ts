@@ -1,3 +1,28 @@
+export namespace windowapp {
+	
+	export class PathsState {
+	    userDataTemplatePath: string;
+	    userDataNodeModulesPath: string;
+	    userDataPackagePath: string;
+	    preloadPath: string;
+	    logMainPath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PathsState(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.userDataTemplatePath = source["userDataTemplatePath"];
+	        this.userDataNodeModulesPath = source["userDataNodeModulesPath"];
+	        this.userDataPackagePath = source["userDataPackagePath"];
+	        this.preloadPath = source["preloadPath"];
+	        this.logMainPath = source["logMainPath"];
+	    }
+	}
+
+}
+
 export namespace windowcontroller {
 	
 	export class Versions {
@@ -27,7 +52,7 @@ export namespace windowexpansions {
 	
 	export class ExpansionsPostMessageParams {
 	    type: string;
-	    data?: string;
+	    data?: Record<string, any>;
 	
 	    static createFrom(source: any = {}) {
 	        return new ExpansionsPostMessageParams(source);
