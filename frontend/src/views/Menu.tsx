@@ -43,13 +43,8 @@ const MenuButton = () => {
     {
       Icon: <ShoppingFilled size={20} />,
       path: '/expansions',
-      className: classNames('steps-6', {
-        'opacity-50': !expansions.runStatus
-      }),
+      className: 'steps-6',
       onClick: path => {
-        if (!expansions.runStatus) {
-          return
-        }
         dispatch(setCommand(`view.${path}`))
       }
     },

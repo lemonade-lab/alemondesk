@@ -9,7 +9,7 @@ import { Input } from '@alemonjs/react-ui'
 import PackageInfo, { PackageInfoType } from './PackageInfo'
 import ExpansionsCard from './ExpansionsCard'
 import Init from './Init'
-import { SyncOutlined } from '@ant-design/icons'
+import { EnterOutlined, SyncOutlined } from '@ant-design/icons'
 import { AppReadFiles } from '@wailsjs/go/windowapp/App'
 import { ExpansionsPostMessage } from '@wailsjs/go/windowexpansions/App'
 import { YarnCommands } from '@wailsjs/go/windowyarn/App'
@@ -176,11 +176,8 @@ export default function Expansions() {
         {select == 'shoping' && packageInfo && <PackageInfo packageInfo={packageInfo} />}
       </SecondaryDiv>
       <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col  w-72 xl:w-80 border-l h-full">
-        <div className="flex justify-between px-2 py-1">
-          <div className=" cursor-pointer" onClick={() => setSelect('')}>
-            包管理器
-          </div>
-          <div className="text-[0.7rem] flex gap-2 items-center justify-center ">
+        <div className="flex px-2 py-1 gap-2">
+          <div className="text-[1rem] flex gap-2 items-center justify-center ">
             <Select onChange={onSelect} className="rounded-md px-2">
               {selects.map((v, i) => (
                 <option key={i} value={v}>
@@ -189,21 +186,19 @@ export default function Expansions() {
               ))}
             </Select>
           </div>
-        </div>
-        <div className="flex items-center">
-          <Input
-            type="text"
-            name="name"
-            placeholder="alemonjs"
-            value={inputValue}
-            onChange={handleChange}
-            className="w-full px-2 py-1 rounded-sm"
-          />
-          <Tooltip text="同步执行">
-            <div className="px-2" onClick={onClickSync}>
-              <SyncOutlined />
+          <div className="flex flex-1 items-center">
+            <Input
+              type="text"
+              name="name"
+              placeholder="输入包名(可选)"
+              value={inputValue}
+              onChange={handleChange}
+              className="w-full px-2 py-1 rounded-sm"
+            />
+            <div className="px-2 cursor-pointer" onClick={onClickSync}>
+              <EnterOutlined />
             </div>
-          </Tooltip>
+          </div>
         </div>
         <div className="flex-1 ">
           <SecondaryDiv className="flex flex-col gap-1  border-t py-2 overflow-auto  h-[calc(100vh-5.9rem)]">

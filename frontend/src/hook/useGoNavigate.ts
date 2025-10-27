@@ -34,7 +34,7 @@ const passPath: NavigatePath[] = [
 ]
 
 // 需要启动扩展器的路径
-const runPath: NavigatePath[] = ['/expansions', '/application']
+const runPath: NavigatePath[] = ['/application']
 
 /**
  *

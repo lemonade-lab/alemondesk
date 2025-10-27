@@ -1,5 +1,4 @@
 import { useNotification } from '@/context/Notification'
-import useNetworkSpeed from '@/hook/useNetworkSpeed'
 import { RootState } from '@/store'
 import { BarDiv } from '@alemonjs/react-ui'
 import { Pause, Play } from '@/common/Icons'
@@ -33,11 +32,13 @@ export default function WordBox() {
   const [conmond, setcommand] = useState<Sidebar[]>([])
   const dropdownRef = useRef<HTMLDivElement | null>(null)
 
-  const [view, setView] = useState('')
-
   // 公共样式常量
   const onClose = () => {
     setIsDropdownOpen(false)
+  }
+
+  const createIconURL = (viewItem: Sidebar) => {
+    return `resource://-/${app.userDataTemplatePath}/node_modules/${viewItem.expansions_name}/${viewItem.icon}`
   }
 
   // 点击外部关闭下拉菜单
@@ -68,12 +69,6 @@ export default function WordBox() {
       }) || []
     setcommand(commandItem)
   }, [expansions.package])
-
-  const { networkSpeed } = useNetworkSpeed()
-
-  const createIconURL = (viewItem: Sidebar) => {
-    return `resource://-/${app.userDataTemplatePath}/node_modules/${viewItem.expansions_name}/${viewItem.icon}`
-  }
 
   const createIcon = (viewItem: Sidebar) => {
     if (!viewItem.icon) return <AppstoreOutlined />
@@ -154,18 +149,8 @@ export default function WordBox() {
         </div>
       ) : (
         <>
-          <div className=" flex-1 flex items-center ">
-            <div className="text-[0.7rem] drag-area flex-1 flex justify-end">
-              {networkSpeed && (
-                <div className="flex gap-1 items-center">
-                  <div>{networkSpeed.downlink}</div>
-                  <div>MB/s</div>
-                  <div>RTT</div>
-                  <div>{networkSpeed.rtt}</div>
-                  <div>ms</div>
-                </div>
-              )}
-            </div>
+          <div className=" flex-1 flex items-center drag-area">
+            &nbsp;
           </div>
           <div className=" flex-1 flex items-center justify-center">
             <div
