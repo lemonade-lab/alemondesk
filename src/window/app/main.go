@@ -5,11 +5,11 @@ import (
 	"alemonapp/src/paths"
 	"context"
 	"encoding/json"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -144,28 +144,29 @@ func (a *App) AppExists(dir string) (bool, error) {
 }
 
 // DownloadFiles 下载文件
-func (a *App) AppDownloadFiles(url string) error {
-	// 实现文件下载逻辑
-	resp, err := http.Get(url)
+func (a *App) AppDownloadFiles(localURL string) error {
+	content, err := os.ReadFile(localURL)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
-	// 从 URL 提取文件名
-	filename := filepath.Base(url)
-	if filename == "." || filename == "/" {
-		filename = "download.file"
-	}
+	DisplayName := filepath.Base(localURL)
+	Pattern := "*." + filepath.Ext(localURL)[1:]
 
-	// 创建文件
-	out, err := os.Create(filename)
-	if err != nil {
+	// 弹出保存文件对话框
+	savePath, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+		Title: "保存文件",
+		Filters: []runtime.FileFilter{
+			{
+				DisplayName: DisplayName,
+				Pattern:     Pattern,
+			},
+		},
+	})
+	if err != nil || savePath == "" {
 		return err
 	}
-	defer out.Close()
 
 	// 写入文件
-	_, err = io.Copy(out, resp.Body)
-	return err
+	return os.WriteFile(savePath, []byte(content), 0644)
 }

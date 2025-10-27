@@ -43,6 +43,23 @@ export default (function App() {
   useEffect(() => {
     // 加载css变量
     ThemeLoadVariables()
+    // 加载主题
+    ThemeMode().then(res => {
+      if (res === 'dark') {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    })
+    // 获取路径状态
+    AppGetPathsState().then(paths => {
+      dispatch(setPath(paths))
+    })
+    YarnCommands({
+      type: 'install',
+      args:[  '--ignore-warnings']
+    })
+
     // 监听 css 变量
     EventsOn('theme', cssVariables => {
       console.log('收到 css 变量', cssVariables)
@@ -55,20 +72,6 @@ export default (function App() {
         console.error(e)
       }
     })
-
-    // 加载主题
-    ThemeMode().then(res => {
-      if (res === 'dark') {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    })
-
-    AppGetPathsState().then(paths => {
-      dispatch(setPath(paths))
-    })
-
     // 监听依赖安装状态 0 失败 1 成功
     EventsOn('yarn', data => {
       const value = data.value
@@ -84,7 +87,6 @@ export default (function App() {
       }
       //
     })
-
     // 监听 bot 状态
     EventsOn('bot', (data ) => {
       const value = data.value
@@ -94,14 +96,12 @@ export default (function App() {
         })
       )
     })
-
     // 监听 通知消息
     EventsOn('notification', (data) => {
       const value = data.value
       const type = data.type
       notification(value, type || 'info')
     })
-
     // 监听 expansions消息
     EventsOn('expansions', (data) => {
       try {
@@ -131,7 +131,6 @@ export default (function App() {
         console.error('HomeApp 解析消息失败')
       }
     })
-
     // 监听 expansions状态
     EventsOn('expansions-status', (data) => {
       const value = data.value
@@ -146,12 +145,10 @@ export default (function App() {
         })
       )
     })
-
     // 监听 log
     EventsOn('terminal', (data: any) => {
       dispatch(postMessage(data))
     })
-
     // 监听  modal
     EventsOn('controller', (data) => {
       if (data.open) {

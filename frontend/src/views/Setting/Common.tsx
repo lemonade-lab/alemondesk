@@ -9,7 +9,7 @@ import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import GuideCommon from '../Guide/Common'
-import { AppExists, AppGetConfig, AppSetConfig } from '@wailsjs/go/windowapp/App'
+import { AppDownloadFiles, AppExists, AppGetConfig, AppSetConfig } from '@wailsjs/go/windowapp/App'
 import { GetVersions } from '@wailsjs/go/windowcontroller/App'
 
 const Common = () => {
@@ -94,27 +94,27 @@ const Common = () => {
                   />
                 )
               },
-              {
-                title: '依赖自检',
-                children: (
-                  <Switch
-                    value={desktopCheckeds.autoCheck}
-                    onChange={checked => onChangeDesktop('AUTO_INSTALL', checked)}
-                  />
-                )
-              },
-              {
-                title: '扩展自启',
-                description: '带依赖自检',
-                children: (
-                  <div className="steps-common-1">
-                    <Switch
-                      value={desktopCheckeds.autoStart}
-                      onChange={checked => onChangeDesktop('AUTO_RUN_EXTENSION', checked)}
-                    />
-                  </div>
-                )
-              },
+              // {
+              //   title: '依赖自检',
+              //   children: (
+              //     <Switch
+              //       value={desktopCheckeds.autoCheck}
+              //       onChange={checked => onChangeDesktop('AUTO_INSTALL', checked)}
+              //     />
+              //   )
+              // },
+              // {
+              //   title: '扩展自启',
+              //   description: '带依赖自检',
+              //   children: (
+              //     <div className="steps-common-1">
+              //       <Switch
+              //         value={desktopCheckeds.autoStart}
+              //         onChange={checked => onChangeDesktop('AUTO_RUN_EXTENSION', checked)}
+              //       />
+              //     </div>
+              //   )
+              // },
               {
                 title: '依赖锁文件',
                 description: 'yarn.lock',
@@ -123,13 +123,12 @@ const Common = () => {
                     className="px-2 rounded-md border"
                     onClick={async () => {
                       const dir = `${app.userDataTemplatePath}/yarn.lock`
-                      // const T = await window.app.exists(dir)
                       const T = await AppExists(dir)
                       if (!T) {
                         notification('yarn.lock不存在')
                         return
                       }
-                      // window.app.downloadFiles(dir)
+                      AppDownloadFiles(dir)
                     }}
                   >
                     下载
@@ -142,10 +141,14 @@ const Common = () => {
                 children: (
                   <Button
                     className="px-2 rounded-md border"
-                    onClick={() => {
+                    onClick={async () => {
                       const dir = app.logMainPath
-                      console.log('dir', app)
-                      // window.app.downloadFiles(dir)
+                      const T = await AppExists(dir)
+                      if (!T) {
+                        notification('记录不存在')
+                        return
+                      }
+                      AppDownloadFiles(dir)
                     }}
                   >
                     下载
@@ -214,24 +217,24 @@ const Common = () => {
             <SecondaryDiv className="flex flex-col gap-2  shadow-inner rounded-md p-2">
               <div className="">快捷键</div>
               {[
-                {
-                  title: '放大窗口',
-                  children: (
-                    <div className="flex gap-1">
-                      <div className="border px-2 rounded-md">{commandKey}</div>
-                      <div className="border px-2 rounded-md">++</div>
-                    </div>
-                  )
-                },
-                {
-                  title: '缩小窗口',
-                  children: (
-                    <div className="flex gap-1">
-                      <div className="border px-2 rounded-md">{commandKey}</div>
-                      <div className="border px-2 rounded-md">--</div>
-                    </div>
-                  )
-                },
+                // {
+                //   title: '放大窗口',
+                //   children: (
+                //     <div className="flex gap-1">
+                //       <div className="border px-2 rounded-md">{commandKey}</div>
+                //       <div className="border px-2 rounded-md">++</div>
+                //     </div>
+                //   )
+                // },
+                // {
+                //   title: '缩小窗口',
+                //   children: (
+                //     <div className="flex gap-1">
+                //       <div className="border px-2 rounded-md">{commandKey}</div>
+                //       <div className="border px-2 rounded-md">--</div>
+                //     </div>
+                //   )
+                // },
                 {
                   title: '开发者工具',
                   children: (
