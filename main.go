@@ -51,7 +51,7 @@ func main() {
 
 	// 创建应用选项
 	appOptions := &options.App{
-		Title:     "LearnWails",
+		Title:     "ALemonDesk",
 		MinWidth:  800,
 		MinHeight: 600,
 		Debug: options.Debug{
