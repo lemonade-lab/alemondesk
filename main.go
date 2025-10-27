@@ -15,11 +15,10 @@ import (
 	windowyarn "alemonapp/src/window/yarn"
 	"context"
 	"embed"
-	"os"
 	"runtime"
 
-	"github.com/joho/godotenv"
 	"github.com/wailsapp/wails/v2"
+
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
@@ -31,9 +30,6 @@ var assets embed.FS
 var ResourcesFiles embed.FS
 
 func main() {
-	// 静默加载 .env 文件，忽略错误
-	_ = godotenv.Load()
-
 	// 初始化文件资源
 	files.Create(ResourcesFiles)
 
@@ -51,12 +47,14 @@ func main() {
 
 	// 创建应用选项
 	appOptions := &options.App{
-		Title:     "ALemonDesk",
-		MinWidth:  800,
-		MinHeight: 600,
-		Debug: options.Debug{
-			OpenInspectorOnStartup: os.Getenv("APP_WAILS_DEV") == "true",
-		},
+		Title:       "ALemonDesk",
+		MaxWidth:    1400,
+		MaxHeight:   900,
+		Width:       960,
+		Height:      600,
+		MinWidth:    960,
+		MinHeight:   600,
+		Debug:       options.Debug{},
 		AssetServer: assetServer.CreateAssetServer(&assets),
 		// 仅 Windows 和 Linux 下启用无边框窗口
 		Frameless: runtime.GOOS == "windows" || runtime.GOOS == "linux",
@@ -102,8 +100,18 @@ func main() {
 		}
 	}
 
+	// mainMenu := menu.NewMenu()
+	// mainMenu.Append(&menu.MenuItem{
+	// 	Label: "开发者工具",
+	// 	Click: func(_ *menu.CallbackData) {
+
+	// 	},
+	// })
+	// appOptions.Menu = mainMenu
+
 	err := wails.Run(appOptions)
 	if err != nil {
 		println("Error:", err.Error())
 	}
+
 }

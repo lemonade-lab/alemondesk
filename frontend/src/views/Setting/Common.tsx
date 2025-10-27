@@ -11,6 +11,8 @@ import { useSelector } from 'react-redux'
 import GuideCommon from '../Guide/Common'
 import { AppDownloadFiles, AppExists, AppGetConfig, AppSetConfig } from '@wailsjs/go/windowapp/App'
 import { GetVersions } from '@wailsjs/go/windowcontroller/App'
+import { BotResetTemplate } from '@wailsjs/go/windowbot/App'
+import { YarnCommands } from '@wailsjs/go/windowyarn/App'
 
 const Common = () => {
   const app = useSelector((state: RootState) => state.app)
@@ -57,12 +59,21 @@ const Common = () => {
       open: true,
       title: '重置扩展与机器人',
       description: '危险！该操作将以当前版本初始内容对所有扩展和机器人进行重置!',
-      buttonText: '重置并重启',
+      buttonText: '重置并重载',
       data: {},
       code: 0,
       onConfirm: () => {
-        console.log('重置')
-        // window.app.resetTemplate()
+        BotResetTemplate().then(res => {
+          if (res) {
+            notification('重置成功，开始重新安装依赖...')
+            YarnCommands({
+              type: 'install',
+              args: ['--ignore-warnings']
+            })
+          } else {
+            notification('重置失败')
+          }
+        })
       }
     })
   }
@@ -194,7 +205,7 @@ const Common = () => {
                 <div className="flex gap-2">{item.children}</div>
               </div>
             ))}
-            <SecondaryDiv className="flex flex-col gap-2  shadow-inner rounded-md p-2">
+            {/* <SecondaryDiv className="flex flex-col gap-2  shadow-inner rounded-md p-2">
               <div className="">快捷键</div>
               {[
                 {
@@ -216,7 +227,7 @@ const Common = () => {
                   </div>
                 )
               })}
-            </SecondaryDiv>
+            </SecondaryDiv> */}
           </div>
           <GuideCommon />
         </PrimaryDiv>

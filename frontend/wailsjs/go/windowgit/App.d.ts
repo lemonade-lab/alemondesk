@@ -4,11 +4,11 @@ import {context} from '../models';
 
 export function GitAddRemote(arg1:string,arg2:string):Promise<boolean>;
 
-export function GitBranch(arg1:string):Promise<Record<string, Array<string>>>;
+export function GitBranch(arg1:string):Promise<Record<string, any>>;
 
 export function GitCheckout(arg1:string,arg2:string):Promise<boolean>;
 
-export function GitClone(arg1:string,arg2:string):Promise<boolean>;
+export function GitClone(arg1:string):Promise<boolean>;
 
 export function GitCommit(arg1:string,arg2:string):Promise<boolean>;
 
@@ -18,7 +18,7 @@ export function GitDiff(arg1:string,arg2:string):Promise<string>;
 
 export function GitFetch(arg1:string):Promise<boolean>;
 
-export function GitGetWordSpaces():Promise<Array<string>>;
+export function GitGetWordSpaces():Promise<string>;
 
 export function GitInit(arg1:string):Promise<boolean>;
 
@@ -28,11 +28,13 @@ export function GitPull(arg1:string,arg2:string,arg3:string):Promise<boolean>;
 
 export function GitPush(arg1:string):Promise<boolean>;
 
-export function GitReposList(arg1:string):Promise<Array<string>>;
+export function GitReposList():Promise<Array<string>>;
 
-export function GitSetWordSpaces(arg1:Array<string>):Promise<void>;
+export function GitSetWordSpaces(arg1:string):Promise<void>;
 
 export function GitShow(arg1:string,arg2:string):Promise<string>;
+
+export function GitShowTags(arg1:string,arg2:string):Promise<string>;
 
 export function GitStatus(arg1:string):Promise<string>;
 

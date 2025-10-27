@@ -6,6 +6,10 @@ export function BotClose() {
   return window['go']['windowbot']['App']['BotClose']();
 }
 
+export function BotResetTemplate() {
+  return window['go']['windowbot']['App']['BotResetTemplate']();
+}
+
 export function BotRun(arg1) {
   return window['go']['windowbot']['App']['BotRun'](arg1);
 }

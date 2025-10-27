@@ -9,11 +9,14 @@ import (
 	"path"
 )
 
+var resourcesFiles fs.FS
+
 // init 函数用于解压资源
 func Create(ResourcesFiles fs.FS) {
+	resourcesFiles = ResourcesFiles
 	workPAth := paths.GetWorkPath()
 	// 解压资源
-	err := fs.WalkDir(ResourcesFiles, ".", func(p string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(resourcesFiles, ".", func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -27,7 +30,7 @@ func Create(ResourcesFiles fs.FS) {
 			}
 		} else {
 			// 打开文件
-			curFile, err := ResourcesFiles.Open(p)
+			curFile, err := resourcesFiles.Open(p)
 			if err != nil {
 				return err
 			}

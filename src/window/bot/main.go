@@ -60,3 +60,9 @@ func (a *App) BotClose() bool {
 func (a *App) BotStatus() bool {
 	return logic.IsRunning(config.BotName)
 }
+
+func (a *App) BotResetTemplate() bool {
+	// 创建默认机器人
+	err := utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))
+	return err == nil
+}

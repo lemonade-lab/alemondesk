@@ -57,7 +57,7 @@ export default (function App() {
     })
     YarnCommands({
       type: 'install',
-      args:[  '--ignore-warnings']
+      args: ['--ignore-warnings']
     })
 
     // 监听 css 变量
@@ -88,7 +88,7 @@ export default (function App() {
       //
     })
     // 监听 bot 状态
-    EventsOn('bot', (data ) => {
+    EventsOn('bot', data => {
       const value = data.value
       dispatch(
         setBotStatus({
@@ -97,13 +97,13 @@ export default (function App() {
       )
     })
     // 监听 通知消息
-    EventsOn('notification', (data) => {
+    EventsOn('notification', data => {
       const value = data.value
       const type = data.type
       notification(value, type || 'info')
     })
     // 监听 expansions消息
-    EventsOn('expansions', (data) => {
+    EventsOn('expansions', data => {
       try {
         if (/^action:/.test(data.type)) {
           const actions = data.type.split(':')
@@ -132,7 +132,7 @@ export default (function App() {
       }
     })
     // 监听 expansions状态
-    EventsOn('expansions-status', (data) => {
+    EventsOn('expansions-status', data => {
       const value = data.value
       if (value == 0) {
         notification('扩展器已停止', 'warning')
@@ -150,7 +150,7 @@ export default (function App() {
       dispatch(postMessage(data))
     })
     // 监听  modal
-    EventsOn('controller', (data) => {
+    EventsOn('controller', data => {
       if (data.open) {
         setPopValue({
           open: true,

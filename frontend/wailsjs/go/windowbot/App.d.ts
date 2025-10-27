@@ -4,6 +4,8 @@ import {context} from '../models';
 
 export function BotClose():Promise<boolean>;
 
+export function BotResetTemplate():Promise<boolean>;
+
 export function BotRun(arg1:Array<string>):Promise<boolean>;
 
 export function BotStatus():Promise<boolean>;

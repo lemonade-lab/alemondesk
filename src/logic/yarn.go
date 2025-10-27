@@ -93,7 +93,7 @@ func Install(name string) (bool, error) {
 	// yarn.cjs
 	cliDir := paths.GetNodeYarnScriptFilePath()
 	// yarn install
-	cmd := utils.Command("node", cliDir, "install", "--ignore-engines")
+	cmd := utils.Command("node", cliDir, "install", "--ignore-engines", "--network-concurrency", "1")
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
 	cmd.Stdout = os.Stdout
