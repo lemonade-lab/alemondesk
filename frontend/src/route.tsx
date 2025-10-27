@@ -5,6 +5,7 @@ import Application from '@/views/Application/App'
 import BotLog from '@/views/BotLog/App'
 import Expansions from '@/views/Expansions/App'
 import GitExpansions from '@/views/GitExpansions/App'
+import Menu from '@/views/Setting/Menu'
 import Common from '@/views/Setting/Common'
 import Theme from '@/views/Setting/Theme'
 import UpdateLog from '@/views/Setting/UpdateLog'
@@ -37,24 +38,34 @@ const router = createHashRouter([
         element: <Expansions />
       },
       {
-        path: 'common',
-        element: <Common />
-      },
-      {
-        path: 'theme',
-        element: <Theme />
-      },
-      {
-        path: 'log',
-        element: <UpdateLog />
-      },
-      {
-        path: 'template',
-        element: <Template />
-      },
-      {
-        path: 'about',
-        element: <About />
+        path: 'settings',
+        element: <Menu />,
+        children: [
+          {
+            index: true,
+            element: <Common />
+          },
+          {
+            path: 'common',
+            element: <Common />
+          },
+          {
+            path: 'theme',
+            element: <Theme />
+          },
+          {
+            path: 'log',
+            element: <UpdateLog />
+          },
+          {
+            path: 'template',
+            element: <Template />
+          },
+          {
+            path: 'about',
+            element: <About />
+          }
+        ]
       },
       { path: '*', element: <Main /> }
     ]

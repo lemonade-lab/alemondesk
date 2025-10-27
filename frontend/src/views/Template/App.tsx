@@ -10,7 +10,7 @@ export default function Template() {
   const app = useSelector((state: RootState) => state.app)
   return (
     <section className="flex flex-row flex-1 h-full shadow-md">
-      <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1">
+      <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1 max-w-[40rem]">
         {select == '' && <Init />}
         {[
           {
@@ -56,7 +56,7 @@ export default function Template() {
           return null
         })}
       </SecondaryDiv>
-      <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col  w-72 xl:w-80 border-l h-full">
+      <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col w-[10rem] border-l h-full">
         <div className="flex-1 ">
           <SecondaryDiv className="flex flex-col gap-1  border-t py-2  overflow-auto  h-[calc(100vh-5.9rem)]">
             {[

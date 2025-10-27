@@ -10,7 +10,7 @@ import ModalProvider from '@/context/modal'
 import PopProvider from '@/context/Pop'
 import router from '@/route'
 import Transition from '@/common/Transition'
-import ErrorBoundary from '@/common/ErrorBoundar'
+import ErrorBoundary from '@/common/ErrorBounder'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
     <Suspense fallback={<Transition />}>

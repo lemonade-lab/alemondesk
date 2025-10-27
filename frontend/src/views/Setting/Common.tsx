@@ -70,6 +70,7 @@ const Common = () => {
   const [commandKey, setCommandKey] = useState('ctrl')
 
   useEffect(() => {
+    console.log('初始化通用设置')
     initUpdate()
     GetVersions().then(res => {
       setCommandKey(res.platform == 'darwin' ? 'command' : 'ctrl')
@@ -94,27 +95,6 @@ const Common = () => {
                   />
                 )
               },
-              // {
-              //   title: '依赖自检',
-              //   children: (
-              //     <Switch
-              //       value={desktopCheckeds.autoCheck}
-              //       onChange={checked => onChangeDesktop('AUTO_INSTALL', checked)}
-              //     />
-              //   )
-              // },
-              // {
-              //   title: '扩展自启',
-              //   description: '带依赖自检',
-              //   children: (
-              //     <div className="steps-common-1">
-              //       <Switch
-              //         value={desktopCheckeds.autoStart}
-              //         onChange={checked => onChangeDesktop('AUTO_RUN_EXTENSION', checked)}
-              //       />
-              //     </div>
-              //   )
-              // },
               {
                 title: '依赖锁文件',
                 description: 'yarn.lock',
@@ -217,24 +197,6 @@ const Common = () => {
             <SecondaryDiv className="flex flex-col gap-2  shadow-inner rounded-md p-2">
               <div className="">快捷键</div>
               {[
-                // {
-                //   title: '放大窗口',
-                //   children: (
-                //     <div className="flex gap-1">
-                //       <div className="border px-2 rounded-md">{commandKey}</div>
-                //       <div className="border px-2 rounded-md">++</div>
-                //     </div>
-                //   )
-                // },
-                // {
-                //   title: '缩小窗口',
-                //   children: (
-                //     <div className="flex gap-1">
-                //       <div className="border px-2 rounded-md">{commandKey}</div>
-                //       <div className="border px-2 rounded-md">--</div>
-                //     </div>
-                //   )
-                // },
                 {
                   title: '开发者工具',
                   children: (

@@ -5,15 +5,18 @@ import classNames from 'classnames'
 import {
   AppstoreFilled,
   HomeFilled,
+  ProductFilled,
   RobotFilled,
   SettingFilled,
   ShoppingFilled
 } from '@ant-design/icons'
-import { Dropdown } from '@alemonjs/react-ui'
 import { setCommand } from '@/store/command'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@/store'
+
 const MenuButton = () => {
   const dispatch = useDispatch()
+  const expansions = useSelector((state: RootState) => state.expansions)
   // 导航列表
   const navList: {
     Icon: React.ReactNode
@@ -30,73 +33,41 @@ const MenuButton = () => {
       }
     },
     {
+      Icon: <ProductFilled size={20} />,
+      path: '/git-expansions',
+      className: '',
+      onClick: path => {
+        dispatch(setCommand(`view.${path}`))
+      }
+    },
+    {
       Icon: <ShoppingFilled size={20} />,
       path: '/expansions',
-      className: 'steps-6',
+      className: classNames('steps-6', {
+        'opacity-50': !expansions.runStatus
+      }),
       onClick: path => {
+        if (!expansions.runStatus) {
+          return
+        }
         dispatch(setCommand(`view.${path}`))
       }
     },
     {
       Icon: <AppstoreFilled size={20} />,
       path: '/application',
-      className: 'steps-7',
+      className: classNames('steps-7', {
+        'opacity-50': !expansions.runStatus
+      }),
       onClick: path => {
+        if (!expansions.runStatus) {
+          return
+        }
         dispatch(setCommand(`view.${path}`))
       }
     }
   ]
 
-  // 按钮列表
-  const buttons = [
-    {
-      children: '通用',
-      onClick: () => {
-        const path = '/common'
-        dispatch(setCommand(`view.${path}`))
-      }
-    },
-    {
-      children: '主题',
-      onClick: () => {
-        // navigate('/theme')
-        const path = '/theme'
-        dispatch(setCommand(`view.${path}`))
-      }
-    },
-    {
-      children: '记录',
-      onClick: () => {
-        // navigate('/log')
-        const path = '/log'
-        dispatch(setCommand(`view.${path}`))
-      }
-    },
-    {
-      children: '仓库',
-      onClick: () => {
-        // navigate('/git-expansions')
-        const path = '/git-expansions'
-        dispatch(setCommand(`view.${path}`))
-      }
-    },
-    {
-      children: '模板',
-      onClick: () => {
-        // navigate('/template')
-        const path = '/template'
-        dispatch(setCommand(`view.${path}`))
-      }
-    },
-    {
-      children: '关于',
-      onClick: () => {
-        // navigate('/about')
-        const path = '/about'
-        dispatch(setCommand(`view.${path}`))
-      }
-    }
-  ]
   const goHome = () => {
     const path = '/'
     dispatch(setCommand(`view.${path}`))
@@ -128,15 +99,14 @@ const MenuButton = () => {
         ))}
       </NavDiv>
       <NavDiv className="p-1 flex-col  rounded-full flex gap-3">
-        <Dropdown placement="topRight" buttons={buttons}>
-          <BarDiv
-            className={classNames(
-              'steps-4 size-8 rounded-full  flex items-center justify-center cursor-pointer transition-all duration-700'
-            )}
-          >
-            <SettingFilled width={20} height={20} />
-          </BarDiv>
-        </Dropdown>
+        <BarDiv
+          className={classNames(
+            'steps-4 size-8 rounded-full  flex items-center justify-center cursor-pointer transition-all duration-700'
+          )}
+          onClick={() => dispatch(setCommand(`view./settings`))}
+        >
+          <SettingFilled width={20} height={20} />
+        </BarDiv>
       </NavDiv>
     </aside>
   )
