@@ -49,12 +49,13 @@ func main() {
 		MinWidth:  800,
 		MinHeight: 600,
 		Debug: options.Debug{
-			OpenInspectorOnStartup: os.Getenv("WAILS_DEV") == "true",
+			OpenInspectorOnStartup: os.Getenv("APP_WAILS_DEV") == "true",
 		},
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		Frameless: false, // 关键：不使用无边框
+		// 仅 Windows 和 Linux 下启用无边框窗口
+		Frameless: runtime.GOOS == "windows" || runtime.GOOS == "linux",
 		OnStartup: func(ctx context.Context) {
 			wbot.Startup(ctx)
 			wapp.Startup(ctx)
@@ -75,7 +76,7 @@ func main() {
 		},
 	}
 
-	// macOS 特定配置 - 启用原生标题栏和交通灯按钮
+	// macOS 特定配置 - 启用交通灯按钮
 	if runtime.GOOS == "darwin" {
 		appOptions.Mac = &mac.Options{
 			TitleBar: &mac.TitleBar{

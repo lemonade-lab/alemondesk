@@ -14,9 +14,23 @@ func GetWorkPath() string {
 	return filepath.Join("work")
 }
 
-// 获得前端主题配置文件路径
-func GetFrontendThemeConfigFilePath() string {
+// 资源目录
+func GetResourcePath() string {
 	workPath := GetWorkPath()
-	filePath := filepath.Join(workPath, "resources", "storage", "them.init.json")
+	resourcePath := filepath.Join(workPath, "resources")
+	return resourcePath
+}
+
+// 存储目录
+func GetStoragePath() string {
+	workPath := GetResourcePath()
+	storagePath := filepath.Join(workPath, "storage")
+	return storagePath
+}
+
+// YARN文件
+func GetNodeYarnScriptFilePath() string {
+	workPath := GetResourcePath()
+	filePath := filepath.Join(workPath, "yarn", "bin", "yarn.js")
 	return filePath
 }

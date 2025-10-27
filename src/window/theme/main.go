@@ -37,7 +37,7 @@ func (a *App) ThemeSetMode(mode string) {
 // 读取主题配置文件并发送给前端
 func (a *App) ThemeLoadVariables() {
 	log.Println("加载主题配置文件")
-	filePath := paths.GetFrontendThemeConfigFilePath()
+	filePath := paths.GetStorageThemeFilePath()
 	// 读取配置文件
 	themeVars, err := a.loadThemeVariables(filePath)
 	if err != nil {
@@ -68,7 +68,7 @@ func (a *App) ThemeResetTheme() {
 }
 
 func (a *App) ThemeSave(variables string) error {
-	filePath := paths.GetFrontendThemeConfigFilePath()
+	filePath := paths.GetStorageThemeFilePath()
 	// 写入配置文件
 	err := os.WriteFile(filePath, []byte(variables), 0644)
 	if err != nil {
