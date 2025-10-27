@@ -25,28 +25,19 @@ const Common = () => {
   const initUpdate = async () => {
     AppGetConfig(['AUTO_LAUNCH', 'AUTO_INSTALL', 'AUTO_RUN_EXTENSION']).then(T => {
       setDesktopChecked({
-        autoLaunch: T[0],
-        autoCheck: T[1],
-        autoStart: T[2]
+        autoLaunch: T.AUTO_LAUNCH === 'true',
+        autoCheck: T.AUTO_INSTALL === 'true',
+        autoStart: T.AUTO_RUN_EXTENSION === 'true'
       })
     })
   }
 
   const update = _.throttle(async (key: string, checked: boolean) => {
-    // const T = (await window.app.setConfig(key, checked)) as boolean
-    const T = await AppSetConfig(key, checked)
+    const T = await AppSetConfig(key, checked ? 'true' : 'false')
     if (T) {
-      const map: {
-        [key: string]: string
-      } = {
-        AUTO_LAUNCH: 'autoLaunch',
-        AUTO_INSTALL: 'autoCheck',
-        AUTO_RUN_EXTENSION: 'autoStart'
-      }
-      const name = map[key]
       setDesktopChecked({
         ...desktopCheckeds,
-        [name]: checked
+        [key]: checked
       })
     }
   }, 500)

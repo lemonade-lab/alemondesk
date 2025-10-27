@@ -184,7 +184,7 @@ export default (function App() {
 
       // 得到配置，判断是否自动启动
       AppGetConfig(['AUTO_RUN_EXTENSION']).then(T => {
-        if (!T) {
+        if (T.AUTO_RUN_EXTENSION !== 'true') {
           return
         }
         // 启动扩展器

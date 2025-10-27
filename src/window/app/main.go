@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -25,11 +26,6 @@ func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-const AUTO_LAUNCH = ""
-const APP_PATH = ""
-const AUTO_INSTALL = ""
-const AUTO_RUN_EXTENSION = ""
-
 type PathsState struct {
 	UserDataTemplatePath    string `json:"userDataTemplatePath"`
 	UserDataNodeModulesPath string `json:"userDataNodeModulesPath"`
@@ -48,30 +44,10 @@ func (a *App) AppGetPathsState() PathsState {
 	}
 }
 
-// GetConfig 获取配置
-func (a *App) AppGetConfig(KEY []string) ([]string, error) {
-	data := []string{}
-	for _, k := range KEY {
-		if k == "AUTO_LAUNCH" {
-			data = append(data, AUTO_LAUNCH)
-		}
-		if k == "APP_PATH" {
-			data = append(data, APP_PATH)
-		}
-		if k == "AUTO_INSTALL" {
-			data = append(data, AUTO_INSTALL)
-		}
-		if k == "AUTO_RUN_EXTENSION" {
-			data = append(data, AUTO_RUN_EXTENSION)
-		}
-	}
-	return data, nil
-}
-
 // SetConfig 设置配置
 func (a *App) AppSetConfig(KEY string, value interface{}) (bool, error) {
 	// 实现配置保存逻辑
-	configFile := "config.json"
+	configFile := paths.GetAppConfigPath()
 
 	// 读取现有配置
 	var config map[string]interface{}
@@ -99,6 +75,34 @@ func (a *App) AppSetConfig(KEY string, value interface{}) (bool, error) {
 	return true, nil
 }
 
+// GetConfig 获取配置
+func (a *App) AppGetConfig(KEY []string) (map[string]interface{}, error) {
+	// 实现配置读取逻辑
+	configFile := paths.GetAppConfigPath()
+
+	// 读取配置文件
+	data, err := os.ReadFile(configFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var config map[string]interface{}
+	err = json.Unmarshal(data, &config)
+	if err != nil {
+		return nil, err
+	}
+
+	// 提取所需键值
+	result := make(map[string]interface{})
+	for _, key := range KEY {
+		if value, exists := config[key]; exists {
+			result[key] = value
+		}
+	}
+
+	return result, nil
+}
+
 // ReadFiles 读取文件
 func (a *App) AppReadFiles(dir string) (string, error) {
 	data, err := os.ReadFile(dir)
@@ -116,6 +120,8 @@ func (a *App) AppWriteFiles(dir string, data string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	log.Println("Writing to file:", dir, data)
 
 	err = os.WriteFile(dir, []byte(data), 0644)
 	if err != nil {
