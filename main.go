@@ -11,7 +11,6 @@ import (
 	windowyarn "alemonapp/src/window/yarn"
 	"context"
 	"embed"
-	"log"
 	"os"
 	"runtime"
 
@@ -29,11 +28,8 @@ var assets embed.FS
 var ResourcesFiles embed.FS
 
 func main() {
-	// 加载 .env 文件
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// 静默加载 .env 文件，忽略错误
+	_ = godotenv.Load()
 
 	// 初始化文件资源
 	files.Create(ResourcesFiles)
@@ -49,9 +45,9 @@ func main() {
 
 	// 创建应用选项
 	appOptions := &options.App{
-		Title:  "LearnWails",
-		Width:  1024,
-		Height: 768,
+		Title:     "LearnWails",
+		MinWidth:  800,
+		MinHeight: 600,
 		Debug: options.Debug{
 			OpenInspectorOnStartup: os.Getenv("WAILS_DEV") == "true",
 		},
@@ -101,7 +97,7 @@ func main() {
 		}
 	}
 
-	err = wails.Run(appOptions)
+	err := wails.Run(appOptions)
 	if err != nil {
 		println("Error:", err.Error())
 	}
