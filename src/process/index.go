@@ -12,8 +12,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-
-	"go.uber.org/zap/zapcore"
 )
 
 // node 进程信息
@@ -95,14 +93,14 @@ func (pm *ProcessManager) RemoveProcess(name string) {
 		RemoveProcessConfig(name)
 		// 释放对应机器人日志资源（如果有）
 		// 注意：按当前设计，机器人名称与进程名称一致
-		var l = new(zapcore.Level)
-		confLogLevel := os.Getenv("APP_LOG_LEVEL")
-		if err := l.UnmarshalText([]byte(confLogLevel)); err == nil {
-			// logger.DeleteBotLogger(name, *l)
-		} else {
-			// 兜底关闭
-			// logger.DeleteBotLogger(name, zapcore.InfoLevel)
-		}
+		// var l = new(zapcore.Level)
+		// confLogLevel := os.Getenv("APP_LOG_LEVEL")
+		// if err := l.UnmarshalText([]byte(confLogLevel)); err == nil {
+		// 	logger.DeleteBotLogger(name, *l)
+		// } else {
+		// 	// 兜底关闭
+		// 	logger.DeleteBotLogger(name, zapcore.InfoLevel)
+		// }
 	}
 }
 
@@ -167,11 +165,11 @@ func (mp *ManagedProcess) Start() error {
 	var err error
 	// 检查日志文件路径是否存在
 	if mp.Config.LogPath != "" {
-		var l = new(zapcore.Level)
-		confLogLevel := os.Getenv("APP_LOG_LEVEL")
-		if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
-			fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
-		}
+		// var l = new(zapcore.Level)
+		// confLogLevel := os.Getenv("APP_LOG_LEVEL")
+		// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
+		// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
+		// }
 
 		// botLogger, err := logger.GetOrCreateBotLogger(mp.Config.Name, *l)
 		// if err != nil {
@@ -186,6 +184,10 @@ func (mp *ManagedProcess) Start() error {
 	for key, value := range mp.Config.Env {
 		mp.Cmd.Env = append(mp.Cmd.Env, fmt.Sprintf("%s=%s", key, value))
 	}
+
+	mp.Cmd.Stdout = os.Stdout
+	mp.Cmd.Stderr = os.Stderr
+
 	// 把标准输出和错误都重定向到日志文件
 	// mp.Cmd.Stdout = botLoggerWriter.Writer(logger.WriterOption{
 	// 	// 识别日志等级有bug，先关闭

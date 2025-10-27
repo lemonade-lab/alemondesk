@@ -23,7 +23,6 @@ func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// { type: 'get-expansions' }
 type YarnCommandsParams struct {
 	Type string   `json:"type"`
 	Args []string `json:"args,omitempty"`
@@ -44,7 +43,41 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 			"error": error,
 		})
 	} else if p1.Type == "remove" {
-
+		// 移除依赖
+		res, error := logic.Remove(config.BotName, p1.Args)
+		data := 0
+		if res {
+			data = 1
+		}
+		runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+			"type":  "remove",
+			"data":  data,
+			"error": error,
+		})
+	} else if p1.Type == "add" {
+		// 添加依赖
+		res, error := logic.Add(config.BotName, p1.Args)
+		data := 0
+		if res {
+			data = 1
+		}
+		runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+			"type":  "add",
+			"data":  data,
+			"error": error,
+		})
+	} else if p1.Type == "cmd" {
+		// 执行命令
+		res, error := logic.Cmd(config.BotName, p1.Args)
+		data := 0
+		if res {
+			data = 1
+		}
+		runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+			"type":  "cmd",
+			"data":  data,
+			"error": error,
+		})
 	}
 	return
 }

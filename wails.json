@@ -17,10 +17,5 @@
     "copyright": "Copyright © 2024 LEMONADE",
     "comments": "阿柠檬桌面客户端",
     "fileDescription": "ALemonDesk - 阿柠檬桌面客户端"
-  },
-  "nodejs": {
-    "embed": true,
-    "bin": "node",
-    "version": "22.14.0"
   }
 }

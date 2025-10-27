@@ -3,20 +3,8 @@
 import {windowcontroller} from '../models';
 import {context} from '../models';
 
-export function CheckForUpdates():Promise<void>;
-
-export function ControllerClose():Promise<void>;
-
-export function ControllerMaximize():Promise<void>;
-
-export function ControllerMinimize():Promise<void>;
-
 export function ControllerOnClick(arg1:number,arg2:string):Promise<boolean>;
 
 export function GetVersions():Promise<windowcontroller.Versions>;
 
-export function OnDownloadProgress(arg1:any):Promise<void>;
-
 export function Startup(arg1:context.Context):Promise<void>;
-
-export function UpdateVersion():Promise<void>;

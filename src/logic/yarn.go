@@ -3,39 +3,36 @@ package logic
 import (
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
-
-	"go.uber.org/zap/zapcore"
 )
 
 // 加载依赖
-func Add(name string, args []string) (string, error) {
+func Add(name string, args []string) (bool, error) {
 	// 检查系统是否安装了 Node.js
 	if _, err := exec.LookPath("node"); err != nil {
-		return "未找到 Node.js，请先安装 Node.js", err
+		return false, err
 	}
 
 	// 检查机器人是否正在运行
 	if IsRunning(name) {
-		return "机器人正在运行，请先停止机器人", os.ErrExist
+		return false, os.ErrExist
 	}
 
 	// 检查是否提供了依赖名称
 	if len(args) == 0 {
-		return "未提供依赖名称", os.ErrInvalid
+		return false, os.ErrInvalid
 	}
 
 	// 检查机器人是否正在运行
 	if IsRunning(name) {
-		return "机器人正在运行，请先停止机器人", os.ErrExist
+		return false, os.ErrExist
 	}
 
 	// 检查是否提供了依赖名称
 	if len(args) == 0 {
-		return "未提供依赖名称", os.ErrInvalid
+		return false, os.ErrInvalid
 	}
 
 	// yarn.cjs 路径
@@ -48,11 +45,11 @@ func Add(name string, args []string) (string, error) {
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
 
-	confLogLevel := os.Getenv("APP_LOG_LEVEL")
-	var l = new(zapcore.Level)
-	if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
-		fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
-	}
+	// confLogLevel := os.Getenv("APP_LOG_LEVEL")
+	// var l = new(zapcore.Level)
+	// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
+	// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
+	// }
 
 	// botLogger, err := logger.GetOrCreateBotLogger(name, *l)
 	// if err != nil {
@@ -76,10 +73,10 @@ func Add(name string, args []string) (string, error) {
 
 	// 执行命令
 	if err := cmd.Run(); err != nil {
-		return "依赖安装异常，请检查日志文件获取详细信息", err
+		return false, err
 	}
 
-	return "依赖安装成功", nil
+	return true, nil
 }
 
 // 加载依赖
@@ -141,20 +138,20 @@ func Install(name string) (bool, error) {
 }
 
 // 移除依赖
-func Remove(name string, names []string) (string, error) {
+func Remove(name string, names []string) (bool, error) {
 	// 检查系统是否安装了 Node.js
 	if _, err := exec.LookPath("node"); err != nil {
-		return "未找到 Node.js，请先安装 Node.js", err
+		return false, err
 	}
 
 	// 检查是否提供了依赖名称
 	if len(names) == 0 {
-		return "未提供依赖名称", os.ErrInvalid
+		return false, os.ErrInvalid
 	}
 
 	// 检查机器人是否正在运行
 	if IsRunning(name) {
-		return "机器人正在运行，请先停止机器人", os.ErrExist
+		return false, os.ErrExist
 	}
 
 	// yarn.cjs 路径
@@ -167,11 +164,11 @@ func Remove(name string, names []string) (string, error) {
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
 
-	var l = new(zapcore.Level)
-	confLogLevel := os.Getenv("APP_LOG_LEVEL")
-	if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
-		fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
-	}
+	// var l = new(zapcore.Level)
+	// confLogLevel := os.Getenv("APP_LOG_LEVEL")
+	// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
+	// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
+	// }
 
 	// botLogger, err := logger.GetOrCreateBotLogger(name, *l)
 	// if err != nil {
@@ -195,8 +192,67 @@ func Remove(name string, names []string) (string, error) {
 
 	// 执行命令
 	if err := cmd.Run(); err != nil {
-		return "依赖移除异常，请检查日志文件获取详细信息", err
+		return false, err
 	}
 
-	return "依赖移除成功", nil
+	return true, nil
+}
+
+// 自由 cmd
+func Cmd(name string, args []string) (bool, error) {
+	// 检查系统是否安装了 Node.js
+	if _, err := exec.LookPath("node"); err != nil {
+		return false, err
+	}
+
+	// 检查机器人是否正在运行
+	if IsRunning(name) {
+		return false, os.ErrExist
+	}
+
+	// 检查是否提供了命令参数
+	if len(args) == 0 {
+		return false, os.ErrInvalid
+	}
+
+	// yarn.cjs 路径
+	cliDir := paths.GetNodeYarnScriptFilePath()
+
+	// 构建命令
+	cmd := utils.Command("node", append([]string{cliDir}, args...)...)
+
+	// 设置工作目录为机器人的路径
+	cmd.Dir = paths.CreateBotPath(name)
+	// var l = new(zapcore.Level)
+	// confLogLevel := os.Getenv("APP_LOG_LEVEL")
+	// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
+	// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
+	// }
+
+	// botLogger, err := logger.GetOrCreateBotLogger(name, *l)
+	// if err != nil {
+	// 	fmt.Printf("unable to create logger: %v\n", err)
+	// }
+	// botLoggerWriter := logger.NewRobotLoggerWriter(botLogger)
+
+	// //defer botLoggerWriter.RobotLogger.Close()
+
+	// // 设置命令的输出到日志文件
+	// cmd.Stdout = botLoggerWriter.Writer(logger.WriterOption{
+	// 	DetectLevel: false,
+	// 	StripDate:   false,
+	// 	StripLevel:  false,
+	// })
+	// cmd.Stderr = botLoggerWriter.Writer(logger.WriterOption{
+	// 	DetectLevel: false,
+	// 	StripDate:   false,
+	// 	StripLevel:  false,
+	// })
+
+	// 执行命令
+	if err := cmd.Run(); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

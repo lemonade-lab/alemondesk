@@ -1,7 +1,11 @@
 package windowcontroller
 
 import (
+	"bytes"
 	"context"
+	"os/exec"
+	"runtime"
+	"strings"
 )
 
 // App struct
@@ -18,45 +22,39 @@ func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) ControllerMinimize() {
-
-}
-
-func (a *App) ControllerMaximize() {
-
-}
-
-func (a *App) ControllerClose() {
-
-}
-
 func (a *App) ControllerOnClick(p1 int, p2 string) bool {
 	return false
-}
-
-func (a *App) UpdateVersion() {
-
-}
-
-func (a *App) OnDownloadProgress(callback func(float64)) {
-
-}
-
-func (a *App) CheckForUpdates() {
-
 }
 
 type Versions struct {
 	Version  string `json:"version"`
 	Node     string `json:"node"`
 	Platform string `json:"platform"`
+	Arch     string `json:"arch"`     // 架构信息
+	Compiler string `json:"compiler"` // Go 编译器版本
+}
+
+// executeCommand runs a command and returns its output as string
+func executeCommand(name string, arg ...string) string {
+	cmd := exec.Command(name, arg...)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return "Unknown"
+	}
+	return strings.TrimSpace(out.String())
 }
 
 // 得到版本信息
 func (a *App) GetVersions() Versions {
+	nodeVersion := executeCommand("node", "--version")
+
 	return Versions{
 		Version:  "1.0.0",
-		Node:     "22.14.0",
-		Platform: "darwin",
+		Node:     nodeVersion,
+		Platform: runtime.GOOS,      // 操作系统: darwin, linux, windows, freebsd 等
+		Arch:     runtime.GOARCH,    // 架构: amd64, arm64, 386 等
+		Compiler: runtime.Version(), // Go 编译器版本
 	}
 }

@@ -4,6 +4,8 @@ export namespace windowcontroller {
 	    version: string;
 	    node: string;
 	    platform: string;
+	    arch: string;
+	    compiler: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Versions(source);
@@ -14,6 +16,8 @@ export namespace windowcontroller {
 	        this.version = source["version"];
 	        this.node = source["node"];
 	        this.platform = source["platform"];
+	        this.arch = source["arch"];
+	        this.compiler = source["compiler"];
 	    }
 	}
 
