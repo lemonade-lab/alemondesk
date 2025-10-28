@@ -8,6 +8,7 @@ on:
 env:
   NODE_VERSION: "22.21.0"
   APP_NAME: "ALemonDesk"
+  GO_VERSION: "1.24.0"
 
 jobs:
   build:
@@ -31,20 +32,20 @@ jobs:
     runs-on: ${{ matrix.build.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           
       - name: 安装 Go 环境
-        if: runner.os == 'ubuntu-latest' || runner.os == 'macos-latest'
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.20' # 或者你想使用的 Go 版本
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
 
       - name: 安装依赖并构建前端
         run: |
@@ -96,7 +97,7 @@ jobs:
           rm -rf "${{ matrix.build.name }}.app"
 
       - name: 上传构建产物
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.APP_NAME }}-${{ matrix.build.os }}-${{ matrix.build.platform }}
           path: ${{ env.APP_NAME }}-${{ matrix.build.os }}-${{ matrix.build.platform }}-*.{exe,zip,pkg}
@@ -107,7 +108,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 下载所有构建产物
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: artifacts
 
