@@ -10,7 +10,10 @@ yarn --cwd frontend insgall
 yarn --cwd frontend build
 go install github.com/wailsapp/wails/v2/cmd/wails@latest
 go mod tidy
-wails dev
+```
+
+```sh
+make dev
 ```
 
 ```sh
@@ -20,4 +23,9 @@ wails generate module
 ```sh
 # macos 查看日志
 cat ~/Library/Application\ Support/ALemonDesk/logs/alemon-desk.log
+```
+
+```sh
+chmod +x app-*.sh 
+make build
 ```
