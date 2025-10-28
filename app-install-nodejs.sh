@@ -1,90 +1,117 @@
 #!/bin/bash
 
-# 创建资源目录
-mkdir -p resources
+set -e
 
-# 简单架构检测
-if [ "$(uname -m)" = "x86_64" ]; then
-    ARCH="x64"
-elif [ "$(uname -m)" = "arm64" ] || [ "$(uname -m)" = "aarch64" ]; then
-    ARCH="arm64"
-else
-    echo "Unsupported architecture: $(uname -m)"
-    exit 1
-fi
+# 颜色定义
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 
-if [ "$(uname -s)" = "Linux" ]; then
-    OS="linux"
-elif [ "$(uname -s)" = "Darwin" ]; then
-    OS="darwin"
-else
-    echo "Unsupported OS: $(uname -s)"
-    exit 1
-fi
+log_info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
 
-NODE_VERSION="22.14.0"
-TARGET_FILE="resources/node.tar.xz"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
 
-# 检查是否已存在压缩包
-if [ -f "$TARGET_FILE" ]; then
-    echo "Node.js 压缩包已存在: $TARGET_FILE"
-    exit 0
-fi
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
 
-# 主逻辑
-main() {
-    # 切换到脚本所在目录，确保相对路径正确
-    cd "$SCRIPT_DIR"
-    
-    # 1. 检查是否已存在压缩包
-    if [ -f "$TARGET_FILE" ]; then
-        echo "✓ Node.js 压缩包已存在: $TARGET_FILE"
-        exit 0
-    fi
-    
-    # 2. 直接下载 Node.js
-    echo "开始下载 Node.js v${NODE_VERSION} for ${OS}-${ARCH}..."
-    URL="https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-${OS}-${ARCH}.tar.xz"
-    
-    # 显示下载信息
-    echo "下载地址: $URL"
-    echo "目标文件: $TARGET_FILE"
-    
-    # 使用 curl 下载
-    if command -v curl >/dev/null 2>&1; then
-        if curl -f -L -o "$TARGET_FILE" "$URL"; then
-            echo "✓ 下载成功: $TARGET_FILE"
-            
-            # 验证文件大小
-            file_size=$(stat -f%z "$TARGET_FILE" 2>/dev/null || stat -c%s "$TARGET_FILE" 2>/dev/null || echo "0")
-            if [ "$file_size" -gt 10000000 ]; then  # 大于 10MB
-                echo "✓ 文件大小验证通过: $(($file_size/1024/1024))MB"
-                exit 0
-            else
-                echo "❌ 文件大小异常，可能下载失败"
-                rm -f "$TARGET_FILE"
-                exit 1
-            fi
-        else
-            echo "❌ curl 下载失败: $URL"
+# 检测操作系统和架构
+detect_platform() {
+    case "$(uname -s)" in
+        Linux*)
+            OS=linux
+            ;;
+        Darwin*)
+            OS=darwin
+            ;;
+        MINGW64*|CYGWIN*|MSYS*)
+            OS=windows
+            ;;
+        *)
+            log_error "Unsupported OS: $(uname -s)"
             exit 1
-        fi
-    # 使用 wget 下载（备选）
-    elif command -v wget >/dev/null 2>&1; then
-        echo "使用 wget 下载..."
-        if wget -O "$TARGET_FILE" "$URL"; then
-            echo "✓ 下载成功: $TARGET_FILE"
-            exit 0
-        else
-            echo "❌ wget 下载失败: $URL"
+            ;;
+    esac
+
+    case "$(uname -m)" in
+        x86_64|amd64)
+            ARCH=x64
+            ;;
+        aarch64|arm64)
+            ARCH=arm64
+            ;;
+        *)
+            log_error "Unsupported architecture: $(uname -m)"
             exit 1
-        fi
+            ;;
+    esac
+
+    echo "${OS}-${ARCH}"
+}
+
+# 下载 Node.js
+download_nodejs() {
+    local platform=$1
+    local node_version="20.18.0"  # 可以根据需要调整版本
+    
+    log_info "Downloading Node.js v${node_version} for ${platform}..."
+    
+    case "${platform}" in
+        linux-x64)
+            url="https://nodejs.org/dist/v${node_version}/node-v${node_version}-linux-x64.tar.xz"
+            ;;
+        darwin-x64)
+            url="https://nodejs.org/dist/v${node_version}/node-v${node_version}-darwin-x64.tar.gz"
+            ;;
+        darwin-arm64)
+            url="https://nodejs.org/dist/v${node_version}/node-v${node_version}-darwin-arm64.tar.gz"
+            ;;
+        windows-x64)
+            url="https://nodejs.org/dist/v${node_version}/node-v${node_version}-win-x64.zip"
+            ;;
+        *)
+            log_error "Unsupported platform: ${platform}"
+            exit 1
+            ;;
+    esac
+
+    # 创建目标目录
+    mkdir -p resources/nodejs
+
+    # 下载文件
+    if command -v curl &> /dev/null; then
+        curl -L -o "resources/node.tar.xz" "$url"
+    elif command -v wget &> /dev/null; then
+        wget -O "resources/node.tar.xz" "$url"
     else
-        echo "❌ 未找到 curl 或 wget，无法下载"
+        log_error "Neither curl nor wget is available"
+        exit 1
+    fi
+
+    if [ $? -eq 0 ]; then
+        log_info "✅ Node.js downloaded successfully"
+    else
+        log_error "Failed to download Node.js"
         exit 1
     fi
 }
 
-# 执行主函数
-main
+main() {
+    log_info "Starting Node.js installation..."
+    
+    # 检测平台
+    platform=$(detect_platform)
+    log_info "Detected platform: ${platform}"
+    
+    # 下载 Node.js
+    download_nodejs "${platform}"
+    
+    log_info "Node.js installation completed!"
+}
+
+main "$@"
