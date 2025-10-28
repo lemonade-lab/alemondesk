@@ -77,7 +77,7 @@ jobs:
 
       - name: Build APP
         run: |
-          wails build -p ${{ matrix.build.platform }} --name "${{ matrix.build.name }}"
+          wails build --clean
 
       - name: 重命名(Windows)
         if: runner.os == 'Windows'
