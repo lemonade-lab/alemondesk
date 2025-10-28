@@ -58,6 +58,7 @@ require (
 	github.com/samber/lo v1.52.0 // indirect
 	github.com/spf13/viper v1.21.0
 	github.com/tkrajina/go-reflector v0.5.8 // indirect
+	github.com/ulikunitz/xz v0.5.15
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/wailsapp/go-webview2 v1.0.22 // indirect

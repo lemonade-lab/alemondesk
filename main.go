@@ -45,6 +45,12 @@ func main() {
 	// 初始化文件资源
 	files.Create(ResourcesFiles)
 
+	// 检查 Node.js 安装
+	manager := files.GetNodeJSManager()
+	if _, err := manager.GetNodeExePath(); err != nil {
+		logger.Error("获取 Node.js 路径失败: %v", err)
+	}
+
 	// 不存在的时候创建机器人目录
 	botPath := paths.CreateBotPath(config.BotName)
 	if _, err := os.Stat(botPath); os.IsNotExist(err) {
@@ -117,8 +123,7 @@ func main() {
 		}
 	}
 
-	err := wails.Run(appOptions)
-	if err != nil {
+	if err := wails.Run(appOptions); err != nil {
 		logger.Error("Error:", err.Error())
 	}
 

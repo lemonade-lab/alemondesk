@@ -39,6 +39,11 @@ func Info(format string, v ...interface{}) {
 	output(msg)
 }
 
+func Warn(format string, v ...interface{}) {
+	msg := fmt.Sprintf("[WARN] "+format, v...)
+	output(msg)
+}
+
 func Error(format string, v ...interface{}) {
 	msg := fmt.Sprintf("[ERROR] "+format, v...)
 	output(msg)

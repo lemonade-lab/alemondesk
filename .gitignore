@@ -43,5 +43,5 @@ _logs
 config*.yaml
 .env
 /work
-/resources/nodejs
+/resources/node.tar.xz
 /resources/template/node_modules.tar.gz

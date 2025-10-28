@@ -1,6 +1,7 @@
 package windowcontroller
 
 import (
+	"alemonapp/src/files"
 	"bytes"
 	"context"
 	"os/exec"
@@ -48,8 +49,12 @@ func executeCommand(name string, arg ...string) string {
 
 // 得到版本信息
 func (a *App) GetVersions() Versions {
-	nodeVersion := executeCommand("node", "--version")
-
+	manager := files.GetNodeJSManager()
+	nodeExe, err := manager.GetNodeExePath()
+	nodeVersion := "Unknown"
+	if err != nil {
+		nodeVersion = executeCommand(nodeExe, "--version")
+	}
 	return Versions{
 		Version:  "1.0.0",
 		Node:     nodeVersion,

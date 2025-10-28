@@ -1,12 +1,12 @@
 package logic
 
 import (
+	"alemonapp/src/files"
 	"alemonapp/src/models"
 	"alemonapp/src/paths"
 	"alemonapp/src/process"
 	"alemonapp/src/utils"
 	"os"
-	"os/exec"
 	"path"
 )
 
@@ -18,11 +18,14 @@ func IsRunning(name string) bool {
 
 // 运行机器人
 func Run(name string) (string, error) {
+
+	manager := files.GetNodeJSManager()
+	nodeExe, err := manager.GetNodeExePath()
 	// 检查系统是否安装了 Node.js
-	nodePath, err := exec.LookPath("node")
 	if err != nil {
 		return "未找到NodeJS", err
 	}
+
 	pm := process.GetProcessManager()
 	if pm.IsRunning(name) {
 		return "机器人已经在运行", nil
@@ -63,7 +66,7 @@ func Run(name string) (string, error) {
 	pm.AddProcess(process.NodeProcessConfig{
 		Name:     name,
 		Dir:      botPath,
-		Node:     nodePath,
+		Node:     nodeExe,
 		ScriptJS: indexPath,
 		// LogPath:     logPath,
 		PidFile:     pidFile,

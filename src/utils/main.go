@@ -8,7 +8,6 @@ import (
 	"path"
 )
 
-// CopyDir 复制目录下的所有文件到目标目录
 func CopyDir(src, dest string) error {
 	err := ClearFolder(dest)
 	if err != nil {
@@ -99,7 +98,6 @@ func ClearFolder(targetPath string) error {
 	return nil
 }
 
-// Command 创建一个新的命令
 func Command(name string, arg ...string) *exec.Cmd {
 	cmd := exec.Command(name, arg...)
 	cmd.Env = os.Environ()

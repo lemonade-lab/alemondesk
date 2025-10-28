@@ -1,12 +1,12 @@
 package expansions
 
 import (
+	"alemonapp/src/files"
 	"alemonapp/src/models"
 	"alemonapp/src/paths"
 	"alemonapp/src/process"
 	"alemonapp/src/utils"
 	"os"
-	"os/exec"
 	"path"
 )
 
@@ -18,8 +18,9 @@ func IsRunning(name string) bool {
 
 // 运行
 func Run(name string) (string, error) {
+	manager := files.GetNodeJSManager()
+	nodeExe, err := manager.GetNodeExePath()
 	// 检查系统是否安装了 Node.js
-	nodePath, err := exec.LookPath("node")
 	if err != nil {
 		return "未找到NodeJS", err
 	}
@@ -60,7 +61,7 @@ func Run(name string) (string, error) {
 	pm.AddProcess(process.NodeProcessConfig{
 		Name:     name + "-desk",
 		Dir:      botPath,
-		Node:     nodePath,
+		Node:     nodeExe,
 		ScriptJS: indexPath,
 		// LogPath:     logPath,
 		PidFile:     pidFile,

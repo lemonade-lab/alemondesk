@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"alemonapp/src/files"
 	"alemonapp/src/logger"
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
@@ -10,8 +11,11 @@ import (
 
 // 加载依赖
 func Add(name string, args []string) (bool, error) {
+	manager := files.GetNodeJSManager()
+	nodeDir, err := manager.GetNodeExePath()
+
 	// 检查系统是否安装了 Node.js
-	if _, err := exec.LookPath("node"); err != nil {
+	if err != nil {
 		return false, err
 	}
 
@@ -40,7 +44,7 @@ func Add(name string, args []string) (bool, error) {
 
 	// 构建命令
 	curArgs := append([]string{"add", "-W"}, args...)
-	cmd := utils.Command("node", append([]string{cliDir}, curArgs...)...)
+	cmd := utils.Command(nodeDir, append([]string{cliDir}, curArgs...)...)
 
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
@@ -81,8 +85,10 @@ func Add(name string, args []string) (bool, error) {
 
 // 加载依赖
 func Install(name string) (bool, error) {
+	manager := files.GetNodeJSManager()
+	nodeDir, err := manager.GetNodeExePath()
 	// 检查系统是否安装了 Node.js
-	if _, err := exec.LookPath("node"); err != nil {
+	if err != nil {
 		logger.Info("unable to find node:", err)
 		return false, err
 	}
@@ -93,7 +99,7 @@ func Install(name string) (bool, error) {
 	// yarn.cjs
 	cliDir := paths.GetNodeYarnScriptFilePath()
 	// yarn install
-	cmd := utils.Command("node", cliDir, "install", "--ignore-engines", "--network-concurrency", "1")
+	cmd := utils.Command(nodeDir, cliDir, "install", "--ignore-engines", "--network-concurrency", "1")
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
 	cmd.Stdout = os.Stdout
@@ -139,8 +145,11 @@ func Install(name string) (bool, error) {
 
 // 移除依赖
 func Remove(name string, names []string) (bool, error) {
+	manager := files.GetNodeJSManager()
+	nodeDir, err := manager.GetNodeExePath()
+
 	// 检查系统是否安装了 Node.js
-	if _, err := exec.LookPath("node"); err != nil {
+	if err != nil {
 		return false, err
 	}
 
@@ -159,7 +168,7 @@ func Remove(name string, names []string) (bool, error) {
 
 	// 构建命令
 	args := append([]string{"remove", "-W"}, names...)
-	cmd := utils.Command("node", append([]string{cliDir}, args...)...)
+	cmd := utils.Command(nodeDir, append([]string{cliDir}, args...)...)
 
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
@@ -200,8 +209,11 @@ func Remove(name string, names []string) (bool, error) {
 
 // 自由 cmd
 func Cmd(name string, args []string) (bool, error) {
+	manager := files.GetNodeJSManager()
+	nodeDir, err := manager.GetNodeExePath()
+
 	// 检查系统是否安装了 Node.js
-	if _, err := exec.LookPath("node"); err != nil {
+	if err != nil {
 		return false, err
 	}
 
@@ -219,7 +231,7 @@ func Cmd(name string, args []string) (bool, error) {
 	cliDir := paths.GetNodeYarnScriptFilePath()
 
 	// 构建命令
-	cmd := utils.Command("node", append([]string{cliDir}, args...)...)
+	cmd := utils.Command(nodeDir, append([]string{cliDir}, args...)...)
 
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
