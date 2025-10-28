@@ -31,11 +31,11 @@ jobs:
           #       libwebkit2gtk-4.1-dev \
           #       libayatana-appindicator3-dev \
           #       librsvg2-dev
-          - os: windows-latest
-            platform: windows/amd64
-            artifact_name: windows-amd64
-            file_ext: ".exe"
-            deps: echo "No additional deps needed for Windows"
+          # - os: windows-latest
+          #   platform: windows/amd64
+          #   artifact_name: windows-amd64
+          #   file_ext: ".exe"
+          #   deps: echo "No additional deps needed for Windows"
           - os: macos-latest
             platform: darwin/amd64
             artifact_name: darwin-amd64
