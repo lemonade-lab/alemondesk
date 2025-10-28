@@ -3,6 +3,7 @@ package files
 import (
 	"alemonapp/src/logger"
 	"alemonapp/src/paths"
+	"alemonapp/src/utils"
 	"fmt"
 	"io"
 	"io/fs"
@@ -69,6 +70,22 @@ func Create(ResourcesFiles fs.FS) {
 	}
 }
 
+// 解压Nodejs
+func ExtractNodeJS(destPath string) error {
+	pkgName := "node.tar.xz"
+	if runtime.GOOS == "windows" {
+		pkgName = "node.zip"
+	}
+	// 获取 Node.js 压缩包路径
+	nodeArchivePath := path.Join(paths.GetWorkPath(), "resources", pkgName)
+
+	// 解压缩
+	if err := utils.ExtractFileTo(nodeArchivePath, destPath); err != nil {
+		return fmt.Errorf("解压 Node.js 失败: %w", err)
+	}
+	return nil
+}
+
 // NodeJSManager Node.js 管理器
 type NodeJSManager struct {
 	nodeJSPath    string
@@ -109,8 +126,6 @@ func (m *NodeJSManager) GetNodeJSPath() (string, error) {
 		return path, nil
 	}
 	m.mu.RUnlock()
-
-	// 找到 Node.js 路径。
 
 	// 固定格式为 work/resources/nodejs/{version}/node{.exe}
 	workPath := paths.GetResourcePath()

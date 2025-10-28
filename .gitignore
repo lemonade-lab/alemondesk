@@ -44,4 +44,5 @@ config*.yaml
 .env
 /work
 /resources/node.tar.xz
+/resources/node.zip
 /resources/template/node_modules.tar.gz
