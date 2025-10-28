@@ -36,27 +36,45 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+      - name: 安装缺失的依赖 (Linux)
+        if: runner.os == 'Linux'
+        run: |
+            sudo apt-get update || { echo "Failed to update apt-get"; exit 1; }
+            sudo apt-get install -y \
+              libgtk-3-dev \
+              libglib2.0-dev \
+              pkg-config
+            sudo add-apt-repository ppa:webkit2gtk/ppa -y
+            sudo apt-get update
+            sudo apt-get install -y libwebkit2gtk-4.0-dev || { echo "Failed to install libwebkit2gtk"; exit 1; }
+            sudo apt-get clean
+            sudo rm -rf /var/lib/apt/lists/*  # Clean up
 
       - name: 安装 Go 环境
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
-    
-      - name: 安装缺失的依赖 (Linux)
-        if: runner.os == 'Linux'
+
+      - name: 安装 Wails CLI
+        if: runner.os == 'linux' || runner.os == 'macos-latest'
         run: |
-         sudo apt-get update
-         sudo apt-get install -y \
-         libgtk-3-dev \
-         libwebkit2gtk-4.0-dev \
-         libglib2.0-dev \
-         pkg-config
-          
+          go install github.com/wailsapp/wails/v2/cmd/wails@latest
+          wails version
+          go mod tidy
+
+      - name: 安装 Wails CLI (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@latest
+          wails version
+          go mod tidy
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
       - name: 安装依赖并构建前端
         run: |
             yarn --cwd frontend install
@@ -76,30 +94,6 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           Remove-Item resources/template/node_modules -Recurse -Force
-
-      - name: 安装 Wails CLI
-        if: runner.os == 'linux' || runner.os == 'macos-latest'
-        run: |
-          go install github.com/wailsapp/wails/v2/cmd/wails@latest
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH  # 将 Wails CLI 添加到 PATH
-
-      - name: 安装 Wails CLI (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          go install github.com/wailsapp/wails/v2/cmd/wails@latest
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH  # 将 Wails CLI 添加到 PATH
-
-      - name: 确认 Wails CLI 路径 (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          echo "GOPATH: $(go env GOPATH)"
-          echo "GOBIN: $(go env GOBIN)"
-          echo "PATH: $env:PATH"
-          wails --version  # 试图运行 wails 命令，查看是否能成功
-
-      - name: Go mod tidy
-        run: |
-          go mod tidy
 
       - name: Build APP
         run: |
@@ -126,7 +120,6 @@ jobs:
         with:
           name: ${{ env.APP_NAME }}-${{ matrix.build.os }}-${{ matrix.build.platform }}
           path: ${{ env.APP_NAME }}-${{ matrix.build.os }}-${{ matrix.build.platform }}-*.{exe,zip,pkg}
-
   
   release:
     name: 创建发布
