@@ -62,8 +62,9 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           wget https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-darwin-x64.tar.xz -O resources/node.tar.xz
+      
       - name: Build wails
-        uses: dAppServer/wails-build-action@v2.2
+        uses: dAppServer/wails-build-action@v3
         id: build
         with:
           build-name: ${{ matrix.build.name }}
