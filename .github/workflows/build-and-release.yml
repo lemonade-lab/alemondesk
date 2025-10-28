@@ -2,9 +2,16 @@ name: 发布版本
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
+
+env:
+  GO_VERSION: '1.24'
+  WAILS_VERSION: 'latest'
 
 jobs:
   build-all-platforms:
@@ -15,18 +22,24 @@ jobs:
             platform: linux/amd64
             artifact_name: linux-amd64
             file_ext: ""
+            deps: |
+              sudo apt-get update
+              sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
           - os: windows-latest
             platform: windows/amd64
             artifact_name: windows-amd64
             file_ext: ".exe"
+            deps: echo "No additional deps needed for Windows"
           - os: macos-latest
             platform: darwin/amd64
             artifact_name: darwin-amd64
             file_ext: ""
+            deps: echo "No additional deps needed for macOS"
           - os: macos-latest
             platform: darwin/arm64
             artifact_name: darwin-arm64
             file_ext: ""
+            deps: echo "No additional deps needed for macOS"
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -38,61 +51,54 @@ jobs:
       - name: 设置 Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.24'
+          go-version: ${{ env.GO_VERSION }}
           cache: true
 
-      - name: 设置 Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-          cache: 'yarn'
-          cache-dependency-path: |
-            frontend/yarn.lock
-            resources/template/yarn.lock
-
-      - name: 安装系统依赖 (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+      - name: 安装系统依赖
+        if: matrix.deps != ''
+        run: ${{ matrix.deps }}
 
       - name: 安装 Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-
-      - name: 构建前端资源
         run: |
-          yarn --cwd frontend install --frozen-lockfile
-          yarn --cwd frontend build
-
-      - name: 构建Node资源
-        run: |
-          yarn --cwd resources/template install --frozen-lockfile
+          go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
+          wails version
 
       - name: 构建应用
         run: |
+          chmod +x ./app-*.sh
+          # 使用更安全的脚本执行方式
+          bash ./app-build.sh ci
+
+      - name: 编译二进制
+        run: |
           wails build -platform ${{ matrix.platform }} -clean -production -ldflags="-s -w"
-        env:
-          CGO_ENABLED: 1
 
       - name: 重命名和打包输出文件
         run: |
           cd build/bin
           
-          # 获取实际生成的文件名
+          # 获取版本信息（如果有 git tag）
+          VERSION=${GITHUB_REF_NAME:-"dev"}
+          echo "构建版本: $VERSION"
+          
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             original_file=$(ls *.exe | head -1)
-            new_name="app-${{ matrix.artifact_name }}.exe"
+            new_name="app-${{ matrix.artifact_name }}${{ matrix.file_ext }}"
             mv "$original_file" "$new_name"
-            # 创建 ZIP 包
-            zip "../app-${{ matrix.artifact_name }}.zip" "$new_name"
+            # 创建 ZIP 包，包含版本信息
+            zip "../app-${{ matrix.artifact_name }}-$VERSION.zip" "$new_name"
           else
-            original_file=$(ls | grep -v '.zip$' | head -1)
-            new_name="app-${{ matrix.artifact_name }}"
+            original_file=$(ls | grep -v '\.\(zip\|tar\.gz\)$' | head -1)
+            new_name="app-${{ matrix.artifact_name }}${{ matrix.file_ext }}"
             mv "$original_file" "$new_name"
             chmod +x "$new_name"
-            # 创建 tar.gz 包
-            tar -czf "../app-${{ matrix.artifact_name }}.tar.gz" "$new_name"
+            # 创建 tar.gz 包，包含版本信息
+            tar -czf "../app-${{ matrix.artifact_name }}-$VERSION.tar.gz" "$new_name"
           fi
+          
+          # 输出文件信息
+          echo "生成的文件:"
+          ls -la ../*.zip ../*.tar.gz 2>/dev/null || true
 
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
@@ -101,6 +107,7 @@ jobs:
           path: |
             build/bin/app-${{ matrix.artifact_name }}*
             build/app-${{ matrix.artifact_name }}.*
+          retention-days: 7
 
   create-release:
     needs: build-all-platforms
@@ -116,10 +123,17 @@ jobs:
       - name: 准备发布文件
         run: |
           mkdir -p release-files
-          # 移动所有文件到 release-files 目录
-          find artifacts -name "app-*" -type f -exec cp {} release-files/ \;
+          # 复制并整理所有构建产物
+          find artifacts -type f -name "app-*" -exec cp {} release-files/ \;
+          
+          # 生成 SHA256 校验和
+          cd release-files
+          shasum -a 256 * > checksums.txt
+          
           echo "发布文件列表:"
-          ls -la release-files/
+          ls -la
+          echo "=== SHA256 校验和 ==="
+          cat checksums.txt
 
       - name: 创建 GitHub Release
         uses: softprops/action-gh-release@v1
@@ -128,3 +142,5 @@ jobs:
           generate_release_notes: true
           draft: false
           prerelease: false
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
