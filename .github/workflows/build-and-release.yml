@@ -7,8 +7,6 @@ on:
 
 env:
   NODE_VERSION: "22.21.0"
-  APP_NAME: "ALemonDesk"
-  GO_VERSION: "1.24.0"
 
 jobs:
   build:
@@ -17,85 +15,69 @@ jobs:
       matrix:
         build:
           - name: 'ALemonDesk'
-            platform: 'windows/amd64'
+            platform:  'linux/amd64'
+            nodePlatform: 'linux-x64'
+            os: 'ubuntu-latest'
+          - name: 'ALemonDesk'
+            platform:  'windows/amd64'
             nodePlatform: 'win-x64'
             os: 'windows-latest'
+          - name: 'ALemonDesk'
+            platform:  'darwin/universal'
+            nodePlatform: 'darwin-arm64'
+            os: 'macos-latest'
 
     runs-on: ${{ matrix.build.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: 安装 Go 环境
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: true
-
-      - name: 安装 Wails CLI (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          go install github.com/wailsapp/wails/v2/cmd/wails@latest
-          wails version
-          go mod tidy
-
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '22'
 
       - name: 安装依赖并构建前端
         run: |
             yarn --cwd frontend install
             yarn --cwd frontend build
-
       - name: 安装模板依赖并压缩
         run: |
             yarn --cwd resources/template install
             tar -czf resources/template/node_modules.tar.gz -C resources/template node_modules
-
       - name: 删除 node_modules (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
           rm -rf resources/template/node_modules
-
       - name: 删除 node_modules (Windows)
         if: runner.os == 'Windows'
         run: |
           Remove-Item resources/template/node_modules -Recurse -Force
-
-      - name: Build APP
+      - name: 下载并内嵌 Nodejs (Linux)
+        if: runner.os == 'Linux'
         run: |
-          wails build --clean
-
-      - name: 重命名(Windows)
+          wget https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-${{ matrix.build.nodePlatform }}.tar.xz -O resources/node.tar.xz
+      - name: 下载并内嵌 Nodejs (Windows)
         if: runner.os == 'Windows'
         run: |
-          Rename-Item "${{ matrix.build.name }}.exe" "${{ env.APP_NAME }}-${{ matrix.build.os }}-${{ matrix.build.nodePlatform }}.exe"
-
-      - name: 上传构建产物
-        uses: actions/upload-artifact@v5
+          Invoke-WebRequest -Uri "https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-${{ matrix.build.nodePlatform }}.zip" -OutFile "resources/node.zip"
+      - name: 下载并内嵌 Nodejs (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          wget https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-${{ matrix.build.nodePlatform }}.tar.xz -O resources/node.tar.xz
+      
+      - name: Build wails
+        uses: dAppServer/wails-build-action@main
+        id: build
         with:
-          name: ${{ env.APP_NAME }}-${{ matrix.build.os }}-${{ matrix.build.nodePlatform }}
-          path: ${{ env.APP_NAME }}-${{ matrix.build.os }}-${{ matrix.build.nodePlatform }}-*.{exe,zip,pkg}
-  
-  release:
-    name: 创建发布
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: 下载所有构建产物
-        uses: actions/download-artifact@v5
-        with:
-          path: artifacts
-
-      - name: 创建 GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref_name }}
-          files: artifacts/**/${{ env.APP_NAME }}-*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          build-name: ${{ matrix.build.name }}
+          build-platform: ${{ matrix.build.platform }}
+          go-version: "1.24.0"
+          node-version: "22.x"
+          wails-version: "v2.10.2"
+          build-obfuscate: true
+          build: true
+          package: true
+          nsis: ${{ matrix.build.platform == 'windows/amd64' }}
