@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-//
 import useGoNavigate from '@/hook/useGoNavigate'
-//
 import { setBotStatus } from '@/store/bot'
 import { setCommand } from '@/store/command'
 import { setModulesStatus } from '@/store/modules'
@@ -11,19 +9,15 @@ import { initPackage, setExpansionsStatus } from '@/store/expansions'
 import { RootState } from '@/store'
 import { setPath } from '@/store/app'
 import { postMessage } from '@/store/log'
-//
 import { usePop } from '@/context/Pop'
 import { useNotification } from '@/context/Notification'
-//
 import { PrimaryDiv } from '@alemonjs/react-ui'
-//
 import Menu from '@/views/Menu'
 import WordBox from '@/views/WordBox'
 import GuideMain from '@/views/Guide/Main'
-//
 import Header from '@/common/Header'
 import { ExpansionsPostMessage, ExpansionsRun } from '@wailsjs/go/windowexpansions/App'
-import { AppGetConfig, AppGetPathsState } from '@wailsjs/go/windowapp/App'
+import { AppGetPathsState } from '@wailsjs/go/windowapp/App'
 import { ThemeLoadVariables, ThemeMode } from '@wailsjs/go/windowtheme/App'
 import { EventsOn } from '@wailsjs/runtime/runtime'
 import { YarnCommands } from '@wailsjs/go/windowyarn/App'
@@ -34,8 +28,8 @@ export default (function App() {
   const notification = useNotification()
   const modules = useSelector((state: RootState) => state.modules)
   const expansions = useSelector((state: RootState) => state.expansions)
-  const { setPopValue, closePop } = usePop()
   const modulesRef = useRef(modules)
+  const { setPopValue, closePop } = usePop()
 
   const [step, setStep] = useState(-1)
 
@@ -43,6 +37,7 @@ export default (function App() {
   useEffect(() => {
     // 加载css变量
     ThemeLoadVariables()
+
     // 加载主题
     ThemeMode().then(res => {
       if (res === 'dark') {
@@ -51,10 +46,11 @@ export default (function App() {
         document.documentElement.classList.remove('dark')
       }
     })
-    // 获取路径状态
-    AppGetPathsState().then(paths => {
-      dispatch(setPath(paths))
-    })
+
+    // 获取路径配置
+    AppGetPathsState().then(paths => dispatch(setPath(paths)))
+
+    // 立即安装依赖
     YarnCommands({
       type: 'install',
       args: ['--ignore-warnings']
@@ -62,7 +58,6 @@ export default (function App() {
 
     // 监听 css 变量
     EventsOn('theme', cssVariables => {
-      console.log('收到 css 变量', cssVariables)
       try {
         const vars = JSON.parse(cssVariables)
         Object.keys(vars).forEach(key => {
@@ -75,9 +70,11 @@ export default (function App() {
     // 监听依赖安装状态 0 失败 1 成功
     EventsOn('yarn', data => {
       const value = data.value
+      // 每一次安装依赖的后，都更新依赖状态
       if (data.type == 'install') {
         if (value == 0) {
-          notification('依赖初始化失败', 'error')
+          // 失败就让用户重启
+          notification('初始化失败，请尝试重启', 'error')
         }
         dispatch(
           setModulesStatus({
@@ -85,7 +82,7 @@ export default (function App() {
           })
         )
       }
-      //
+      // 其他的通知
     })
     // 监听 bot 状态
     EventsOn('bot', data => {
@@ -101,6 +98,20 @@ export default (function App() {
       const value = data.value
       const type = data.type
       notification(value, type || 'info')
+    })
+    // 监听 expansions状态
+    EventsOn('expansions-status', data => {
+      const value = data.value
+      if (value == 0) {
+        notification('扩展器已停止', 'warning')
+      } else {
+        notification('扩展器已启动')
+      }
+      dispatch(
+        setExpansionsStatus({
+          runStatus: value == 0 ? false : true
+        })
+      )
     })
     // 监听 expansions消息
     EventsOn('expansions', data => {
@@ -131,25 +142,11 @@ export default (function App() {
         console.error('HomeApp 解析消息失败')
       }
     })
-    // 监听 expansions状态
-    EventsOn('expansions-status', data => {
-      const value = data.value
-      if (value == 0) {
-        notification('扩展器已停止', 'warning')
-      } else {
-        notification('扩展器已启动')
-      }
-      dispatch(
-        setExpansionsStatus({
-          runStatus: value == 0 ? false : true
-        })
-      )
-    })
-    // 监听 log
+    // 监听 terminal 消息
     EventsOn('terminal', (data: any) => {
       dispatch(postMessage(data))
     })
-    // 监听  modal
+    // 监听  modal 弹窗机制
     EventsOn('controller', data => {
       if (data.open) {
         setPopValue({
@@ -167,29 +164,25 @@ export default (function App() {
     })
   }, [])
 
+  /**
+   * 感知依赖安装状态。
+   * 安装完成后，自动启动扩展器，
+   * 依赖没安装的情况下，要禁止一些涉及使用依赖的功能
+   */
   useEffect(() => {
     modulesRef.current = modules
-
     // 依赖安装完成后，启动扩展器
     if (modules.nodeModulesStatus) {
       notification('依赖加载完成')
-
-      // 已经启动了
-      if (expansions.runStatus) {
-        return
-      }
-
-      // 得到配置，判断是否自动启动
-      AppGetConfig(['AUTO_RUN_EXTENSION']).then(T => {
-        if (T.AUTO_RUN_EXTENSION !== 'true') {
-          return
-        }
-        // 启动扩展器
-        ExpansionsRun([])
-      })
+      // 确保启动扩展器
+      ExpansionsRun([])
     }
   }, [modules.nodeModulesStatus])
 
+  /**
+   * 感知扩展器状态。
+   * 感知到扩展器重启后，获取扩展器列表
+   */
   useEffect(() => {
     if (expansions.runStatus) {
       // 获取扩展器列表
@@ -197,7 +190,11 @@ export default (function App() {
     }
   }, [expansions.runStatus])
 
-  // 监听 command
+  /**
+   * 感知命令变化
+   1. view. 开头的，前往对应页面
+   2. 其他命令，发送给扩展器
+   */
   const command = useSelector((state: RootState) => state.command)
   useEffect(() => {
     if (command.name) {

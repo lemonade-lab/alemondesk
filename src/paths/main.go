@@ -1,16 +1,40 @@
 package paths
 
 import (
+	"os"
+	"os/user"
 	"path/filepath"
+	"runtime"
 )
 
-// 获取机器人模板目录
-func GetBotTemplate() string {
-	return filepath.Join("resources", "template")
+func GetUserHomeDir(appName string) string {
+	usr, _ := user.Current()
+	home := usr.HomeDir
+	switch runtime.GOOS {
+	case "windows":
+		appData := os.Getenv("APPDATA")
+		if appData != "" {
+			return filepath.Join(appData, appName)
+		}
+		return filepath.Join(home, appName)
+	case "darwin":
+		return filepath.Join(home, "Library", "Application Support", appName)
+	default: // linux
+		config := os.Getenv("XDG_CONFIG_HOME")
+		if config != "" {
+			return filepath.Join(config, appName)
+		}
+		return filepath.Join(home, ".config", appName)
+	}
 }
 
 // 获取工作目录
 func GetWorkPath() string {
+	if os.Getenv("APP_WAILS_DEV") != "true" {
+		// 生产环境使用用户应用数据目录
+		homeDir := GetUserHomeDir("ALemonDesk")
+		return filepath.Join(homeDir, "work")
+	}
 	return filepath.Join("work")
 }
 
@@ -21,10 +45,16 @@ func GetResourcePath() string {
 	return resourcePath
 }
 
+// 获取机器人模板目录
+func GetBotTemplate() string {
+	resPath := GetResourcePath()
+	return filepath.Join(resPath, "template")
+}
+
 // 存储目录
 func GetStoragePath() string {
-	workPath := GetResourcePath()
-	storagePath := filepath.Join(workPath, "storage")
+	resPath := GetResourcePath()
+	storagePath := filepath.Join(resPath, "storage")
 	return storagePath
 }
 

@@ -1,11 +1,11 @@
 package process
 
 import (
+	"alemonapp/src/logger"
 	"alemonapp/src/paths"
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -126,13 +126,13 @@ func GetProcessConfigFilePath() string {
 		// 创建文件
 		file, err := os.Create(filePath)
 		if err != nil {
-			log.Printf("创建进程配置文件失败: %v", err)
+			logger.Info("创建进程配置文件失败: %v", err)
 		}
 		defer file.Close()
 		// 写入空的 JSON 对象
 		_, err = file.WriteString("{}")
 		if err != nil {
-			log.Printf("写入空JSON失败: %v", err)
+			logger.Info("写入空JSON失败: %v", err)
 		}
 	}
 	return filePath
@@ -247,7 +247,7 @@ func (mp *ManagedProcess) monitor() {
 		mp.RestartCount++
 	}
 	if mp.RestartCount <= mp.MaxRestarts {
-		log.Printf("[%s] exited, restarting in %v (count: %d/%d)\n", mp.Config.Name, mp.RestartWait, mp.RestartCount, mp.MaxRestarts)
+		logger.Info("[%s] exited, restarting in %v (count: %d/%d)\n", mp.Config.Name, mp.RestartWait, mp.RestartCount, mp.MaxRestarts)
 		go func() {
 			time.Sleep(mp.RestartWait)
 			mp.Start()
@@ -255,7 +255,7 @@ func (mp *ManagedProcess) monitor() {
 	} else {
 		mp.Status = StatusStopped
 		mp.Config.Port = 0
-		log.Printf("[%s] too many restarts, giving up!\n", mp.Config.Name)
+		logger.Info("[%s] too many restarts, giving up!\n", mp.Config.Name)
 	}
 	// 持久化状态
 	SaveProcess(mp.Config.Name, mp.Config, mp.Status)
@@ -422,12 +422,12 @@ func SaveProcess(name string, Config NodeProcessConfig, status string) {
 	filePath := GetProcessConfigFilePath()
 	data, err := json.Marshal(cfgMap)
 	if err != nil {
-		log.Printf("序列化进程配置失败: %v", err)
+		logger.Info("序列化进程配置失败: %v", err)
 		return
 	}
 	err = os.WriteFile(filePath, data, 0644)
 	if err != nil {
-		log.Printf("保存进程配置到文件失败: %v", err)
+		logger.Info("保存进程配置到文件失败: %v", err)
 		return
 	}
 }
@@ -444,12 +444,12 @@ func RemoveProcessConfig(name string) {
 	filePath := GetProcessConfigFilePath()
 	data, err := json.Marshal(cfgMap)
 	if err != nil {
-		log.Printf("序列化进程配置失败: %v", err)
+		logger.Info("序列化进程配置失败: %v", err)
 		return
 	}
 	err = os.WriteFile(filePath, data, 0644)
 	if err != nil {
-		log.Printf("保存进程配置到文件失败: %v", err)
+		logger.Info("保存进程配置到文件失败: %v", err)
 		return
 	}
 }

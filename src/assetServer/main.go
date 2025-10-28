@@ -1,8 +1,8 @@
 package assetServer
 
 import (
+	"alemonapp/src/logger"
 	"embed"
-	"log"
 	"net/http"
 	"os"
 
@@ -16,7 +16,7 @@ func CreateAssetServer(assets *embed.FS) *assetserver.Options {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				resourcePrefix := "resource://-/"
 				if len(r.URL.Path) > len(resourcePrefix) && r.URL.Path[:len(resourcePrefix)] == resourcePrefix {
-					log.Println("Resource request:", r.URL.Path)
+					logger.Info("Resource request:", r.URL.Path)
 					filePath := r.URL.Path[len(resourcePrefix):]
 					contentBytes, err := os.ReadFile(filePath)
 					if err != nil {

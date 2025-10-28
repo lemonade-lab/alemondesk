@@ -2,10 +2,11 @@ package main
 
 import (
 	assetServer "alemonapp/src/assetServer"
-	"alemonapp/src/config"
+	config "alemonapp/src/config"
 	files "alemonapp/src/files"
-	"alemonapp/src/paths"
-	"alemonapp/src/utils"
+	logger "alemonapp/src/logger"
+	paths "alemonapp/src/paths"
+	utils "alemonapp/src/utils"
 	windowapp "alemonapp/src/window/app"
 	windowbot "alemonapp/src/window/bot"
 	windowcontroller "alemonapp/src/window/controller"
@@ -18,6 +19,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/joho/godotenv"
 	"github.com/wailsapp/wails/v2"
 
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -27,15 +29,23 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
-//go:embed all:resources
+//go:embed resources/**/* resources/*
 var ResourcesFiles embed.FS
 
 func main() {
+	// 加载.env
+	_ = godotenv.Load()
+
+	// 初始化日志
+	if err := logger.Init(); err != nil {
+		logger.Error("初始化日志失败:", err)
+	}
+	defer logger.Close()
+
 	// 初始化文件资源
 	files.Create(ResourcesFiles)
 
-	// 创建默认机器人
-	// 前提是机器人目录不存在
+	// 不存在的时候创建机器人目录
 	botPath := paths.CreateBotPath(config.BotName)
 	if _, err := os.Stat(botPath); os.IsNotExist(err) {
 		utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))
@@ -52,17 +62,19 @@ func main() {
 
 	// 创建应用选项
 	appOptions := &options.App{
-		Title:       "ALemonDesk",
-		MaxWidth:    1400,
-		MaxHeight:   900,
-		Width:       960,
-		Height:      600,
-		MinWidth:    960,
-		MinHeight:   600,
-		Debug:       options.Debug{},
+		Title:     "ALemonDesk",
+		MaxWidth:  1400,
+		MaxHeight: 900,
+		Width:     960,
+		Height:    600,
+		MinWidth:  960,
+		MinHeight: 600,
+		Debug: options.Debug{
+			OpenInspectorOnStartup: true,
+		},
 		AssetServer: assetServer.CreateAssetServer(&assets),
-		// 仅 Windows 和 Linux 下启用无边框窗口
-		Frameless: runtime.GOOS == "windows" || runtime.GOOS == "linux",
+		// Macos 禁止无边框窗口
+		Frameless: runtime.GOOS != "darwin",
 		OnStartup: func(ctx context.Context) {
 			wgit.Startup(ctx)
 			wbot.Startup(ctx)
@@ -105,18 +117,9 @@ func main() {
 		}
 	}
 
-	// mainMenu := menu.NewMenu()
-	// mainMenu.Append(&menu.MenuItem{
-	// 	Label: "开发者工具",
-	// 	Click: func(_ *menu.CallbackData) {
-
-	// 	},
-	// })
-	// appOptions.Menu = mainMenu
-
 	err := wails.Run(appOptions)
 	if err != nil {
-		println("Error:", err.Error())
+		logger.Error("Error:", err.Error())
 	}
 
 }

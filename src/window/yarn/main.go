@@ -2,9 +2,9 @@ package windowyarn
 
 import (
 	"alemonapp/src/config"
+	"alemonapp/src/logger"
 	"alemonapp/src/logic"
 	"context"
-	"log"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -29,7 +29,7 @@ type YarnCommandsParams struct {
 }
 
 func (a *App) YarnCommands(p1 YarnCommandsParams) {
-	log.Printf("YarnCommands: %v", p1)
+	logger.Info("YarnCommands: %v", p1)
 	if p1.Type == "install" {
 		// 安装依赖
 		res, error := logic.Install(config.BotName)

@@ -83,7 +83,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
           //
           YarnCommands({
             type: `upgrade`,
-            value: [  `${pkgInfo.name}@${version}`, '-W']
+            args: [`${pkgInfo.name}@${version}`, '-W']
           })
         } else {
           notification(`当前已是最新版本`, 'default')

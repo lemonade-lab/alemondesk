@@ -4,10 +4,11 @@ package windowexpansions
 import (
 	"alemonapp/src/config"
 	"alemonapp/src/expansions"
+	"alemonapp/src/logger"
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
 	"context"
-	"log"
+	"encoding/json"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -66,7 +67,7 @@ func (a *App) handlePostMessage(params map[string]interface{}) {
 	messageType, _ := params["type"].(string)
 	data, _ := params["data"].(map[string]interface{})
 
-	log.Printf("Received expansion message - Type: %s, Data: %v", messageType, data)
+	logger.Info("Received expansion message - Type: %s, Data: %v", messageType, data)
 
 	// 根据消息类型处理不同的逻辑
 	switch messageType {
@@ -106,7 +107,7 @@ func (a *App) handleGetExpansions(data map[string]interface{}) {
 	// 获取扩展列表并发送
 	expansionsList, err := a.GetExpansionList(name)
 	if err != nil {
-		log.Printf("Error getting expansion list: %v", err)
+		logger.Info("Error getting expansion list: %v", err)
 		return
 	}
 
@@ -127,13 +128,13 @@ func (a *App) getThemeVariables() map[string]interface{} {
 }
 
 type ExpansionsPostMessageParams struct {
-	Type string                 `json:"type"`
-	Data map[string]interface{} `json:"data,omitempty"`
+	Type string `json:"type"`
+	Data string `json:"data,omitempty"`
 }
 
 func (a *App) ExpansionsPostMessage(params ExpansionsPostMessageParams) {
 	// 向指定的 nodejs 进程发送消息
-	log.Printf("Sending message to expansion: %s - %v", params.Type, params.Data)
+	logger.Info("Sending message to expansion: %s - %v", params.Type, params.Data)
 
 	// 这里可以调用你的 expansions 包来实际发送消息
 	// 例如: expansions.SendMessage(config.BotName, params.Type, params.Data)
@@ -150,10 +151,15 @@ func (a *App) ExpansionsRun(p1 []string) bool {
 	if !utils.ExistsPath([]string{botPath}) {
 		return false
 	}
+	// 判断是否在运行
+	if expansions.IsRunning(config.BotName) {
+		return true
+	}
 	msg, err := expansions.Run(config.BotName)
 	if err != nil {
 		return false
 	}
+	// 通知前端扩展器状态变化
 	runtime.EventsEmit(a.ctx, "expansions-status", map[string]interface{}{
 		"data": 1,
 	})
@@ -190,7 +196,7 @@ type MessageData struct {
 // 创建隐藏的 webview
 func (a *App) CreateHideWebview(name string) error {
 	a.webviews[name] = true
-	log.Printf("Created hide webview: %s", name)
+	logger.Info("Created hide webview: %s", name)
 
 	// 通知前端 webview 已创建
 	runtime.EventsEmit(a.ctx, "webview-created", map[string]interface{}{
@@ -262,21 +268,20 @@ func (a *App) CreateDesktopHideAPI(name string) map[string]interface{} {
 func (a *App) CreateDesktopAPI(name string) map[string]interface{} {
 	return map[string]interface{}{
 		"postMessage": func(data map[string]interface{}) {
+			b, _ := json.Marshal(map[string]interface{}{
+				"name":  name,
+				"value": data,
+			})
 			a.ExpansionsPostMessage(ExpansionsPostMessageParams{
 				Type: "webview-post-message",
-				Data: map[string]interface{}{
-					"name":  name,
-					"value": data,
-				},
+				Data: string(b),
 			})
 		},
 		"expansion": map[string]interface{}{
 			"getList": func() {
 				a.ExpansionsPostMessage(ExpansionsPostMessageParams{
 					Type: "webview-get-expansions",
-					Data: map[string]interface{}{
-						"name": name,
-					},
+					Data: name,
 				})
 			},
 		},

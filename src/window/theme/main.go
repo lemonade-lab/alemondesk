@@ -1,10 +1,10 @@
 package windowtheme
 
 import (
+	"alemonapp/src/logger"
 	"alemonapp/src/paths"
 	"context"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -36,12 +36,14 @@ func (a *App) ThemeSetMode(mode string) {
 
 // 读取主题配置文件并发送给前端
 func (a *App) ThemeLoadVariables() {
-	log.Println("加载主题配置文件")
+	logger.Info("加载主题配置文件")
+	logger.Info("加载主题配置文件")
 	filePath := paths.GetStorageThemeFilePath()
 	// 读取配置文件
 	themeVars, err := a.loadThemeVariables(filePath)
 	if err != nil {
-		log.Printf("读取主题配置失败: %v", err)
+		logger.Info("读取主题配置失败: %v", err)
+		logger.Info("读取主题配置失败: %v", err)
 	}
 	runtime.EventsEmit(a.ctx, "theme", themeVars)
 }
@@ -50,14 +52,17 @@ func (a *App) ThemeLoadVariables() {
 func (a *App) loadThemeVariables(filePath string) (string, error) {
 	// 检查文件是否存在
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		logger.Info("主题配置文件不存在，使用默认配置", filePath)
 		return "{}", nil
 	}
 
 	// 读取文件
 	data, err := os.ReadFile(filePath)
 	if err != nil {
+		logger.Info("读取主题配置文件失败: %v", err)
 		return "{}", fmt.Errorf("读取文件失败: %v", err)
 	}
+	logger.Info("读取主题配置文件成功", filePath)
 
 	return string(data), nil
 }

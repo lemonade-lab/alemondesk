@@ -2,10 +2,10 @@ package windowapp
 
 import (
 	"alemonapp/src/config"
+	"alemonapp/src/logger"
 	"alemonapp/src/paths"
 	"context"
 	"encoding/json"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -121,7 +121,7 @@ func (a *App) AppWriteFiles(dir string, data string) (string, error) {
 		return "", err
 	}
 
-	log.Println("Writing to file:", dir, data)
+	logger.Info("Writing to file:", dir, data)
 
 	err = os.WriteFile(dir, []byte(data), 0644)
 	if err != nil {

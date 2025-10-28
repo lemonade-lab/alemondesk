@@ -1,9 +1,9 @@
 package logic
 
 import (
+	"alemonapp/src/logger"
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
-	"log"
 	"os"
 	"os/exec"
 )
@@ -83,11 +83,11 @@ func Add(name string, args []string) (bool, error) {
 func Install(name string) (bool, error) {
 	// 检查系统是否安装了 Node.js
 	if _, err := exec.LookPath("node"); err != nil {
-		log.Println("unable to find node:", err)
+		logger.Info("unable to find node:", err)
 		return false, err
 	}
 	if IsRunning(name) {
-		log.Println("机器人在运行")
+		logger.Info("机器人在运行")
 		return false, os.ErrExist
 	}
 	// yarn.cjs
@@ -127,13 +127,13 @@ func Install(name string) (bool, error) {
 	if err := cmd.Run(); err != nil {
 		// 分析错误。如果只是依赖的一些警告不应当做为错误
 		if exitError, ok := err.(*exec.ExitError); ok && exitError.ExitCode() == 0 {
-			log.Println("依赖安装完成，存在警告信息")
+			logger.Info("依赖安装完成，存在警告信息")
 			return false, nil
 		}
-		log.Println("依赖安装失败:", err)
+		logger.Info("依赖安装失败:", err)
 		return false, err
 	}
-	log.Println("依赖安装成功")
+	logger.Info("依赖安装成功")
 	return true, nil
 }
 

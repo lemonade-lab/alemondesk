@@ -13,3 +13,8 @@ wails dev
 ```sh
 wails generate module 
 ```
+
+```sh
+# macos 查看日志
+cat ~/Library/Application\ Support/ALemonDesk/logs/alemon-desk.log
+```

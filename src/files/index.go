@@ -1,10 +1,10 @@
 package files
 
 import (
+	"alemonapp/src/logger"
 	"alemonapp/src/paths"
 	"io"
 	"io/fs"
-	"log"
 	"os"
 	"path"
 )
@@ -18,6 +18,7 @@ func Create(ResourcesFiles fs.FS) {
 	// 解压资源
 	err := fs.WalkDir(resourcesFiles, ".", func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
+			logger.Error("资源初始化失败: %v", err)
 			return err
 		}
 		// 计算目标路径
@@ -26,12 +27,14 @@ func Create(ResourcesFiles fs.FS) {
 		if d.IsDir() {
 			// 创建目录
 			if err := os.MkdirAll(targetPath, os.ModePerm); err != nil {
+				logger.Error("资源初始化失败: %v", err)
 				return err
 			}
 		} else {
 			// 打开文件
 			curFile, err := resourcesFiles.Open(p)
 			if err != nil {
+				logger.Error("资源初始化失败: %v", err)
 				return err
 			}
 			// 关闭文件
@@ -40,6 +43,7 @@ func Create(ResourcesFiles fs.FS) {
 			// 打开文件
 			file, err := os.Create(targetPath)
 			if err != nil {
+				logger.Error("资源初始化失败: %v", err)
 				return err
 			}
 			// 关闭文件
@@ -47,6 +51,7 @@ func Create(ResourcesFiles fs.FS) {
 
 			// 复制文件
 			if _, err := io.Copy(file, curFile); err != nil {
+				logger.Error("资源初始化失败: %v", err)
 				return err
 			}
 		}
@@ -54,7 +59,7 @@ func Create(ResourcesFiles fs.FS) {
 	})
 
 	if err != nil {
-		log.Println("资源初始化失败:", err)
+		logger.Info("资源初始化失败:", err)
 		return
 	}
 }

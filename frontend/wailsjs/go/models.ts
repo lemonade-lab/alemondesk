@@ -52,7 +52,7 @@ export namespace windowexpansions {
 	
 	export class ExpansionsPostMessageParams {
 	    type: string;
-	    data?: Record<string, any>;
+	    data?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new ExpansionsPostMessageParams(source);

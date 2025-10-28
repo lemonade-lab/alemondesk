@@ -1,8 +1,8 @@
 package process
 
 import (
+	"alemonapp/src/logger"
 	"alemonapp/src/paths"
-	"log"
 	"os"
 
 	"github.com/spf13/viper"
@@ -29,7 +29,7 @@ func ReadBotConfig(name string) *RunConfig {
 		return defaultConfig
 	}
 	var runConfig RunConfig
-	log.Println("读取机器人配置:", configPath)
+	logger.Info("读取机器人配置:", configPath)
 	if err := v.Unmarshal(&runConfig); err != nil {
 		return defaultConfig
 	}
