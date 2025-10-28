@@ -7,6 +7,7 @@ on:
 
 env:
   NODE_VERSION: "22.21.0"
+  APP_NAME: "ALemonDesk"
 
 jobs:
   build:
@@ -15,15 +16,15 @@ jobs:
       matrix:
         build:
           - name: 'ALemonDesk'
-            platform:  'linux/amd64'
+            platform: 'linux/amd64'
             nodePlatform: 'linux-x64'
             os: 'ubuntu-latest'
           - name: 'ALemonDesk'
-            platform:  'windows/amd64'
+            platform: 'windows/amd64'
             nodePlatform: 'win-x64'
             os: 'windows-latest'
           - name: 'ALemonDesk'
-            platform:  'darwin/universal'
+            platform: 'darwin/universal'
             nodePlatform: 'darwin-arm64'
             os: 'macos-latest'
 
@@ -37,7 +38,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: 安装依赖并构建前端
         run: |
@@ -59,24 +60,47 @@ jobs:
         run: |
           Remove-Item resources/template/node_modules -Recurse -Force
 
-      - name: 下载并内嵌 Nodejs (Linux)
-        if: runner.os == 'Linux'
+      - name: Build APP
         run: |
-          wget https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-${{ matrix.build.nodePlatform }}.tar.xz -O resources/node.tar.xz
+          wails build -p ${{ matrix.build.platform }} --name "${{ matrix.build.name }}"
 
-      - name: 下载并内嵌 Nodejs (Windows)
+      - name: 重命名(Windows)
         if: runner.os == 'Windows'
         run: |
-          Invoke-WebRequest -Uri "https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-${{ matrix.build.nodePlatform }}.zip" -OutFile "resources/node.zip"
+          Rename-Item "${{ matrix.build.name }}.exe" "${{env.APP_NAME}}-${{ matrix.build.os }}-${{ matrix.build.platform }}.exe"
 
-      - name: 下载并内嵌 Nodejs (macOS)
+      - name: 重命名(Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mv "${{ matrix.build.name }}" "${{env.APP_NAME}}-${{ matrix.build.os }}-${{ matrix.build.platform }}"
+
+      - name: 重命名(macOS)
         if: runner.os == 'macOS'
         run: |
-          wget https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-${{ matrix.build.nodePlatform }}.tar.xz -O resources/node.tar.xz
-      
-      - name: Build wails
-        uses: dAppServer/wails-build-action@main
-        id: build
+          zip -r "${{env.APP_NAME}}-${{ matrix.build.os }}-${{ matrix.build.platform }}.zip" "${{ matrix.build.name }}.app"
+          rm -rf "${{ matrix.build.name }}.app"
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
         with:
-          build-name: ${{ matrix.build.name }}
-          build-platform: ${{ matrix.build.platform }}
+          name: ${{env.APP_NAME}}-${{ matrix.build.os }}-${{ matrix.build.platform }}
+          path: ${{env.APP_NAME}}-${{ matrix.build.os }}-${{ matrix.build.platform }}-*.{exe,zip,pkg}
+
+  release:
+    name: 创建发布
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 下载所有构建产物
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
+          files: artifacts/**/${{ env.APP_NAME }}-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
