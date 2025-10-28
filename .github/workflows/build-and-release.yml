@@ -71,9 +71,6 @@ jobs:
 
       - name: 构建应用
         run: |
-          # 删除.npmrc以防干扰
-          rm -rf frontend/.npmrc
-          rm -rf resources/template/.npmrc
           chmod +x ./app-*.sh
           # 使用更安全的脚本执行方式
           bash ./app-build.sh ci
