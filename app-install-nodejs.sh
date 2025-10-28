@@ -80,9 +80,6 @@ download_nodejs() {
             ;;
     esac
 
-    # 创建目标目录
-    mkdir -p resources/nodejs
-
     # 下载文件
     if command -v curl &> /dev/null; then
         curl -L -o "resources/node.tar.xz" "$url"

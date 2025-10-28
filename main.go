@@ -115,11 +115,11 @@ func main() {
 			Appearance:           mac.DefaultAppearance, // 系统外观
 			WebviewIsTransparent: false,
 			WindowIsTranslucent:  false,
-			About: &mac.AboutInfo{
-				Title:   "ALemonDesk",
-				Message: "阿柠檬桌面应用",
-				Icon:    nil,
-			},
+			// About: &mac.AboutInfo{
+			// 	Title:   "ALemonDesk",
+			// 	Message: "阿柠檬桌面应用",
+			// 	Icon:    nil,
+			// },
 		}
 	}
 
