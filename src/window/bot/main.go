@@ -2,6 +2,7 @@ package windowbot
 
 import (
 	"alemonapp/src/config"
+	"alemonapp/src/logger"
 	"alemonapp/src/logic"
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
@@ -23,44 +24,56 @@ func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) BotRun(p1 []string) bool {
-	botPath := paths.GetBotPath(config.BotName)
-	if !utils.ExistsPath([]string{botPath}) {
-		return false
-	}
-	// 运行机器人
-	msg, err := logic.Run(config.BotName)
-	if err != nil {
-		return false
-	}
-	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
-		"data": 1,
-	})
-	_ = msg
-	return true
-}
-
-func (a *App) BotClose() bool {
-	botPath := paths.GetBotPath(config.BotName)
-	if !utils.ExistsPath([]string{botPath}) {
-		return false
-	}
-	// 停止机器人
-	msg, err := logic.Stop(config.BotName)
-	if err != nil {
-		return false
-	}
-	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
-		"data": 0,
-	})
-	_ = msg
-	return true
-}
-
 func (a *App) BotStatus() bool {
 	return logic.IsRunning(config.BotName)
 }
 
+func (a *App) BotRun(p1 []string) {
+	botPath := paths.GetBotPath(config.BotName)
+	if !utils.ExistsPath([]string{botPath}) {
+		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+			"value": 0,
+		})
+		return
+	}
+	// 运行机器人
+	_, err := logic.Run(config.BotName)
+	if err != nil {
+		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+			"value": 0,
+		})
+		return
+	}
+	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+		"value": 1,
+	})
+	return
+}
+
+func (a *App) BotClose() {
+	botPath := paths.GetBotPath(config.BotName)
+	if !utils.ExistsPath([]string{botPath}) {
+		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+			"value": 0,
+		})
+		logger.Error("机器人路径不存在:", botPath)
+		return
+	}
+	// 停止机器人
+	_, err := logic.Stop(config.BotName)
+	if err != nil {
+		// 无变化。
+		logger.Error("停止机器人失败:", err)
+		return
+	}
+	logger.Info("机器人已停止")
+	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+		"value": 0,
+	})
+	return
+}
+
+// 重置机器人模板
 func (a *App) BotResetTemplate() bool {
 	// 创建默认机器人
 	err := utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))

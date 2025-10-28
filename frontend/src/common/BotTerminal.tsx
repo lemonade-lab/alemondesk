@@ -56,8 +56,8 @@ function BotTerminal({
         <div className="flex gap-4  justify-between items-center px-2 py-1">
           <div className=" flex gap-2 items-center ">{headerLeft}</div>
           <div className="flex gap-4 ">
-            <div>Terminal</div>
-            {[10, 20, 50, 99].map((item, index) => (
+            {/* <div>Terminal</div> */}
+            {/* {[10, 20, 50, 99].map((item, index) => (
               <div
                 key={index}
                 className=" cursor-pointer"
@@ -67,7 +67,7 @@ function BotTerminal({
               >
                 -{item}
               </div>
-            ))}
+            ))} */}
           </div>
           <div className="flex items-center gap-2">{headerRight}</div>
         </div>

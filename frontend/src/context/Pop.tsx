@@ -6,7 +6,7 @@ import { ControllerOnClick } from '@wailsjs/go/windowcontroller/App'
 type DataType = {
   open: boolean
   title: string
-  description: string
+  description: null | string | ReactNode
   buttonText: string
   buttonCancelText?: string
   data: any
@@ -28,7 +28,7 @@ export default function PopProvider({ children }: { children: ReactNode }) {
   const [modalData, setModalData] = useState<DataType>({
     open: false,
     title: '',
-    description: '',
+    description: null,
     buttonText: '',
     buttonCancelText: '',
     data: {},

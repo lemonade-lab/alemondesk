@@ -70,7 +70,7 @@ func main() {
 		MinWidth:  960,
 		MinHeight: 600,
 		Debug: options.Debug{
-			OpenInspectorOnStartup: true,
+			OpenInspectorOnStartup: false,
 		},
 		AssetServer: assetServer.CreateAssetServer(&assets),
 		// Macos 禁止无边框窗口

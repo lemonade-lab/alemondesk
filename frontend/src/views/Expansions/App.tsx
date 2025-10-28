@@ -3,7 +3,7 @@ import { debounce } from 'lodash'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useNotification } from '@/context/Notification'
-import { SecondaryDiv, Select, Tooltip } from '@alemonjs/react-ui'
+import { Button, SecondaryDiv, Select, Tooltip } from '@alemonjs/react-ui'
 import { SidebarDiv } from '@alemonjs/react-ui'
 import { Input } from '@alemonjs/react-ui'
 import PackageInfo, { PackageInfoType } from './PackageInfo'
@@ -201,14 +201,14 @@ export default function Expansions() {
             <Input
               type="text"
               name="name"
-              placeholder="输入包名(可选)"
+              placeholder="输入扩展名(可选)"
               value={inputValue}
               onChange={handleChange}
               className="w-full px-2 py-1 rounded-sm"
             />
-            <div className="px-2 cursor-pointer" onClick={onClickSync}>
+            <Button className='px-2 rounded-full' onClick={onClickSync}>
               <EnterOutlined />
-            </div>
+            </Button>
           </div>
         </div>
         <div className="flex-1 ">

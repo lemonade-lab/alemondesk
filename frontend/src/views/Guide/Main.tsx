@@ -11,53 +11,58 @@ const steps = [
   {
     target: '.steps-2',
     content:
-      '这是“扩展器运行和暂停”按钮。仅有在依赖完成后可运行的按钮，运行后，可使用“扩展市场”和“应用列表”。'
+      '这是“扩展器运行和暂停”按钮。用于增强和扩展应用功能。'
   },
   {
     target: '.steps-3',
-    content: '这是“指令输入框”，可以快速执行桌面或扩展器设计的快捷功能'
+    content: '这是“指令输入框”，可以快捷执行桌面或扩展器设计的功能'
   },
   {
     target: '.steps-4',
-    content: '这是“主页”按钮，当没有安装依赖时，可回到“主页”进行操作'
+    content: '这是“主页”按钮，是返回主页面的入口'
   },
   {
     target: '.steps-5',
-    content: '这里“菜单栏-控制台”，需要“加载依赖”。可以查看机器人的运行日志，操作机器人的启动和停止'
+    content: '这里“菜单栏-控制台”。可以查看机器人的运行日志，操作机器人的启动和停止'
   },
   {
     target: '.steps-6',
-    content: '这里“菜单栏-扩展市场”，需要“加载依赖”。可以查看和安装扩展器'
+    content: '这里“菜单栏-扩展市场”。可以查看和安装扩展器'
   },
   {
     target: '.steps-7',
     content:
-      '这里“菜单栏-应用列表”，需要“加载依赖”。可以查看和操作应用，修改不同应用的配置，是最核心的设计之一'
+      '这里“菜单栏-应用列表”。可以查看和操作应用，修改不同应用的配置等。'
   },
   {
     target: '.steps-8',
-    content: '设置可以让你对应用进行个性化调整，如主题、自启、管理仓库和依赖等...'
+    content: '设置可以让你对应用进行个性化调整，如主题...'
   }
 ]
 
-export default function GuideMain({ stepIndex }: { stepIndex: number }) {
-  const [step, setSetp] = useState(-1)
+export default function GuideMain({ stepIndex = 1}: { stepIndex?: number }) {
+  const [step, setStep] = useState(-1)
 
   // 引导回调函数
   const handleJoyrideCallback = (data: { action: string; index: number; type: string }) => {
     if (data.action == 'skip' && data.type == 'tour:end') {
+      // 跳过，关闭引导
       localStorage.setItem(KEY, KEY_DATA)
     }
   }
+
   useEffect(() => {
+    // 为 -1，表示不显示引导
     if (stepIndex == -1) {
       return
     }
-    const guide = localStorage.getItem(KEY)
-    if (!guide || (guide && guide != KEY_DATA)) {
-      setSetp(stepIndex)
+    // 检查本地存储，是否已经显示过引导
+    const openKey = localStorage.getItem(KEY)
+    if (!openKey || (openKey && openKey != KEY_DATA)) {
+      setStep(stepIndex)
     }
   }, [stepIndex])
+
   return (
     <Joyride
       steps={step == -1 ? [] : steps.slice(step - 1, steps.length)} // 引导步骤

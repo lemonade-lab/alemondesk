@@ -2,6 +2,8 @@
 package logger
 
 import (
+	"alemonapp/src/config"
+	"alemonapp/src/paths"
 	"fmt"
 	"log"
 	"os"
@@ -16,7 +18,7 @@ var (
 
 func Init() error {
 	// 创建日志目录
-	logDir := getLogDir()
+	logDir := paths.GetLogsPath()
 	os.MkdirAll(logDir, 0755)
 
 	// 创建日志文件
@@ -30,22 +32,6 @@ func Init() error {
 	logger = log.New(file, "", log.LstdFlags|log.Lshortfile)
 
 	return nil
-}
-
-func getLogDir() string {
-	// 开发模式使用当前目录，生产模式使用用户数据目录
-	if isDev() {
-		return "./logs"
-	}
-
-	configDir, _ := os.UserConfigDir()
-	return filepath.Join(configDir, "ALemonDesk", "logs")
-}
-
-func isDev() bool {
-	// 简单的开发模式检测
-	_, err := os.Stat("go.mod")
-	return err == nil
 }
 
 func Info(format string, v ...interface{}) {
@@ -74,7 +60,7 @@ func output(msg string) {
 	}
 
 	// 同时在控制台输出（开发模式）
-	if isDev() {
+	if config.IsDev() {
 		log.Printf("%s:%d %s", file, line, msg)
 	}
 }

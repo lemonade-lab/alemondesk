@@ -1,4 +1,4 @@
-import { createHashRouter } from 'react-router-dom'
+import { createHashRouter, Navigate } from 'react-router-dom'
 import App from '@/views/App'
 import Main from '@/views/Home/App'
 import Application from '@/views/Application/App'
@@ -43,7 +43,7 @@ const router = createHashRouter([
         children: [
           {
             index: true,
-            element: <Common />
+            element: <Navigate to="/settings/common" replace />
           },
           {
             path: 'common',

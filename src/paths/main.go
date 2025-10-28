@@ -1,13 +1,15 @@
 package paths
 
 import (
+	"alemonapp/src/config"
 	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
 )
 
-func GetUserHomeDir(appName string) string {
+func GetUserHomeDir() string {
+	appName := "ALemonDesk"
 	usr, _ := user.Current()
 	home := usr.HomeDir
 	switch runtime.GOOS {
@@ -30,9 +32,9 @@ func GetUserHomeDir(appName string) string {
 
 // 获取工作目录
 func GetWorkPath() string {
-	if os.Getenv("APP_WAILS_DEV") != "true" {
+	if !config.IsDev() {
 		// 生产环境使用用户应用数据目录
-		homeDir := GetUserHomeDir("ALemonDesk")
+		homeDir := GetUserHomeDir()
 		return filepath.Join(homeDir, "work")
 	}
 	return filepath.Join("work")
@@ -62,4 +64,11 @@ func GetStoragePath() string {
 func GetNodeYarnScriptFilePath() string {
 	// 相对于当前机器人的
 	return filepath.Join("..", "..", "yarn", "bin", "yarn.cjs")
+}
+
+// logs 目录
+func GetLogsPath() string {
+	workPath := GetWorkPath()
+	logsPath := filepath.Join(workPath, "logs")
+	return logsPath
 }

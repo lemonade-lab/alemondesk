@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Init from './Init'
-import { SecondaryDiv } from '@alemonjs/react-ui'
+import { Button, SecondaryDiv } from '@alemonjs/react-ui'
 import { SidebarDiv } from '@alemonjs/react-ui'
 import { Input } from '@alemonjs/react-ui'
 import { DeleteFilled, FolderAddOutlined } from '@ant-design/icons'
@@ -195,11 +195,9 @@ export default function Expansions() {
             placeholder="https://xxx.git或git@xxx.git"
             className="w-full px-2 py-1 rounded-sm"
           />
-          <Tooltip text="安装仓库">
-            <div className="px-2" onClick={onAdd}>
-              <FolderAddOutlined />
-            </div>
-          </Tooltip>
+          <Button className="px-2 mx-2 rounded-full" onClick={onAdd}>
+            <FolderAddOutlined />
+          </Button>
         </div>
         <div className="flex-1 ">
           <SecondaryDiv className="flex flex-col gap-1  border-t py-2  overflow-auto  h-[calc(100vh-5.9rem)]">
@@ -236,7 +234,7 @@ export default function Expansions() {
                       onDelete(item.Name)
                     }}
                   >
-                   <DeleteFilled />
+                    <DeleteFilled />
                   </div>
                 </div>
               </div>

@@ -1,4 +1,3 @@
-import { NavigatePath } from '@/hook/useGoNavigate'
 import { BarDiv } from '@alemonjs/react-ui'
 import { NavDiv } from '@alemonjs/react-ui'
 import classNames from 'classnames'
@@ -20,9 +19,9 @@ const MenuButton = () => {
   // 导航列表
   const navList: {
     Icon: React.ReactNode
-    path: NavigatePath
+    path: string
     className: string
-    onClick: (path: NavigatePath) => void
+    onClick: (path: string) => void
   }[] = [
     {
       Icon: <RobotFilled size={20} />,

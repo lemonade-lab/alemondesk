@@ -96,7 +96,7 @@ export default function Webviews() {
             <div className="flex-1 flex justify-center items-center">
               <div className="flex-col flex justify-center items-center">
                 {viewSidebars.length === 0
-                  ? '未找到相关扩展，请前往商场下载'
+                  ? '未找到相关扩展，请包管理下载'
                   : '可选择右侧导航栏中的应用进行查看'}
               </div>
             </div>

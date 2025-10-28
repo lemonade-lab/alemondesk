@@ -33,7 +33,6 @@ export const useBotController = () => {
   const expansions = useSelector((state: RootState) => state.expansions)
   const platforms = getPlatform(expansions.package)
 
-  //
   const state = useState<{
     name: string
     value: string
@@ -46,36 +45,23 @@ export const useBotController = () => {
    * @returns
    */
   const onClickStart = _.throttle(() => {
-    // 依赖状态
-    if (!modules.nodeModulesStatus) return
-    // 不在运行
-    if (!bot.runStatus) {
-      notification('开始运行机器人...')
-
-      const [platform] = state
-      if (!platform?.value || platform?.value === 'dev') {
-        BotRun([])
-        return
-      }
-
-      // 如果是 @alemonjs/ 开头的，就当做登录名处理
-      if (/@alemonjs\//.test(platform.value)) {
-        const login = platform.value.replace('@alemonjs/', '')
-        BotRun(['--login', login])
-      } else {
-        BotRun(['--platform', platform.value])
-      }
+    const [platform] = state
+    if (!platform?.value || platform?.value === 'dev') {
+      BotRun([])
       return
+    }
+    // 如果是 @alemonjs/ 开头的，就当做登录名处理
+    if (/@alemonjs\//.test(platform.value)) {
+      const login = platform.value.replace('@alemonjs/', '')
+      BotRun(['--login', login])
     } else {
-      notification('机器人已经启动')
+      BotRun(['--platform', platform.value])
     }
   }, 500)
   /**
    * @returns
    */
   const onClickClose = _.throttle(() => {
-    if (!bot.runStatus) return
-    notification('机器人已停止', 'warning')
     BotClose()
   }, 500)
 

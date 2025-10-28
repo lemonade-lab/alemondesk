@@ -146,41 +146,57 @@ func (a *App) ExpansionsPostMessage(params ExpansionsPostMessageParams) {
 	})
 }
 
-func (a *App) ExpansionsRun(p1 []string) bool {
+const expansionsStatus = "expansions-status"
+
+func (a *App) ExpansionsRun(p1 []string) {
 	botPath := paths.GetBotPath(config.BotName)
 	if !utils.ExistsPath([]string{botPath}) {
-		return false
+		// 通知前端扩展器状态变化
+		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+			"data": 0,
+		})
+		return
 	}
 	// 判断是否在运行
 	if expansions.IsRunning(config.BotName) {
-		return true
+		// 通知前端扩展器状态变化
+		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+			"data": 1,
+		})
+		return
 	}
-	msg, err := expansions.Run(config.BotName)
+	_, err := expansions.Run(config.BotName)
 	if err != nil {
-		return false
+		// 通知前端扩展器状态变化
+		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+			"data": 0,
+		})
+		return
 	}
 	// 通知前端扩展器状态变化
-	runtime.EventsEmit(a.ctx, "expansions-status", map[string]interface{}{
+	runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
 		"data": 1,
 	})
-	_ = msg
-	return true
+	return
 }
 
-func (a *App) ExpansionsClose() bool {
+func (a *App) ExpansionsClose() {
 	botPath := paths.GetBotPath(config.BotName)
 	if !utils.ExistsPath([]string{botPath}) {
-		return false
+		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+			"data": 0,
+		})
+		return
 	}
-	msg, err := expansions.Stop(config.BotName)
-	runtime.EventsEmit(a.ctx, "expansions-status", map[string]interface{}{
+	_, err := expansions.Stop(config.BotName)
+	runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
 		"data": 0,
 	})
 	if err != nil {
-		return false
+		logger.Error("停止扩展器失败:", err)
+		return
 	}
-	_ = msg
-	return true
+	return
 }
 
 func (a *App) ExpansionsStatus() bool {

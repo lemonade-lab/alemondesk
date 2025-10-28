@@ -21,6 +21,7 @@ import { AppGetPathsState } from '@wailsjs/go/windowapp/App'
 import { ThemeLoadVariables, ThemeMode } from '@wailsjs/go/windowtheme/App'
 import { EventsOn } from '@wailsjs/runtime/runtime'
 import { YarnCommands } from '@wailsjs/go/windowyarn/App'
+import { BotStatus } from '@wailsjs/go/windowbot/App'
 
 export default (function App() {
   const navigate = useGoNavigate()
@@ -30,8 +31,6 @@ export default (function App() {
   const expansions = useSelector((state: RootState) => state.expansions)
   const modulesRef = useRef(modules)
   const { setPopValue, closePop } = usePop()
-
-  const [step, setStep] = useState(-1)
 
   // watch
   useEffect(() => {
@@ -102,11 +101,6 @@ export default (function App() {
     // 监听 expansions状态
     EventsOn('expansions-status', data => {
       const value = data.value
-      if (value == 0) {
-        notification('扩展器已停止', 'warning')
-      } else {
-        notification('扩展器已启动')
-      }
       dispatch(
         setExpansionsStatus({
           runStatus: value == 0 ? false : true
@@ -162,6 +156,22 @@ export default (function App() {
         closePop()
       }
     })
+
+    // const onBotStatus = async () => {
+    //   const T = await BotStatus()
+    //   console.log('BotStatus', T)
+    //   dispatch(
+    //     setBotStatus({
+    //       runStatus: T ? true : false
+    //     })
+    //   )
+    // }
+
+    // const intervalId =  setInterval(onBotStatus, 1000)
+
+    // return () => {
+    //   clearInterval(intervalId)
+    // }
   }, [])
 
   /**
@@ -173,7 +183,7 @@ export default (function App() {
     modulesRef.current = modules
     // 依赖安装完成后，启动扩展器
     if (modules.nodeModulesStatus) {
-      notification('依赖加载完成')
+      // notification('依赖加载完成')
       // 确保启动扩展器
       ExpansionsRun([])
     }
@@ -221,7 +231,7 @@ export default (function App() {
           </div>
         </PrimaryDiv>
       </div>
-      <GuideMain stepIndex={step} />
+      <GuideMain />
     </>
   )
 })

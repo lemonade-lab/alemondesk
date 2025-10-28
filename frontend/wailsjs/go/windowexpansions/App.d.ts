@@ -9,11 +9,11 @@ export function CreateDesktopHideAPI(arg1:string):Promise<Record<string, any>>;
 
 export function CreateHideWebview(arg1:string):Promise<void>;
 
-export function ExpansionsClose():Promise<boolean>;
+export function ExpansionsClose():Promise<void>;
 
 export function ExpansionsPostMessage(arg1:windowexpansions.ExpansionsPostMessageParams):Promise<void>;
 
-export function ExpansionsRun(arg1:Array<string>):Promise<boolean>;
+export function ExpansionsRun(arg1:Array<string>):Promise<void>;
 
 export function ExpansionsStatus():Promise<boolean>;
 
