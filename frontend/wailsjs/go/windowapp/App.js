@@ -30,6 +30,10 @@ export function AppWriteFiles(arg1, arg2) {
   return window['go']['windowapp']['App']['AppWriteFiles'](arg1, arg2);
 }
 
+export function GetAppLogsFilePath() {
+  return window['go']['windowapp']['App']['GetAppLogsFilePath']();
+}
+
 export function Startup(arg1) {
   return window['go']['windowapp']['App']['Startup'](arg1);
 }

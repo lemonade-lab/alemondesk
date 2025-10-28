@@ -9,7 +9,7 @@ import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import GuideCommon from '../Guide/Common'
-import { AppDownloadFiles, AppExists, AppGetConfig, AppSetConfig } from '@wailsjs/go/windowapp/App'
+import { AppDownloadFiles, AppExists, AppGetConfig, AppSetConfig, GetAppLogsFilePath } from '@wailsjs/go/windowapp/App'
 import { GetVersions } from '@wailsjs/go/windowcontroller/App'
 import { BotResetTemplate } from '@wailsjs/go/windowbot/App'
 import { YarnCommands } from '@wailsjs/go/windowyarn/App'
@@ -133,7 +133,11 @@ const Common = () => {
                   <Button
                     className="px-2 rounded-md border"
                     onClick={async () => {
-                      const dir = app.logMainPath
+                      const dir = await GetAppLogsFilePath()
+                      if (!dir) {
+                        notification('日志文件路径获取失败')
+                        return
+                      }
                       const T = await AppExists(dir)
                       if (!T) {
                         notification('记录不存在')

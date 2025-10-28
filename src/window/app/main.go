@@ -143,6 +143,10 @@ func (a *App) AppExists(dir string) (bool, error) {
 	return true, nil
 }
 
+func (a *App) GetAppLogsFilePath() (string, error) {
+	return logger.GetLogsFilePath()
+}
+
 // DownloadFiles 下载文件
 func (a *App) AppDownloadFiles(localURL string) error {
 	content, err := os.ReadFile(localURL)

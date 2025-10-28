@@ -17,4 +17,6 @@ export function AppSetConfig(arg1:string,arg2:any):Promise<boolean>;
 
 export function AppWriteFiles(arg1:string,arg2:string):Promise<string>;
 
+export function GetAppLogsFilePath():Promise<string>;
+
 export function Startup(arg1:context.Context):Promise<void>;

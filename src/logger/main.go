@@ -16,13 +16,23 @@ var (
 	logger  *log.Logger
 )
 
-func Init() error {
-	// 创建日志目录
+func GetLogsFilePath() (string, error) {
 	logDir := paths.GetLogsPath()
-	os.MkdirAll(logDir, 0755)
+	err := os.MkdirAll(logDir, 0755)
+	if err != nil {
+		return "", err
+	}
+	logPath := filepath.Join(logDir, "alemon-desk.log")
+	return logPath, nil
+}
+
+func Init() error {
+	logPath, err := GetLogsFilePath()
+	if err != nil {
+		return err
+	}
 
 	// 创建日志文件
-	logPath := filepath.Join(logDir, "alemon-desk.log")
 	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		return err
@@ -32,6 +42,13 @@ func Init() error {
 	logger = log.New(file, "", log.LstdFlags|log.Lshortfile)
 
 	return nil
+}
+
+func GetLogFilePath() string {
+	if logFile != nil {
+		return logFile.Name()
+	}
+	return ""
 }
 
 func Info(format string, v ...interface{}) {
