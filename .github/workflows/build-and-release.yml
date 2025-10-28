@@ -1,147 +1,72 @@
-name: 发布版本
+name: Wails build
 
 on:
-  workflow_dispatch:
   push:
     tags:
-      - 'v*'
-
-permissions:
-  contents: write
+      - '*'
 
 env:
-  GO_VERSION: '1.24'
-  WAILS_VERSION: 'latest'
+  NODE_OPTIONS: "--max-old-space-size=4096"
+  NODE_VERSION: "22.17.1"
 
 jobs:
-  build-all-platforms:
+  build:
     strategy:
+      fail-fast: false
       matrix:
-        include:
-          # - os: ubuntu-latest
-          #   platform: linux/amd64
-          #   artifact_name: linux-amd64
-          #   file_ext: ""
-          - os: windows-latest
-            platform: windows/amd64
-            artifact_name: windows-amd64
-            file_ext: ".exe"
-            deps: echo "No additional deps needed for Windows"
-          - os: macos-latest
-            platform: darwin/amd64
-            artifact_name: darwin-amd64
-            file_ext: ""
-            deps: echo "No additional deps needed for macOS"
-          - os: macos-latest
-            platform: darwin/arm64
-            artifact_name: darwin-arm64
-            file_ext: ""
-            deps: echo "No additional deps needed for macOS"
+        build:
+          - name: 'App'
+            platform:  'linux/amd64'
+            os: 'ubuntu-latest'
+          - name: 'App'
+            platform:  'windows/amd64'
+            os: 'windows-latest'
+          - name: 'App'
+            platform:  'darwin/universal'
+            os: 'macos-latest'
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.build.os }}
     steps:
-      - name: 检出代码
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          submodules: recursive
 
-      - name: 设置 Go
-        uses: actions/setup-go@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: true
+          node-version: '22'
 
-      - name: 安装系统依赖
-        if: matrix.deps != ''
-        run: ${{ matrix.deps }}
-
-      - name: 安装 Wails
+      - name: 安装依赖并构建前端
         run: |
-          go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
-          wails version
+            yarn --cwd frontend install
+            yarn --cwd frontend build
 
-      - name: 构建应用
+      - name: 安装模板依赖并压缩
         run: |
-          chmod +x ./app-*.sh
-          # 使用更安全的脚本执行方式
-          bash ./app-build.sh ci
+            yarn --cwd resources/template install
+            tar -czf resources/template/node_modules.tar.gz -C resources/template node_modules
+            rm -rf resources/template/node_modules
 
-      - name: 编译二进制
+      - name: 下载并内嵌 Nodejs (Linux)
+        if: runner.os == 'Linux'
         run: |
-          wails build -platform ${{ matrix.platform }} -clean -ldflags="-s -w"
+          wget https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-linux-x64.tar.xz -O resources/node.tar.xz
 
-      - name: 重命名和打包输出文件
+      - name: 下载并内嵌 Nodejs (Windows)
+        if: runner.os == 'Windows'
         run: |
-          cd build/bin
-          
-          # 获取版本信息（如果有 git tag）
-          VERSION=${GITHUB_REF_NAME:-"dev"}
-          echo "构建版本: $VERSION"
-          
-          if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            original_file=$(ls *.exe | head -1)
-            new_name="app-${{ matrix.artifact_name }}${{ matrix.file_ext }}"
-            mv "$original_file" "$new_name"
-            # 创建 ZIP 包，包含版本信息
-            zip "../app-${{ matrix.artifact_name }}-$VERSION.zip" "$new_name"
-          else
-            original_file=$(ls | grep -v '\.\(zip\|tar\.gz\)$' | head -1)
-            new_name="app-${{ matrix.artifact_name }}${{ matrix.file_ext }}"
-            mv "$original_file" "$new_name"
-            chmod +x "$new_name"
-            # 创建 tar.gz 包，包含版本信息
-            tar -czf "../app-${{ matrix.artifact_name }}-$VERSION.tar.gz" "$new_name"
-          fi
-          
-          # 输出文件信息
-          echo "生成的文件:"
-          ls -la ../*.zip ../*.tar.gz 2>/dev/null || true
+          Invoke-WebRequest -Uri "https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-win-x64.zip" -OutFile "resources/node.zip"
 
-      - name: 上传构建产物
-        uses: actions/upload-artifact@v4
+      - name: 下载并内嵌 Nodejs (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          wget https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-darwin-x64.tar.xz -O resources/node.tar.xz
+      - name: Build wails
+        uses: dAppServer/wails-build-action@v2.2
+        id: build
         with:
-          name: app-${{ matrix.artifact_name }}
-          path: |
-            build/bin/app-${{ matrix.artifact_name }}*
-            build/app-${{ matrix.artifact_name }}.*
-          retention-days: 7
-
-  create-release:
-    needs: build-all-platforms
-    runs-on: ubuntu-latest
-    steps:
-      - name: 下载所有构建产物
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-          pattern: app-*
-          merge-multiple: true
-
-      - name: 准备发布文件
-        run: |
-          mkdir -p release-files
-          # 复制所有 artifact 目录下的文件
-          cp artifacts/*/* release-files/
-          
-          # 输出调试信息
-          echo "release-files 目录内容:"
-          ls -la release-files
-          
-          # 生成 SHA256 校验和
-          cd release-files
-          shasum -a 256 * > checksums.txt
-          
-          echo "发布文件列表:"
-          ls -la
-          echo "=== SHA256 校验和 ==="
-          cat checksums.txt
-
-      - name: 创建 GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: release-files/*
-          generate_release_notes: true
-          draft: false
-          prerelease: false
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          build-name: ${{ matrix.build.name }}
+          build-platform: ${{ matrix.build.platform }}
+          package: false
+          go-version: '1.20'
