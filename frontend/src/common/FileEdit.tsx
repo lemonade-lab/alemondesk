@@ -78,10 +78,7 @@ const FileEdit = ({
 
       {/* 编辑器区域 */}
       <MonacoEditor
-        disabled={false}
-        onSave={() => {
-          handleSave()
-        }}
+        onSave={() => handleSave()}
         value={fileData}
         language={language}
         width="100%"
