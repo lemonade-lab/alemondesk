@@ -49,31 +49,8 @@ func Add(name string, args []string) (bool, error) {
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
 
-	// confLogLevel := os.Getenv("APP_LOG_LEVEL")
-	// var l = new(zapcore.Level)
-	// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
-	// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
-	// }
-
-	// botLogger, err := logger.GetOrCreateBotLogger(name, *l)
-	// if err != nil {
-	// 	fmt.Printf("unable to create logger: %v\n", err)
-	// }
-	// botLoggerWriter := logger.NewRobotLoggerWriter(botLogger)
-
-	//defer botLoggerWriter.RobotLogger.Close()
-
-	// 设置命令的输出到日志文件
-	// cmd.Stdout = botLoggerWriter.Writer(logger.WriterOption{
-	// 	DetectLevel: false,
-	// 	StripDate:   false,
-	// 	StripLevel:  false,
-	// })
-	// cmd.Stderr = botLoggerWriter.Writer(logger.WriterOption{
-	// 	DetectLevel: false,
-	// 	StripDate:   false,
-	// 	StripLevel:  false,
-	// })
+	cmd.Stdout = &logger.LogWriter{Level: "info"}
+	cmd.Stderr = &logger.LogWriter{Level: "error"}
 
 	// 执行命令
 	if err := cmd.Run(); err != nil {
@@ -102,32 +79,9 @@ func Install(name string) (bool, error) {
 	cmd := utils.Command(nodeDir, cliDir, "install", "--ignore-engines", "--network-concurrency", "1")
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	// var l = new(zapcore.Level)
-	// confLogLevel := os.Getenv("APP_LOG_LEVEL")
-	// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
-	// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
-	// }
 
-	// botLogger, err := logger.GetOrCreateBotLogger(name, *l)
-	// if err != nil {
-	// 	fmt.Printf("unable to create logger: %v\n", err)
-	// }
-	// botLoggerWriter := logger.NewRobotLoggerWriter(botLogger)
-
-	// cmd.Stdout = botLoggerWriter.Writer(logger.WriterOption{
-	// 	DetectLevel: false,
-	// 	StripDate:   false,
-	// 	StripLevel:  false,
-	// })
-	// cmd.Stderr = botLoggerWriter.Writer(logger.WriterOption{
-	// 	DetectLevel: false,
-	// 	StripDate:   false,
-	// 	StripLevel:  false,
-	// })
-
-	//defer botLoggerWriter.RobotLogger.Close()
+	cmd.Stdout = &logger.LogWriter{Level: "info"}
+	cmd.Stderr = &logger.LogWriter{Level: "error"}
 
 	// 执行命令
 	if err := cmd.Run(); err != nil {
@@ -173,31 +127,8 @@ func Remove(name string, names []string) (bool, error) {
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
 
-	// var l = new(zapcore.Level)
-	// confLogLevel := os.Getenv("APP_LOG_LEVEL")
-	// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
-	// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
-	// }
-
-	// botLogger, err := logger.GetOrCreateBotLogger(name, *l)
-	// if err != nil {
-	// 	fmt.Printf("unable to create logger: %v\n", err)
-	// }
-	// botLoggerWriter := logger.NewRobotLoggerWriter(botLogger)
-
-	// //defer botLoggerWriter.RobotLogger.Close()
-
-	// // 设置命令的输出到日志文件
-	// cmd.Stdout = botLoggerWriter.Writer(logger.WriterOption{
-	// 	DetectLevel: false,
-	// 	StripDate:   false,
-	// 	StripLevel:  false,
-	// })
-	// cmd.Stderr = botLoggerWriter.Writer(logger.WriterOption{
-	// 	DetectLevel: false,
-	// 	StripDate:   false,
-	// 	StripLevel:  false,
-	// })
+	cmd.Stdout = &logger.LogWriter{Level: "info"}
+	cmd.Stderr = &logger.LogWriter{Level: "error"}
 
 	// 执行命令
 	if err := cmd.Run(); err != nil {
@@ -235,31 +166,9 @@ func Cmd(name string, args []string) (bool, error) {
 
 	// 设置工作目录为机器人的路径
 	cmd.Dir = paths.CreateBotPath(name)
-	// var l = new(zapcore.Level)
-	// confLogLevel := os.Getenv("APP_LOG_LEVEL")
-	// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
-	// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
-	// }
 
-	// botLogger, err := logger.GetOrCreateBotLogger(name, *l)
-	// if err != nil {
-	// 	fmt.Printf("unable to create logger: %v\n", err)
-	// }
-	// botLoggerWriter := logger.NewRobotLoggerWriter(botLogger)
-
-	// //defer botLoggerWriter.RobotLogger.Close()
-
-	// // 设置命令的输出到日志文件
-	// cmd.Stdout = botLoggerWriter.Writer(logger.WriterOption{
-	// 	DetectLevel: false,
-	// 	StripDate:   false,
-	// 	StripLevel:  false,
-	// })
-	// cmd.Stderr = botLoggerWriter.Writer(logger.WriterOption{
-	// 	DetectLevel: false,
-	// 	StripDate:   false,
-	// 	StripLevel:  false,
-	// })
+	cmd.Stdout = &logger.LogWriter{Level: "info"}
+	cmd.Stderr = &logger.LogWriter{Level: "error"}
 
 	// 执行命令
 	if err := cmd.Run(); err != nil {

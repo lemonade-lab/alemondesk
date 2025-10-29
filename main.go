@@ -42,8 +42,15 @@ func main() {
 	}
 	defer logger.Close()
 
-	// 初始化文件资源
+	// 从嵌入里解出文件
 	files.Create(ResourcesFiles)
+
+	// 判断系统是否有 Node.js
+	has := files.HasSystemNodeJS()
+	if !has {
+		// 解压 Node.js
+		files.ExtractNodeJS()
+	}
 
 	// 检查 Node.js 安装
 	manager := files.GetNodeJSManager()
@@ -89,6 +96,7 @@ func main() {
 			wcontroller.Startup(ctx)
 			wexpansions.Startup(ctx)
 			wyarn.Startup(ctx)
+			logger.Startup(ctx)
 		},
 		Bind: []interface{}{
 			wbot,
@@ -115,11 +123,6 @@ func main() {
 			Appearance:           mac.DefaultAppearance, // 系统外观
 			WebviewIsTransparent: false,
 			WindowIsTranslucent:  false,
-			// About: &mac.AboutInfo{
-			// 	Title:   "ALemonDesk",
-			// 	Message: "阿柠檬桌面应用",
-			// 	Icon:    nil,
-			// },
 		}
 	}
 

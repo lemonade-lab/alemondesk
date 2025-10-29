@@ -2,9 +2,9 @@ package windowcontroller
 
 import (
 	"alemonapp/src/files"
+	"alemonapp/src/utils"
 	"bytes"
 	"context"
-	"os/exec"
 	"runtime"
 	"strings"
 )
@@ -37,9 +37,10 @@ type Versions struct {
 
 // executeCommand runs a command and returns its output as string
 func executeCommand(name string, arg ...string) string {
-	cmd := exec.Command(name, arg...)
+	cmd := utils.Command(name, arg...)
 	var out bytes.Buffer
 	cmd.Stdout = &out
+	// cmd.Stderr = &out
 	err := cmd.Run()
 	if err != nil {
 		return "Unknown"

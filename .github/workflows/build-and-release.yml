@@ -42,8 +42,6 @@ jobs:
         with:
           path: frontend/node_modules
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-frontend-
       - name: install frontend dependencies and build
         run: |
             yarn --cwd frontend install

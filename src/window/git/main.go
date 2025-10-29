@@ -46,14 +46,12 @@ func (a *App) GitReposList(name string) ([]GitRepoInfo, error) {
 	// 读取目录
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		logger.Info("读取目录错误:", path, err)
+		logger.Error("读取目录错误:", path, err)
 		return repos, err
 	}
 
 	for _, entry := range entries {
 		if entry.IsDir() {
-			logger.Info("发现仓库:", entry.Name())
-
 			IsFullRepo := false
 			remoteURL := ""
 			branch := ""
@@ -137,14 +135,14 @@ func GitPull(space string, name string) (bool, error) {
 	// 打开仓库
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
-		logger.Info("打开仓库错误:", repoPath, err)
+		logger.Error("打开仓库错误:", repoPath, err)
 		return false, err
 	}
 
 	// 获取工作树
 	worktree, err := repo.Worktree()
 	if err != nil {
-		logger.Info("获取工作树错误:", err)
+		logger.Error("获取工作树错误:", err)
 		return false, err
 	}
 
@@ -154,7 +152,7 @@ func GitPull(space string, name string) (bool, error) {
 		Progress:   os.Stdout,
 	})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
-		logger.Info("拉取错误:", err)
+		logger.Error("拉取错误:", err)
 		return false, err
 	}
 
@@ -173,14 +171,14 @@ func (a *App) GitFetch(space string, repoUrl string) (bool, error) {
 	// 打开仓库
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
-		logger.Info("打开仓库错误:", repoPath, err)
+		logger.Error("打开仓库错误:", repoPath, err)
 		return false, err
 	}
 
 	// 获取远程
 	remote, err := repo.Remote("origin")
 	if err != nil {
-		logger.Info("获取远程错误:", err)
+		logger.Error("获取远程错误:", err)
 		return false, err
 	}
 
@@ -189,7 +187,7 @@ func (a *App) GitFetch(space string, repoUrl string) (bool, error) {
 		Progress: os.Stdout,
 	})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
-		logger.Info("拉取错误:", err)
+		logger.Error("拉取错误:", err)
 		return false, err
 	}
 
@@ -208,7 +206,7 @@ func (a *App) GitDelete(space string, name string) (bool, error) {
 	// 删除目录
 	err := os.RemoveAll(repoPath)
 	if err != nil {
-		logger.Info("删除仓库错误:", repoPath, err)
+		logger.Error("删除仓库错误:", repoPath, err)
 		return false, err
 	}
 
@@ -227,14 +225,14 @@ func (a *App) GitCheckout(space string, name string, branch string) (bool, error
 	// 打开仓库
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
-		logger.Info("打开仓库错误:", repoPath, err)
+		logger.Error("打开仓库错误:", repoPath, err)
 		return false, err
 	}
 
 	// 获取工作树
 	worktree, err := repo.Worktree()
 	if err != nil {
-		logger.Info("获取工作树错误:", err)
+		logger.Error("获取工作树错误:", err)
 		return false, err
 	}
 
@@ -244,7 +242,7 @@ func (a *App) GitCheckout(space string, name string, branch string) (bool, error
 		// Branch: git.Renamed("refs/heads/" + branch),
 	})
 	if err != nil {
-		logger.Info("切换分支错误:", err)
+		logger.Error("切换分支错误:", err)
 		return false, err
 	}
 

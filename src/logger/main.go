@@ -4,12 +4,21 @@ package logger
 import (
 	"alemonapp/src/config"
 	"alemonapp/src/paths"
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+var curCtx context.Context
+
+func Startup(ctx context.Context) {
+	curCtx = ctx
+}
 
 var (
 	logFile *os.File
@@ -72,6 +81,12 @@ func Debug(format string, v ...interface{}) {
 }
 
 func output(msg string) {
+	// 如果有前端上下文，发送到前端
+	if curCtx == nil {
+		return
+	}
+	wailsRuntime.EventsEmit(curCtx, "terminal", fmt.Sprintf("%s\n", msg))
+
 	// 获取调用者信息
 	_, file, line, _ := runtime.Caller(2)
 	file = filepath.Base(file)
@@ -85,10 +100,28 @@ func output(msg string) {
 	if config.IsDev() {
 		log.Printf("%s:%d %s", file, line, msg)
 	}
+
 }
 
 func Close() {
 	if logFile != nil {
 		logFile.Close()
 	}
+}
+
+type LogWriter struct {
+	Level string
+}
+
+func (lw *LogWriter) Write(p []byte) (n int, err error) {
+	msg := string(p)
+	switch lw.Level {
+	case "info":
+		Info("%s", msg)
+	case "error":
+		Error("%s", msg)
+	default:
+		Info("%s", msg)
+	}
+	return len(p), nil
 }

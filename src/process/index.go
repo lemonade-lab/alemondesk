@@ -126,13 +126,13 @@ func GetProcessConfigFilePath() string {
 		// 创建文件
 		file, err := os.Create(filePath)
 		if err != nil {
-			logger.Info("创建进程配置文件失败: %v", err)
+			logger.Error("创建进程配置文件失败: %v", err)
 		}
 		defer file.Close()
 		// 写入空的 JSON 对象
 		_, err = file.WriteString("{}")
 		if err != nil {
-			logger.Info("写入空JSON失败: %v", err)
+			logger.Error("写入空JSON失败: %v", err)
 		}
 	}
 	return filePath
@@ -185,21 +185,9 @@ func (mp *ManagedProcess) Start() error {
 		mp.Cmd.Env = append(mp.Cmd.Env, fmt.Sprintf("%s=%s", key, value))
 	}
 
-	mp.Cmd.Stdout = os.Stdout
-	mp.Cmd.Stderr = os.Stderr
+	mp.Cmd.Stdout = &logger.LogWriter{Level: "info"}
+	mp.Cmd.Stderr = &logger.LogWriter{Level: "error"}
 
-	// 把标准输出和错误都重定向到日志文件
-	// mp.Cmd.Stdout = botLoggerWriter.Writer(logger.WriterOption{
-	// 	// 识别日志等级有bug，先关闭
-	// 	DetectLevel: false,
-	// 	StripDate:   true,
-	// 	StripLevel:  true,
-	// })
-	// mp.Cmd.Stderr = botLoggerWriter.Writer(logger.WriterOption{
-	// 	DetectLevel: false,
-	// 	StripDate:   true,
-	// 	StripLevel:  true,
-	// })
 	if mp.Config.Dir != "" {
 		mp.Cmd.Dir = mp.Config.Dir
 	}
@@ -422,12 +410,12 @@ func SaveProcess(name string, Config NodeProcessConfig, status string) {
 	filePath := GetProcessConfigFilePath()
 	data, err := json.Marshal(cfgMap)
 	if err != nil {
-		logger.Info("序列化进程配置失败: %v", err)
+		logger.Error("序列化进程配置失败: %v", err)
 		return
 	}
 	err = os.WriteFile(filePath, data, 0644)
 	if err != nil {
-		logger.Info("保存进程配置到文件失败: %v", err)
+		logger.Error("保存进程配置到文件失败: %v", err)
 		return
 	}
 }
@@ -444,12 +432,12 @@ func RemoveProcessConfig(name string) {
 	filePath := GetProcessConfigFilePath()
 	data, err := json.Marshal(cfgMap)
 	if err != nil {
-		logger.Info("序列化进程配置失败: %v", err)
+		logger.Error("序列化进程配置失败: %v", err)
 		return
 	}
 	err = os.WriteFile(filePath, data, 0644)
 	if err != nil {
-		logger.Info("保存进程配置到文件失败: %v", err)
+		logger.Error("保存进程配置到文件失败: %v", err)
 		return
 	}
 }

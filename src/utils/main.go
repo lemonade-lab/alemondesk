@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path"
 )
 
@@ -96,12 +95,6 @@ func ClearFolder(targetPath string) error {
 		}
 	}
 	return nil
-}
-
-func Command(name string, arg ...string) *exec.Cmd {
-	cmd := exec.Command(name, arg...)
-	cmd.Env = os.Environ()
-	return cmd
 }
 
 func ExistsPath(path []string) bool {

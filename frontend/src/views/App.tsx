@@ -137,7 +137,7 @@ export default (function App() {
       }
     })
     // 监听 terminal 消息
-    EventsOn('terminal', (data: any) => {
+    EventsOn('terminal', (data: string) => {
       dispatch(postMessage(data))
     })
     // 监听  modal 弹窗机制

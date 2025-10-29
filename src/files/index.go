@@ -9,7 +9,6 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"runtime"
 	"sync"
@@ -28,7 +27,7 @@ func Create(ResourcesFiles fs.FS) {
 			return err
 		}
 		// 计算目标路径
-		targetPath := path.Join(workPAth, p)
+		targetPath := filepath.Join(workPAth, p)
 		// 如果是目录
 		if d.IsDir() {
 			// 创建目录
@@ -65,25 +64,38 @@ func Create(ResourcesFiles fs.FS) {
 	})
 
 	if err != nil {
-		logger.Info("资源初始化失败:", err)
+		logger.Error("资源初始化失败:", err)
 		return
 	}
 }
 
+func getNodejsResourcePath() string {
+	return filepath.Join(paths.GetResourcePath(), "nodejs")
+}
+
 // 解压Nodejs
-func ExtractNodeJS(destPath string) error {
+func ExtractNodeJS() error {
 	pkgName := "node.tar.xz"
 	if runtime.GOOS == "windows" {
 		pkgName = "node.zip"
 	}
 	// 获取 Node.js 压缩包路径
-	nodeArchivePath := path.Join(paths.GetWorkPath(), "resources", pkgName)
+	nodeArchivePath := filepath.Join(paths.GetWorkPath(), "resources", pkgName)
+
+	// 目标解压路径
+	destPath := getNodejsResourcePath()
 
 	// 解压缩
 	if err := utils.ExtractFileTo(nodeArchivePath, destPath); err != nil {
 		return fmt.Errorf("解压 Node.js 失败: %w", err)
 	}
 	return nil
+}
+
+// 判断系统是否有 Node.js
+func HasSystemNodeJS() bool {
+	_, err := exec.LookPath("node")
+	return err == nil
 }
 
 // NodeJSManager Node.js 管理器
@@ -127,9 +139,8 @@ func (m *NodeJSManager) GetNodeJSPath() (string, error) {
 	}
 	m.mu.RUnlock()
 
-	// 固定格式为 work/resources/nodejs/{version}/node{.exe}
-	workPath := paths.GetResourcePath()
-	nodejsBasePath := path.Join(workPath, "nodejs")
+	// work/resources/nodejs/{version}/node{.exe}
+	nodejsBasePath := getNodejsResourcePath()
 
 	// 读取目录
 	entries, err := os.ReadDir(nodejsBasePath)
@@ -140,7 +151,7 @@ func (m *NodeJSManager) GetNodeJSPath() (string, error) {
 	// 找到第一个目录作为版本目录
 	for _, entry := range entries {
 		if entry.IsDir() {
-			versionPath := path.Join(nodejsBasePath, entry.Name())
+			versionPath := filepath.Join(nodejsBasePath, entry.Name())
 			m.mu.Lock()
 			m.nodeJSPath = versionPath
 			m.mu.Unlock()
@@ -172,18 +183,23 @@ func (m *NodeJSManager) GetNodeExePath() (string, error) {
 	}
 	m.mu.RUnlock()
 
-	dir, err := m.GetNodeJSPath()
-	if err != nil {
-		// 未找到 Node.js 路径，尝试从系统环境变量中获取
+	// 判断是否有系统nodejs
+	has := HasSystemNodeJS()
+	if has {
+		// 得到系统nodejs路径
 		systemNode, err := GetSystemExePath()
 		if err != nil {
 			return "", err
 		}
-
 		m.mu.Lock()
 		m.nodeExePath = systemNode
 		m.mu.Unlock()
-		return systemNode, nil
+		return m.nodeExePath, nil
+	}
+
+	dir, err := m.GetNodeJSPath()
+	if err != nil {
+		return "node", nil
 	}
 
 	// 确定可执行文件名
@@ -192,34 +208,18 @@ func (m *NodeJSManager) GetNodeExePath() (string, error) {
 		exeName = "node.exe"
 	}
 
-	// 使用 filepath.Join 替代 path.Join 以获得更好的跨平台支持
+	// 拼接可执行文件路径
 	exePath := filepath.Join(dir, "bin", exeName)
 
 	// 检查文件是否存在
 	if _, err := os.Stat(exePath); os.IsNotExist(err) {
-		// 如果指定路径不存在，回退到系统环境变量
-		systemNode, err := GetSystemExePath()
-		if err != nil {
-			return "", err
-		}
-
-		m.mu.Lock()
-		m.nodeExePath = systemNode
-		m.mu.Unlock()
-		return systemNode, nil
+		return "node", nil
 	}
 
 	// 确保返回绝对路径
 	absExePath, err := filepath.Abs(exePath)
 	if err != nil {
-		systemNode, err := GetSystemExePath()
-		if err != nil {
-			return "", err
-		}
-		m.mu.Lock()
-		m.nodeExePath = systemNode
-		m.mu.Unlock()
-		return systemNode, nil
+		return "node", nil
 	}
 
 	m.mu.Lock()
