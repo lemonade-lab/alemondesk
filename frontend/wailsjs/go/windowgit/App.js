@@ -6,8 +6,8 @@ export function GitCheckout(arg1, arg2, arg3) {
   return window['go']['windowgit']['App']['GitCheckout'](arg1, arg2, arg3);
 }
 
-export function GitClone(arg1, arg2) {
-  return window['go']['windowgit']['App']['GitClone'](arg1, arg2);
+export function GitClone(arg1) {
+  return window['go']['windowgit']['App']['GitClone'](arg1);
 }
 
 export function GitDelete(arg1, arg2) {

@@ -1,6 +1,6 @@
 import { extractRepoInfo, isGitRepositoryFormat } from '@/api'
 import { useNotification } from '@/context/Notification'
-import { Button, Input } from '@alemonjs/react-ui'
+import { Button, Input, Switch } from '@alemonjs/react-ui'
 import { GitClone, GitReposList } from '@wailsjs/go/windowgit/App'
 import { useState } from 'react'
 
@@ -19,9 +19,11 @@ const PackageClone = ({
     // 仓库地址
     repoUrl: '',
     // 分支
-    branch: 'main',
+    branch: '',
     // 深度
-    depth: 1
+    depth: 0,
+    // 是否强制覆盖
+    force: false
   })
   /**
    *
@@ -57,7 +59,13 @@ const PackageClone = ({
 
       notification('正在添加仓库..')
 
-      await GitClone(space, value).then(res => {
+      await GitClone({
+        RepoURL: value,
+        Branch: values.branch,
+        Depth: values.depth,
+        Space: space,
+        Force: values.force
+      }).then(() => {
         notification('添加成功')
         // 更新列表
         GitReposList(space).then(res => {
@@ -99,9 +107,19 @@ const PackageClone = ({
           type="number"
           className="px-2 rounded-md w-full"
           value={values.depth}
-          onChange={e => setValues({ ...values, depth: Number(e.target.value) })}
-          placeholder="请输入克隆深度"
+          onChange={e => {
+            // min 0
+            if (Number(e.target.value) < 0) {
+              setValues({ ...values, depth: 0 })
+              return
+            }
+            setValues({ ...values, depth: Number(e.target.value) })
+          }}
         />
+      </div>
+      <div className="flex gap-2 justify-center items-center">
+        <div className="w-28">是否强制覆盖:</div>
+        <Switch value={values.force} onChange={checked => setValues({ ...values, force: checked})} />
       </div>
       <Button className="px-2 rounded-md" type="submit">
         Clone

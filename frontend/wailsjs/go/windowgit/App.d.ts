@@ -5,7 +5,7 @@ import {context} from '../models';
 
 export function GitCheckout(arg1:string,arg2:string,arg3:string):Promise<boolean>;
 
-export function GitClone(arg1:string,arg2:string):Promise<boolean>;
+export function GitClone(arg1:windowgit.GitCloneOptions):Promise<boolean>;
 
 export function GitDelete(arg1:string,arg2:string):Promise<boolean>;
 

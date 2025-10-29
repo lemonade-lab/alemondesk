@@ -5,11 +5,13 @@ import (
 	"alemonapp/src/logger"
 	"alemonapp/src/paths"
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 // App struct
@@ -96,8 +98,22 @@ func (a *App) GitReposList(name string) ([]GitRepoInfo, error) {
 	return repos, nil
 }
 
+// 克隆参数
+type GitCloneOptions struct {
+	Space   string
+	RepoURL string
+	Branch  string
+	Depth   int
+	Force   bool // 新增：是否强制覆盖
+}
+
 // 克隆仓库
-func (a *App) GitClone(space string, repoUrl string) (bool, error) {
+func (a *App) GitClone(params GitCloneOptions) (bool, error) {
+	space := params.Space
+	repoUrl := params.RepoURL
+	branch := params.Branch
+	depth := params.Depth
+	force := params.Force
 	// 根据 space 参数确定克隆路径
 	path := paths.GetBotPackagesPath(config.BotName)
 	if space == "plugins" {
@@ -112,13 +128,35 @@ func (a *App) GitClone(space string, repoUrl string) (bool, error) {
 	repoName := filepath.Base(repoUrl)
 	clonePath := filepath.Join(path, strings.Replace(repoName, ".git", "", 1))
 
-	// 使用简单的 PlainClone 方法
-	_, err := git.PlainClone(clonePath, false, &git.CloneOptions{
-		URL:      repoUrl,
-		Progress: os.Stdout,
-	})
+	// 检查目录是否已存在
+	if _, err := os.Stat(clonePath); err == nil {
+		if force {
+			// 强制覆盖：删除已存在的目录
+			if err := os.RemoveAll(clonePath); err != nil {
+				return false, fmt.Errorf("删除已存在目录失败: %v", err)
+			}
+		} else {
+			return false, fmt.Errorf("目录已存在: %s", clonePath)
+		}
+	}
+
+	// 构建 CloneOptions
+	cloneOpts := &git.CloneOptions{
+		URL:          repoUrl,
+		Progress:     os.Stdout,
+		Depth:        depth,
+		SingleBranch: true, // 只克隆单个分支以节省时间和空间
+	}
+
+	// 如果指定了分支，设置 ReferenceName
+	if branch != "" {
+		cloneOpts.ReferenceName = plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branch))
+	}
+
+	// 使用 PlainClone 方法克隆仓库
+	_, err := git.PlainClone(clonePath, false, cloneOpts)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("克隆仓库失败: %v", err)
 	}
 
 	return true, nil

@@ -69,6 +69,26 @@ export namespace windowexpansions {
 
 export namespace windowgit {
 	
+	export class GitCloneOptions {
+	    Space: string;
+	    RepoURL: string;
+	    Branch: string;
+	    Depth: number;
+	    Force: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new GitCloneOptions(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Space = source["Space"];
+	        this.RepoURL = source["RepoURL"];
+	        this.Branch = source["Branch"];
+	        this.Depth = source["Depth"];
+	        this.Force = source["Force"];
+	    }
+	}
 	export class GitRepoInfo {
 	    Name: string;
 	    IsFullRepo: boolean;
