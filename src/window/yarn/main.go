@@ -34,14 +34,11 @@ type YarnCommandsParams struct {
 }
 
 func (a *App) YarnCommands(p1 YarnCommandsParams) {
-	logger.Info("YarnCommands: %v", p1)
 	if p1.Type == "install" {
 		// 不存在，则尝试从已有的压缩文件中解压
 		destPath := paths.GetBotDependencyPath(config.BotName)
 		alemonjsPath := path.Join(destPath, "alemonjs")
-		logger.Info("检测依赖目录是否存在: %s", alemonjsPath)
 		if _, err := os.Stat(alemonjsPath); os.IsNotExist(err) {
-			logger.Info("检测到 node_modules/alemonjs 不存在，开始读取缓存...")
 			dependenciesArchivePath := files.GetDependenciesArchivePath()
 			// 解压缩
 			if err := utils.ExtractFileTo(dependenciesArchivePath, destPath); err != nil {

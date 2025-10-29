@@ -36,13 +36,10 @@ func (a *App) ThemeSetMode(mode string) {
 
 // 读取主题配置文件并发送给前端
 func (a *App) ThemeLoadVariables() {
-	logger.Info("加载主题配置文件")
-	logger.Info("加载主题配置文件")
 	filePath := paths.GetStorageThemeFilePath()
 	// 读取配置文件
 	themeVars, err := a.loadThemeVariables(filePath)
 	if err != nil {
-		logger.Error("读取主题配置失败: %v", err)
 		logger.Error("读取主题配置失败: %v", err)
 	}
 	runtime.EventsEmit(a.ctx, "theme", themeVars)
@@ -62,8 +59,6 @@ func (a *App) loadThemeVariables(filePath string) (string, error) {
 		logger.Error("读取主题配置文件失败: %v", err)
 		return "{}", fmt.Errorf("读取文件失败: %v", err)
 	}
-	logger.Info("读取主题配置文件成功", filePath)
-
 	return string(data), nil
 }
 

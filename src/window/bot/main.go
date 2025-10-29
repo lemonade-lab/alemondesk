@@ -66,7 +66,6 @@ func (a *App) BotClose() {
 		logger.Error("停止机器人失败:", err)
 		return
 	}
-	logger.Info("机器人已停止")
 	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
 		"value": 0,
 	})

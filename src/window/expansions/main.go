@@ -67,8 +67,6 @@ func (a *App) handlePostMessage(params map[string]interface{}) {
 	messageType, _ := params["type"].(string)
 	data, _ := params["data"].(map[string]interface{})
 
-	logger.Info("Received expansion message - Type: %s, Data: %v", messageType, data)
-
 	// 根据消息类型处理不同的逻辑
 	switch messageType {
 	case "webview-post-message":
@@ -107,7 +105,7 @@ func (a *App) handleGetExpansions(data map[string]interface{}) {
 	// 获取扩展列表并发送
 	expansionsList, err := a.GetExpansionList(name)
 	if err != nil {
-		logger.Info("Error getting expansion list: %v", err)
+		logger.Error("Error getting expansion list: %v", err)
 		return
 	}
 
@@ -134,7 +132,6 @@ type ExpansionsPostMessageParams struct {
 
 func (a *App) ExpansionsPostMessage(params ExpansionsPostMessageParams) {
 	// 向指定的 nodejs 进程发送消息
-	logger.Info("Sending message to expansion: %s - %v", params.Type, params.Data)
 
 	// 这里可以调用你的 expansions 包来实际发送消息
 	// 例如: expansions.SendMessage(config.BotName, params.Type, params.Data)
@@ -212,7 +209,6 @@ type MessageData struct {
 // 创建隐藏的 webview
 func (a *App) CreateHideWebview(name string) error {
 	a.webviews[name] = true
-	logger.Info("Created hide webview: %s", name)
 
 	// 通知前端 webview 已创建
 	runtime.EventsEmit(a.ctx, "webview-created", map[string]interface{}{

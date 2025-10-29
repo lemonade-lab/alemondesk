@@ -66,11 +66,11 @@ func Install(name string) (bool, error) {
 	nodeDir, err := manager.GetNodeExePath()
 	// 检查系统是否安装了 Node.js
 	if err != nil {
-		logger.Info("unable to find node:", err)
+		logger.Error("unable to find node:", err)
 		return false, err
 	}
 	if IsRunning(name) {
-		logger.Info("机器人在运行")
+		logger.Error("机器人在运行")
 		return false, os.ErrExist
 	}
 	// yarn.cjs
@@ -87,13 +87,12 @@ func Install(name string) (bool, error) {
 	if err := cmd.Run(); err != nil {
 		// 分析错误。如果只是依赖的一些警告不应当做为错误
 		if exitError, ok := err.(*exec.ExitError); ok && exitError.ExitCode() == 0 {
-			logger.Info("依赖安装完成，存在警告信息")
+			logger.Error("依赖安装完成，存在警告信息")
 			return false, nil
 		}
-		logger.Info("依赖安装失败:", err)
+		logger.Error("依赖安装失败:", err)
 		return false, err
 	}
-	logger.Info("依赖安装成功")
 	return true, nil
 }
 

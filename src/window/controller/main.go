@@ -53,7 +53,7 @@ func (a *App) GetVersions() Versions {
 	manager := files.GetNodeJSManager()
 	nodeExe, err := manager.GetNodeExePath()
 	nodeVersion := "Unknown"
-	if err != nil {
+	if err == nil {
 		nodeVersion = executeCommand(nodeExe, "--version")
 	}
 	return Versions{

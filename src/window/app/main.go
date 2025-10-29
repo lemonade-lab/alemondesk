@@ -121,8 +121,6 @@ func (a *App) AppWriteFiles(dir string, data string) (string, error) {
 		return "", err
 	}
 
-	logger.Info("Writing to file:", dir, data)
-
 	err = os.WriteFile(dir, []byte(data), 0644)
 	if err != nil {
 		return "", err

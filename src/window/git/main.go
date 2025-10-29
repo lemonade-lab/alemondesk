@@ -46,7 +46,6 @@ func (a *App) GitReposList(name string) ([]GitRepoInfo, error) {
 	// 读取目录
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		logger.Error("读取目录错误:", path, err)
 		return repos, err
 	}
 
@@ -156,7 +155,6 @@ func GitPull(space string, name string) (bool, error) {
 		return false, err
 	}
 
-	logger.Info("拉取成功")
 	return true, nil
 }
 
@@ -191,7 +189,6 @@ func (a *App) GitFetch(space string, repoUrl string) (bool, error) {
 		return false, err
 	}
 
-	logger.Info("拉取成功")
 	return true, nil
 }
 
@@ -210,7 +207,6 @@ func (a *App) GitDelete(space string, name string) (bool, error) {
 		return false, err
 	}
 
-	logger.Info("删除仓库成功:", repoPath)
 	return true, nil
 }
 
@@ -246,6 +242,5 @@ func (a *App) GitCheckout(space string, name string, branch string) (bool, error
 		return false, err
 	}
 
-	logger.Info("切换分支成功")
 	return true, nil
 }
