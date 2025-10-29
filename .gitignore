@@ -45,4 +45,4 @@ config*.yaml
 /work
 /resources/node.tar.xz
 /resources/node.zip
-/resources/template/node_modules.tar.gz
+/resources/node_modules.tar.gz

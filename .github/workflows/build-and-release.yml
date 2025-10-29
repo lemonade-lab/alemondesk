@@ -46,10 +46,20 @@ jobs:
         run: |
             yarn --cwd frontend install
             yarn --cwd frontend build
-      - name: install template dependencies and compress
+      - name: install template dependencies
         run: |
             yarn --cwd resources/template install
-            tar -czf resources/template/node_modules.tar.gz -C resources/template node_modules
+      - name: delete bin (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          rm -rf resources/template/node_modules/.bin
+      - name: delete bin (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Remove-Item resources/template/node_modules/.bin -Recurse -Force
+      - name: compress
+        run: |
+            tar -czf resources/node_modules.tar.gz -C resources/template node_modules
       - name: delete node_modules (Linux/macOS)
         if: runner.os != 'Windows'
         run: |

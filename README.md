@@ -12,7 +12,10 @@ go install github.com/wailsapp/wails/v2/cmd/wails@latest
 go mod tidy
 ```
 
+- 开发启动
+
 ```sh
+chmod +x app-*.sh 
 make dev
 ```
 
@@ -24,6 +27,8 @@ wails generate module
 # macos 查看日志
 cat ~/Library/Application\ Support/ALemonDesk/logs/alemon-desk.log
 ```
+
+- 打包测试
 
 ```sh
 chmod +x app-*.sh 

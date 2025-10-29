@@ -73,15 +73,26 @@ func getNodejsResourcePath() string {
 	return filepath.Join(paths.GetResourcePath(), "nodejs")
 }
 
+// 得到nodejs压缩包地址
+func GetNodejsArchivePath() string {
+	{
+		pkgName := "node.tar.xz"
+		if runtime.GOOS == "windows" {
+			pkgName = "node.zip"
+		}
+		return filepath.Join(paths.GetWorkPath(), "resources", pkgName)
+	}
+}
+
+// 得到依赖压缩包地址
+func GetDependenciesArchivePath() string {
+	return filepath.Join(paths.GetWorkPath(), "resources", "node_modules.tar.gz")
+}
+
 // 解压Nodejs
 func ExtractNodeJS() error {
-	pkgName := "node.tar.xz"
-	if runtime.GOOS == "windows" {
-		pkgName = "node.zip"
-	}
 	// 获取 Node.js 压缩包路径
-	nodeArchivePath := filepath.Join(paths.GetWorkPath(), "resources", pkgName)
-
+	nodeArchivePath := GetNodejsArchivePath()
 	// 目标解压路径
 	destPath := getNodejsResourcePath()
 
