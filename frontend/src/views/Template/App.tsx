@@ -60,7 +60,7 @@ export default function Template() {
     <section className="flex flex-row flex-1 h-full shadow-md">
       <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1">
         {item ? (
-          <EditFile key={item.title} title={item.title} mode={item.mode} dir={item.dir} />
+          <EditFile key={item.title} title={item.title} mode={item?.mode ?? ''} dir={item.dir} />
         ) : (
           <Init />
         )}

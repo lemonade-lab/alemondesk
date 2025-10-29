@@ -10,6 +10,11 @@
   outline: none;
 }
 
+html, body {
+  // 禁用窗体的滚动条
+  overflow: hidden;
+}
+
 // 可拖拽区域
 .drag-area {
   // -webkit-app-region: drag;

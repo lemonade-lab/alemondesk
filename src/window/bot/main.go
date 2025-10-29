@@ -37,7 +37,7 @@ func (a *App) BotRun(p1 []string) {
 		return
 	}
 	// 运行机器人
-	_, err := logic.Run(config.BotName)
+	_, err := logic.Run(config.BotName, p1)
 	if err != nil {
 		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
 			"value": 0,
@@ -47,7 +47,6 @@ func (a *App) BotRun(p1 []string) {
 	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
 		"value": 1,
 	})
-	return
 }
 
 func (a *App) BotClose() {

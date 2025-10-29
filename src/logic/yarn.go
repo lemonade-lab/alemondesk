@@ -70,7 +70,7 @@ func Install(name string) (bool, error) {
 		return false, err
 	}
 	if IsRunning(name) {
-		logger.Error("机器人在运行")
+		logger.Warn("机器人在运行中，禁止调整依赖")
 		return false, os.ErrExist
 	}
 	// yarn.cjs

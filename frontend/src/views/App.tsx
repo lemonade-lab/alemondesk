@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import useGoNavigate from '@/hook/useGoNavigate'
@@ -157,21 +157,21 @@ export default (function App() {
       }
     })
 
-    // const onBotStatus = async () => {
-    //   const T = await BotStatus()
-    //   console.log('BotStatus', T)
-    //   dispatch(
-    //     setBotStatus({
-    //       runStatus: T ? true : false
-    //     })
-    //   )
-    // }
+    const onBotStatus = async () => {
+      const T = await BotStatus()
+      console.log('BotStatus', T)
+      dispatch(
+        setBotStatus({
+          runStatus: T ? true : false
+        })
+      )
+    }
 
-    // const intervalId =  setInterval(onBotStatus, 1000)
+    const intervalId = setInterval(onBotStatus, 1000 * 3)
 
-    // return () => {
-    //   clearInterval(intervalId)
-    // }
+    return () => {
+      clearInterval(intervalId)
+    }
   }, [])
 
   /**
@@ -219,7 +219,7 @@ export default (function App() {
   }, [command.name])
 
   return (
-    <>
+    <Fragment>
       <div className=" flex flex-col flex-1 h-screen relative ">
         <Header>
           <WordBox />
@@ -232,6 +232,6 @@ export default (function App() {
         </PrimaryDiv>
       </div>
       <GuideMain />
-    </>
+    </Fragment>
   )
 })

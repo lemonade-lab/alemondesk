@@ -26,6 +26,7 @@ type NodeProcessConfig struct {
 	EnvFilePath string
 	Env         map[string]string
 	Port        int
+	Args        []string
 }
 
 // 持久化结构体（包含状态）
@@ -165,21 +166,22 @@ func (mp *ManagedProcess) Start() error {
 	// var botLoggerWriter *logger.RobotLoggerWriter
 	var err error
 	// 检查日志文件路径是否存在
-	if mp.Config.LogPath != "" {
-		// var l = new(zapcore.Level)
-		// confLogLevel := os.Getenv("APP_LOG_LEVEL")
-		// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
-		// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
-		// }
+	// if mp.Config.LogPath != "" {
+	// var l = new(zapcore.Level)
+	// confLogLevel := os.Getenv("APP_LOG_LEVEL")
+	// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
+	// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
+	// }
 
-		// botLogger, err := logger.GetOrCreateBotLogger(mp.Config.Name, *l)
-		// if err != nil {
-		// 	fmt.Printf("unable to create logger: %v\n", err)
-		// }
-		// botLoggerWriter = logger.NewRobotLoggerWriter(botLogger)
-	}
+	// botLogger, err := logger.GetOrCreateBotLogger(mp.Config.Name, *l)
+	// if err != nil {
+	// 	fmt.Printf("unable to create logger: %v\n", err)
+	// }
+	// botLoggerWriter = logger.NewRobotLoggerWriter(botLogger)
+	// }
 	mp.Ctx, mp.Cancel = context.WithCancel(context.Background())
-	mp.Cmd = utils.CommandContext(mp.Ctx, mp.Config.Node, mp.Config.ScriptJS)
+	args := append([]string{mp.Config.ScriptJS}, mp.Config.Args...)
+	mp.Cmd = utils.CommandContext(mp.Ctx, mp.Config.Node, args...)
 	mp.Cmd.Env = LoadEnvironment(mp.Config.EnvFilePath)
 	// 还要支持，直接传入的环境变量 mp.Config.Env
 	for key, value := range mp.Config.Env {

@@ -17,8 +17,7 @@ func IsRunning(name string) bool {
 }
 
 // 运行机器人
-func Run(name string) (string, error) {
-
+func Run(name string, args []string) (string, error) {
 	manager := files.GetNodeJSManager()
 	nodeExe, err := manager.GetNodeExePath()
 	// 检查系统是否安装了 Node.js
@@ -70,6 +69,7 @@ func Run(name string) (string, error) {
 		ScriptJS: indexPath,
 		// LogPath:     logPath,
 		PidFile:     pidFile,
+		Args:        args,
 		EnvFilePath: paths.GetBotEnvFilePath(name),
 		// 支持直接加环境变量
 		Env: map[string]string{

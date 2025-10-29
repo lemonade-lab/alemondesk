@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import Init from './Init'
-import { Button, SecondaryDiv } from '@alemonjs/react-ui'
+import { SecondaryDiv } from '@alemonjs/react-ui'
 import { SidebarDiv } from '@alemonjs/react-ui'
-import CodeDiff from './CodeDiff'
 import { useNotification } from '@/context/Notification'
 import Markdown from '@/common/Markdown'
 import { Select } from '@alemonjs/react-ui'
@@ -10,6 +9,7 @@ import { GitDelete, GitReposList } from '@wailsjs/go/windowgit/App'
 import { windowgit } from '@wailsjs/go/models'
 import PackageList from './PackageList'
 import PackageClone from './PackageClone'
+import Tabs from '@/common/ui/Tabs'
 
 const initialSpace = 'packages'
 const spaceOptions = [initialSpace, 'plugins']
@@ -19,29 +19,6 @@ const spaceMap: { [key: string]: string } = {
   plugins: '插件'
 }
 
-const Tabs = ({
-  options,
-  value,
-  onChange
-}: {
-  options: {
-    key: string
-    label: string
-  }[]
-  value: string
-  onChange: (key: string) => void
-}) => {
-  return (
-    <div className="flex px-2 py-1 gap-2">
-      {options.map((item, index) => (
-        <Button className=" rounded-md px-2" onClick={() => onChange(item.key)} key={index}>
-          {item.label}
-        </Button>
-      ))}
-    </div>
-  )
-}
-
 export default function Expansions() {
   const [select, setSelect] = useState('')
   const notification = useNotification()
@@ -49,8 +26,9 @@ export default function Expansions() {
   const [sub, setSub] = useState(false)
   const [space, setSpace] = useState(initialSpace)
   const [readme, setReadme] = useState('')
-  const [diffedCode, setdiffedCode] = useState('')
+  // const [diffedCode, setdiffedCode] = useState('')
   const [tabValue, setTabValue] = useState('1')
+  const [messageValue, setMessageValue] = useState('readme')
 
   /**
    * @param item
@@ -75,13 +53,7 @@ export default function Expansions() {
     setSub(false)
   }
 
-  useEffect(() => {
-    if (readme == '' && diffedCode == '') {
-      setSelect('')
-    }
-  }, [readme])
-
-  const [selectValue, setSelectValue] = useState('')
+  // const [selectValue, setSelectValue] = useState('')
 
   useEffect(() => {
     GitReposList(space).then(res => {
@@ -94,20 +66,35 @@ export default function Expansions() {
       <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1">
         {select == '' && <Init />}
         {select === 'readme' && (
-          <div className="select-text">
-            <div className="overflow-auto scrollbar h-[calc(100vh-3rem)] max-w-[calc(100vw-21.5rem)]">
+          <div className="flex flex-col">
+            <SecondaryDiv className="py-2 px-2 border-b">
+              <Tabs
+                value={messageValue}
+                onChange={key => setMessageValue(key)}
+                options={[
+                  {
+                    label: 'README',
+                    key: 'readme'
+                  },
+                  {
+                    label: '分支列表',
+                    key: 'branches'
+                  },
+                  {
+                    label: '提交记录',
+                    key: 'commits'
+                  }
+                ]}
+              />
+            </SecondaryDiv>
+            <div className="select-text overflow-auto scrollbar h-[calc(100vh-5rem)] max-w-[calc(100vw-21.5rem)]">
               <Markdown source={readme} />
             </div>
           </div>
         )}
-        {select === 'diffcode' && (
-          <div className="select-text">
-            <CodeDiff content={diffedCode} />
-          </div>
-        )}
       </SecondaryDiv>
       <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col  w-72 xl:w-80 border-l h-full">
-        <div className="flex px-2 gap-2">
+        <div className="flex px-2 py-1 gap-2">
           <Tabs
             value={tabValue}
             options={[
@@ -132,13 +119,6 @@ export default function Expansions() {
               }}
             >
               {spaceOptions.map((item, index) => {
-                if (item == selectValue) {
-                  return (
-                    <option key={index} value={item} selected>
-                      {item}
-                    </option>
-                  )
-                }
                 return (
                   <option key={index} value={item}>
                     {spaceMap[item]}

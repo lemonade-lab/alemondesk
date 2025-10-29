@@ -36,7 +36,7 @@ function BotLogList({
   }
 
   return (
-    <div className="flex-1 flex flex-col shadow-md">
+    <div className="flex-1 flex flex-col shadow-md w-[calc(100vw-4rem)]">
       <div className="z-50 flex flex-col border-b">
         <div className="flex gap-4 justify-between items-center px-2 py-1">
           <div className="flex gap-2 items-center">{headerLeft}</div>
@@ -59,16 +59,11 @@ function BotLogList({
         {log.message.length === 0 ? (
           <div className="text-gray-400">暂无日志</div>
         ) : (
-          <div className="space-y-2">
-            {
-              // 允许选择复制
-            }
-            {log.message.map((msg, idx) => (
-              <SecondaryDiv className="select-all rounded-md" key={idx}>
+          log.message.map((msg, idx) => (
+              <SecondaryDiv className="select-all rounded-md break-words" key={idx}>
                 {parseLogMessage(msg)}
               </SecondaryDiv>
-            ))}
-          </div>
+            ))
         )}
       </Box>
     </div>

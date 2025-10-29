@@ -1,7 +1,62 @@
 import { Button } from '@alemonjs/react-ui'
 import { Modal } from '@alemonjs/react-ui'
-import { createContext, useState, ReactNode, useContext } from 'react'
+import { createContext, useState, ReactNode, useContext, PropsWithChildren } from 'react'
 import { ControllerOnClick } from '@wailsjs/go/windowcontroller/App'
+import classNames from 'classnames'
+
+type ModalProps = PropsWithChildren & {
+  open: boolean
+  onClose: () => void
+  title: string
+  onOk: () => void
+  textOk?: string
+  textCancel?: string
+}
+
+export const BaseModal = ({
+  open,
+  onClose,
+  title,
+  children,
+  onOk,
+  textOk,
+  textCancel
+}: ModalProps) => {
+  return (
+    <Modal isOpen={open} onClose={onClose}>
+      <h2 className="text-xl mb-4">{title}</h2>
+      <div>{children}</div>
+      <div className="flex justify-end gap-2">
+        <Button onClick={onClose} className="mt-4 px-4 py-2   rounded ">
+          {textCancel || '取消'}
+        </Button>
+        <Button onClick={onOk} className="mt-4 px-4 py-2   rounded ">
+          {textOk || '确定'}
+        </Button>
+      </div>
+    </Modal>
+  )
+}
+
+const positionClass: {
+  [key: string]: string
+} = {
+  'center': 'fixed inset-0 flex items-center justify-center',
+  'bottom-end': 'fixed bottom-4 right-4',
+  'bottom-start': 'fixed bottom-4 left-4',
+  'top-end': 'fixed top-4 right-4',
+  'top-start': 'fixed top-4 left-4'
+}
+
+export function FeatModal(props: ModalProps & { position?: keyof typeof positionClass }) {
+  const { open, position = 'center', ...reset } = props
+  if (!open) return null
+  return (
+    <div className={classNames('z-50', positionClass[position])}>
+      <BaseModal open={open} {...reset} />
+    </div>
+  )
+}
 
 type DataType = {
   open: boolean
@@ -80,18 +135,15 @@ export default function PopProvider({ children }: { children: ReactNode }) {
   return (
     <PopContext.Provider value={{ setPopValue: setPopValue, closePop }}>
       {children}
-      <Modal isOpen={modalData.open} onClose={closePop}>
-        <h2 className="text-xl mb-4">{modalData.title}</h2>
-        <p>{modalData.description}</p>
-        <div className="flex justify-end gap-2">
-          <Button onClick={closePop} className="mt-4 px-4 py-2   rounded ">
-            {modalData.buttonCancelText || '取消'}
-          </Button>
-          <Button onClick={onModal} className="mt-4 px-4 py-2   rounded ">
-            {modalData.buttonText}
-          </Button>
-        </div>
-      </Modal>
+      <BaseModal
+        open={modalData.open}
+        onClose={closePop}
+        title={modalData.title}
+        children={modalData.description}
+        onOk={onModal}
+        textOk={modalData.buttonText}
+        textCancel={modalData.buttonCancelText}
+      />
     </PopContext.Provider>
   )
 }
