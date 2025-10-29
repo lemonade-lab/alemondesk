@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import { html } from 'diff2html'
-// import 'diff2html/bundles/css/diff2html.min.css';
 import '@/assets/css/diff2html.css'
 
 const CodeDiff = ({ content }: { content: string }) => {
