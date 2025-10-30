@@ -2,7 +2,7 @@ package config
 
 import "os"
 
-var BotName = "default"
+const BotName = "default"
 
 func IsDev() bool {
 	return os.Getenv("APP_WAILS_DEV") == "true"

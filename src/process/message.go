@@ -1,9 +1,9 @@
 package process
 
 import (
+	"alemonapp/src/logger"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 )
@@ -29,9 +29,8 @@ func (w *IPCMessageWriter) Write(p []byte) (n int, err error) {
 		// 无论解析成功与否，都返回写入成功
 		return len(p), nil
 	}
-
-	// 普通日志输出到标准错误（保持原有日志流）
-	os.Stderr.Write(p)
+	// os.Stderr.Write(p)
+	logger.Info(data)
 	return len(p), nil
 }
 
@@ -56,4 +55,10 @@ func (mp *ManagedProcess) Send(message map[string]interface{}) error {
 
 	_, err = mp.stdinPipe.Write(append(data, '\n'))
 	return err
+}
+
+var handleMessages = make(map[string]func(message map[string]interface{}))
+
+func SetHandleMessage(name string, message func(message map[string]interface{})) {
+	handleMessages[name+"-desk"] = message
 }

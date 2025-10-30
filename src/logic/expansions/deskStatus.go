@@ -18,7 +18,7 @@ func IsRunning(name string) bool {
 }
 
 // 运行
-func Run(name string, HandleMessage func(message map[string]interface{})) (string, error) {
+func Run(name string) (string, error) {
 	manager := files.GetNodeJSManager()
 	nodeExe, err := manager.GetNodeExePath()
 	// 检查系统是否安装了 Node.js
@@ -66,7 +66,7 @@ func Run(name string, HandleMessage func(message map[string]interface{})) (strin
 		PidFile:              pidFile,
 		EnvFilePath:          paths.GetBotEnvFilePath(name),
 		CommunicationEnabled: true, // 开启通讯
-		HandleMessage:        HandleMessage,
+		// HandleMessage:        HandleMessage,
 		// 支持直接加环境变量
 		Env: map[string]string{
 			// 关闭日志时间

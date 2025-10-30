@@ -6,6 +6,7 @@ import (
 	"alemonapp/src/logger"
 	logicexpansions "alemonapp/src/logic/expansions"
 	"alemonapp/src/paths"
+	"alemonapp/src/process"
 	"alemonapp/src/utils"
 	"context"
 	"encoding/json"
@@ -51,7 +52,8 @@ func (a *App) ExpansionsRun(p1 []string) {
 		})
 		return
 	}
-	_, err := logicexpansions.Run(expansionsName, func(message map[string]interface{}) {
+
+	process.SetHandleMessage(expansionsName, func(message map[string]interface{}) {
 		// 处理来自扩展器进程的消息
 		msgType, ok := message["type"].(string)
 		if !ok {
@@ -69,6 +71,8 @@ func (a *App) ExpansionsRun(p1 []string) {
 			logger.Info("[%s] Unknown message type: %s", expansionsName, msgType)
 		}
 	})
+
+	_, err := logicexpansions.Run(expansionsName)
 	if err != nil {
 		// 通知前端扩展器状态变化
 		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{

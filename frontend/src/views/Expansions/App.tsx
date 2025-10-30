@@ -14,6 +14,7 @@ import { AppReadFiles } from '@wailsjs/go/windowapp/App'
 import { ExpansionsPostMessage } from '@wailsjs/go/windowexpansions/App'
 import { YarnCommands } from '@wailsjs/go/windowyarn/App'
 import { EventsOn } from '@wailsjs/runtime/runtime'
+import classNames from 'classnames'
 
 export default function Expansions() {
   const app = useSelector((state: RootState) => state.app)
@@ -163,8 +164,7 @@ export default function Expansions() {
 
       // 重新获取扩展列表
       ExpansionsPostMessage({
-        type: 'get-expansions',
-        data: ''
+        type: 'get-expansions'
       })
     })
   }, [])
@@ -184,7 +184,15 @@ export default function Expansions() {
     <section className=" flex flex-row flex-1 h-full shadow-md">
       <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1">
         {select == '' && <Init />}
-        {select == 'shoping' && packageInfo && <PackageInfo packageInfo={packageInfo} />}
+        {select == 'shoping' && packageInfo && (
+          <div
+            className={classNames(
+              'select-text overflow-auto scrollbar h-[calc(100vh-5rem)] max-w-[calc(100vw-21.5rem)]'
+            )}
+          >
+            <PackageInfo packageInfo={packageInfo} />
+          </div>
+        )}
       </SecondaryDiv>
       <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col  w-72 xl:w-80 border-l h-full">
         <div className="flex px-2 py-1 gap-2">

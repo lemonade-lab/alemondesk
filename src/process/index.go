@@ -29,7 +29,7 @@ type NodeProcessConfig struct {
 	Port                 int
 	Args                 []string
 	CommunicationEnabled bool
-	HandleMessage        func(message map[string]interface{})
+	// HandleMessage        func(message map[string]interface{})
 }
 
 // 持久化结构体（包含状态）
@@ -194,10 +194,9 @@ func (mp *ManagedProcess) Start() error {
 		// 创建多路复用writer
 		multiStdout := &multiplexWriter{
 			writers: []io.Writer{
-				&logger.LogWriter{Level: "info"},
 				&IPCMessageWriter{ // IPC消息处理
 					ProcessName:    mp.Config.Name,
-					MessageHandler: mp.Config.HandleMessage,
+					MessageHandler: handleMessages[mp.Config.Name],
 				},
 			},
 		}
