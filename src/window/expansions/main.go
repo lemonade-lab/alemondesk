@@ -150,7 +150,7 @@ func (a *App) ExpansionsRun(p1 []string) {
 	if !utils.ExistsPath([]string{botPath}) {
 		// 通知前端扩展器状态变化
 		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-			"data": 0,
+			"value": 0,
 		})
 		return
 	}
@@ -158,7 +158,7 @@ func (a *App) ExpansionsRun(p1 []string) {
 	if expansions.IsRunning(config.BotName) {
 		// 通知前端扩展器状态变化
 		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-			"data": 1,
+			"value": 1,
 		})
 		return
 	}
@@ -166,34 +166,32 @@ func (a *App) ExpansionsRun(p1 []string) {
 	if err != nil {
 		// 通知前端扩展器状态变化
 		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-			"data": 0,
+			"value": 0,
 		})
 		return
 	}
 	// 通知前端扩展器状态变化
 	runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-		"data": 1,
+		"value": 1,
 	})
-	return
 }
 
 func (a *App) ExpansionsClose() {
 	botPath := paths.GetBotPath(config.BotName)
 	if !utils.ExistsPath([]string{botPath}) {
 		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-			"data": 0,
+			"value": 0,
 		})
 		return
 	}
 	_, err := expansions.Stop(config.BotName)
 	runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-		"data": 0,
+		"value": 0,
 	})
 	if err != nil {
 		logger.Error("停止扩展器失败:", err)
 		return
 	}
-	return
 }
 
 func (a *App) ExpansionsStatus() bool {

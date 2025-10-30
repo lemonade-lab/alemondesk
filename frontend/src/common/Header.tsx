@@ -3,6 +3,7 @@ import classNames from 'classnames'
 import { HeaderDiv } from '@alemonjs/react-ui'
 import { Close, Maximize, Minimize } from '@/common/Icons'
 import { WindowHide, WindowMaximise, WindowMinimise } from '@wailsjs/runtime/runtime'
+import { GetVersions } from '@wailsjs/go/windowcontroller/App'
 
 type HeaderProps = PropsWithChildren<{
   LeftSlot?: ReactNode
@@ -17,12 +18,18 @@ type HeaderProps = PropsWithChildren<{
  * @returns
  */
 export default memo(function Header({ children }: HeaderProps) {
-  const [versions, setVersions] = useState({
-    platform: 'darwin'
+  const [versions, setVersions] = useState<{
+    node: string
+    platform: string
+  }>({
+    node: '',
+    platform: ''
   })
 
   useEffect(() => {
-    // 获取系统信息
+    GetVersions().then(res => {
+      setVersions(res)
+    })
   }, [])
 
   return (

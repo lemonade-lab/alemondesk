@@ -7,12 +7,13 @@ import { PrimaryDiv } from '@alemonjs/react-ui'
 import { SecondaryDiv } from '@alemonjs/react-ui'
 import { Tooltip } from '@alemonjs/react-ui'
 import classNames from 'classnames'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Fragment } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { AppstoreOutlined, CloseCircleOutlined } from '@ant-design/icons'
+import { AppstoreOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons'
 import { AntdIcon } from '@/common/AntdIcon'
 import { setCommand } from '@/store/command'
-import {ExpansionsClose, ExpansionsRun} from '@wailsjs/go/windowexpansions/App'
+import { ExpansionsClose, ExpansionsRun } from '@wailsjs/go/windowexpansions/App'
+import { YarnCommands } from '@wailsjs/go/windowyarn/App'
 interface Sidebar {
   expansions_name: string
   name: string
@@ -148,9 +149,25 @@ export default function WordBox() {
           </PrimaryDiv>
         </div>
       ) : (
-        <>
-          <div className=" flex-1 flex items-center drag-area">
-            &nbsp;
+        <Fragment>
+          <div className=" flex-1 flex items-center  justify-end drag-area">
+            <Tooltip text="重载依赖">
+              <div
+                className=" "
+                onClick={() => {
+                  if (!modules.nodeModulesStatus) {
+                    notification('依赖未加载', 'warning')
+                    return
+                  }
+                  YarnCommands({
+                    type: 'install',
+                    args: ['--ignore-warnings']
+                  })
+                }}
+              >
+                <ReloadOutlined />
+              </div>
+            </Tooltip>
           </div>
           <div className=" flex-1 flex items-center justify-center">
             <div
@@ -182,7 +199,7 @@ export default function WordBox() {
               // 当依赖加载完毕后再显示操作按钮
             }
             <div className="flex flex-1">
-              <div className="steps-2 flex justify-center items-center">
+              <div className="steps-2 flex gap-2 justify-center items-center">
                 <Tooltip text="运行扩展器">
                   {expansions.runStatus ? (
                     <div
@@ -212,7 +229,7 @@ export default function WordBox() {
               <div className="drag-area flex-1 "></div>
             </div>
           </div>
-        </>
+        </Fragment>
       )}
     </div>
   )
