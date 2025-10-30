@@ -38,21 +38,18 @@ export const BaseModal = ({
   )
 }
 
-const positionClass: {
-  [key: string]: string
-} = {
-  'center': 'fixed inset-0 flex items-center justify-center',
-  'bottom-end': 'fixed bottom-4 right-4',
-  'bottom-start': 'fixed bottom-4 left-4',
-  'top-end': 'fixed top-4 right-4',
-  'top-start': 'fixed top-4 left-4'
-}
-
-export function FeatModal(props: ModalProps & { position?: keyof typeof positionClass }) {
+const positionClass = ['center', 'bottom-end', 'bottom-start', 'top-end', 'top-start'] as const
+export function FeatModal(props: ModalProps & { position?: typeof positionClass[number] }) {
   const { open, position = 'center', ...reset } = props
   if (!open) return null
   return (
-    <div className={classNames('z-50', positionClass[position])}>
+    <div className={classNames('z-50', {
+      ['fixed inset-0 flex items-center justify-center']: position === 'center',
+      ['fixed bottom-4 right-4']: position === 'bottom-end',
+      ['fixed bottom-4 left-4']: position === 'bottom-start',
+      ['fixed top-4 right-4']: position === 'top-end',
+      ['fixed top-4 left-4']: position === 'top-start'
+    })}>
       <BaseModal open={open} {...reset} />
     </div>
   )

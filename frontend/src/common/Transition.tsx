@@ -1,4 +1,4 @@
-import Header from '@/common/Header'
+import Header from '@/views/Header'
 import { PrimaryDiv } from '@alemonjs/react-ui'
 /**
  * 过度页

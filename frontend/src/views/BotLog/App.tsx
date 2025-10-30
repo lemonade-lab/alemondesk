@@ -2,9 +2,10 @@ import _ from 'lodash'
 import { useBotController } from '@/hook/useBotController'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
-import { Button } from '@alemonjs/react-ui'
+import { Button, PrimaryDiv } from '@alemonjs/react-ui'
 import BotTerminal from '../../common/BotTerminal'
 import { FeatModal } from '@/context/Pop'
+import DatePicker from '@/common/ui/DatePicker'
 import { Fragment, useEffect, useState } from 'react'
 import RunForm, { Config, getRunConfig, initialRunConfig, setRunConfig } from './RunForm'
 
@@ -30,9 +31,9 @@ function Terminal() {
   return (
     <Fragment>
       <BotTerminal
-        headerLeft={<Fragment />}
+        headerLeft={<DatePicker hover />}
         headerRight={
-          <>
+          <div className="flex justify-end">
             {modules.nodeModulesStatus &&
               (bot.runStatus ? (
                 <Button
@@ -51,7 +52,7 @@ function Terminal() {
                   <span>启动</span>
                 </Button>
               ))}
-          </>
+          </div>
         }
       />
       {

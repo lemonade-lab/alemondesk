@@ -150,29 +150,30 @@ export default function WordBox() {
         </div>
       ) : (
         <Fragment>
-          <div className=" flex-1 flex items-center  justify-end drag-area">
-            <Tooltip text="重载依赖">
-              <div
-                className=" "
-                onClick={() => {
-                  if (!modules.nodeModulesStatus) {
-                    notification('依赖未加载', 'warning')
-                    return
-                  }
-                  YarnCommands({
-                    type: 'install',
-                    args: ['--ignore-warnings']
-                  })
-                }}
-              >
-                <ReloadOutlined />
-              </div>
-            </Tooltip>
+          <div className="flex-1 flex items-center justify-end drag-area">
+            <div className="steps-2">
+              <Tooltip text="重载依赖">
+                <div
+                  onClick={() => {
+                    if (!modules.nodeModulesStatus) {
+                      notification('依赖未加载', 'warning')
+                      return
+                    }
+                    YarnCommands({
+                      type: 'install',
+                      args: ['--ignore-warnings']
+                    })
+                  }}
+                >
+                  <ReloadOutlined />
+                </div>
+              </Tooltip>
+            </div>
           </div>
-          <div className=" flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center">
             <div
               ref={dropdownRef}
-              className="w-full relative steps-3 "
+              className="w-full relative steps-3"
               onClick={() => {
                 // 检查是否加载完毕
                 if (!modules.nodeModulesStatus) {
@@ -199,32 +200,34 @@ export default function WordBox() {
               // 当依赖加载完毕后再显示操作按钮
             }
             <div className="flex flex-1">
-              <div className="steps-2 flex gap-2 justify-center items-center">
-                <Tooltip text="运行扩展器">
-                  {expansions.runStatus ? (
-                    <div
-                      className=" "
-                      onClick={() => {
-                        ExpansionsClose()
-                      }}
-                    >
-                      <Pause width={20} height={20} />
-                    </div>
-                  ) : (
-                    <div
-                      className=" "
-                      onClick={() => {
-                        if (!modules.nodeModulesStatus) {
-                          notification('依赖未加载', 'warning')
-                          return
-                        }
-                        ExpansionsRun([])
-                      }}
-                    >
-                      <Play width={20} height={20} />
-                    </div>
-                  )}
-                </Tooltip>
+              <div className=" flex gap-2 justify-center items-center">
+                <div className="steps-2">
+                  <Tooltip text="运行扩展器">
+                    {expansions.runStatus ? (
+                      <div
+                        className=" "
+                        onClick={() => {
+                          ExpansionsClose()
+                        }}
+                      >
+                        <Pause width={20} height={20} />
+                      </div>
+                    ) : (
+                      <div
+                        className=" "
+                        onClick={() => {
+                          if (!modules.nodeModulesStatus) {
+                            notification('依赖未加载', 'warning')
+                            return
+                          }
+                          ExpansionsRun([])
+                        }}
+                      >
+                        <Play width={20} height={20} />
+                      </div>
+                    )}
+                  </Tooltip>
+                </div>
               </div>
               <div className="drag-area flex-1 "></div>
             </div>

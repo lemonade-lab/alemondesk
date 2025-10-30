@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '@/store'
 import { delMessate } from '@/store/log'
 import { useNotification } from '@/context/Notification'
-import { Button, SecondaryDiv } from '@alemonjs/react-ui'
+import { Button, PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
 import Box from './layout/Box'
 
 // 解析字符串。如果发现是error字样要进行高亮
@@ -28,18 +28,16 @@ function BotLogList({
   // 删除日志
   const onClickDeleteLog = (size = 10) => {
     if (log.message.length > 0) {
-      const count = log.message.length > size || size == 99 ? size : log.message.length
+      const count = log.message.length > size ? (size + 1) : (log.message.length + 1)
       dispatch(delMessate(count))
-    } else {
-      notification('没有日志可删除', 'warning')
     }
   }
 
   return (
     <div className="flex-1 flex flex-col shadow-md w-[calc(100vw-4rem)]">
-      <div className="z-50 flex flex-col border-b">
+      <PrimaryDiv className="border-b">
         <div className="flex gap-4 justify-between items-center px-2 py-1">
-          <div className="flex gap-2 items-center">{headerLeft}</div>
+          <div className="flex-1 gap-2 items-center">{headerLeft}</div>
           <div className="flex gap-4">
             {/* 删除按钮示例 */}
             {[20, 50, 99].map((item, index) => (
@@ -52,9 +50,9 @@ function BotLogList({
               </Button>
             ))}
           </div>
-          <div className="flex items-center gap-2">{headerRight}</div>
+          <div className="flex-1 items-center gap-2">{headerRight}</div>
         </div>
-      </div>
+      </PrimaryDiv>
       <Box className='scrollbar h-[calc(100vh-6rem)]'>
         {log.message.length === 0 ? (
           <div className="text-gray-400">暂无日志</div>

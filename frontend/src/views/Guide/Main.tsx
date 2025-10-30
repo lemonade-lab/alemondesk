@@ -9,17 +9,22 @@ const KEY_DATA = '1'
 // 定义引导步骤
 const steps = [
   {
-    target: '.steps-2',
+    target: '.steps-1',
     content:
       '这是“扩展器运行和暂停”按钮。用于增强和扩展应用功能。'
   },
   {
+    target: '.steps-2',
+    content:
+      '这是“重载依赖”按钮。当提示缺失必要依赖(包)或挂本地文件(包)时，可尝试点击。'
+  },
+  {
     target: '.steps-3',
-    content: '这是“指令输入框”，可以快捷执行桌面或扩展器设计的功能'
+    content: '这是“指令”输入框，可以快捷执行桌面或扩展器设计的功能'
   },
   {
     target: '.steps-4',
-    content: '这是“主页”按钮，是返回主页面的入口'
+    content: '这是“主页”按钮，可返回主页面的入口'
   },
   {
     target: '.steps-5',
@@ -36,7 +41,7 @@ const steps = [
   },
   {
     target: '.steps-8',
-    content: '设置可以让你对应用进行个性化调整，如主题...'
+    content: '设置可以让你对应用进行个性化调整，如主题、开机自启等...'
   }
 ]
 
