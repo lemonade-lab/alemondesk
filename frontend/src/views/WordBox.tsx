@@ -93,6 +93,9 @@ export default function WordBox() {
           <PrimaryDiv className={classNames('rounded-md  shadow-md p-1')}>
             <Input
               type="text"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck="false"
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               // 回车
@@ -201,33 +204,31 @@ export default function WordBox() {
             }
             <div className="flex flex-1">
               <div className=" flex gap-2 justify-center items-center">
-                <div className="steps-2">
-                  <Tooltip text="运行扩展器">
-                    {expansions.runStatus ? (
-                      <div
-                        className=" "
-                        onClick={() => {
-                          ExpansionsClose()
-                        }}
-                      >
-                        <Pause width={20} height={20} />
-                      </div>
-                    ) : (
-                      <div
-                        className=" "
-                        onClick={() => {
-                          if (!modules.nodeModulesStatus) {
-                            notification('依赖未加载', 'warning')
-                            return
-                          }
-                          ExpansionsRun([])
-                        }}
-                      >
-                        <Play width={20} height={20} />
-                      </div>
-                    )}
-                  </Tooltip>
-                </div>
+                <Tooltip text="运行扩展器">
+                  {expansions.runStatus ? (
+                    <div
+                      className=" "
+                      onClick={() => {
+                        ExpansionsClose()
+                      }}
+                    >
+                      <Pause width={20} height={20} />
+                    </div>
+                  ) : (
+                    <div
+                      className=" "
+                      onClick={() => {
+                        if (!modules.nodeModulesStatus) {
+                          notification('依赖未加载', 'warning')
+                          return
+                        }
+                        ExpansionsRun([])
+                      }}
+                    >
+                      <Play width={20} height={20} />
+                    </div>
+                  )}
+                </Tooltip>
               </div>
               <div className="drag-area flex-1 "></div>
             </div>

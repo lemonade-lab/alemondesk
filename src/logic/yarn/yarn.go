@@ -1,8 +1,9 @@
-package logic
+package logicyarn
 
 import (
 	"alemonapp/src/files"
 	"alemonapp/src/logger"
+	logicbot "alemonapp/src/logic/bot"
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
 	"os"
@@ -20,17 +21,7 @@ func Add(name string, args []string) (bool, error) {
 	}
 
 	// 检查机器人是否正在运行
-	if IsRunning(name) {
-		return false, os.ErrExist
-	}
-
-	// 检查是否提供了依赖名称
-	if len(args) == 0 {
-		return false, os.ErrInvalid
-	}
-
-	// 检查机器人是否正在运行
-	if IsRunning(name) {
+	if logicbot.IsRunning(name) {
 		return false, os.ErrExist
 	}
 
@@ -69,7 +60,7 @@ func Install(name string) (bool, error) {
 		logger.Error("unable to find node:", err)
 		return false, err
 	}
-	if IsRunning(name) {
+	if logicbot.IsRunning(name) {
 		logger.Warn("机器人在运行中，禁止调整依赖")
 		return false, os.ErrExist
 	}
@@ -112,7 +103,7 @@ func Remove(name string, names []string) (bool, error) {
 	}
 
 	// 检查机器人是否正在运行
-	if IsRunning(name) {
+	if logicbot.IsRunning(name) {
 		return false, os.ErrExist
 	}
 
@@ -148,7 +139,7 @@ func Cmd(name string, args []string) (bool, error) {
 	}
 
 	// 检查机器人是否正在运行
-	if IsRunning(name) {
+	if logicbot.IsRunning(name) {
 		return false, os.ErrExist
 	}
 

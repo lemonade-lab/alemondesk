@@ -16,7 +16,7 @@ import Menu from '@/views/Menu'
 import WordBox from '@/views/WordBox'
 import GuideMain from '@/views/Guide/Main'
 import Header from '@/views/Header'
-import { ExpansionsPostMessage, ExpansionsRun } from '@wailsjs/go/windowexpansions/App'
+import { ExpansionsPostMessage, ExpansionsRun, ExpansionsStatus } from '@wailsjs/go/windowexpansions/App'
 import { AppGetPathsState } from '@wailsjs/go/windowapp/App'
 import { ThemeLoadVariables, ThemeMode } from '@wailsjs/go/windowtheme/App'
 import { EventsOn } from '@wailsjs/runtime/runtime'
@@ -157,17 +157,33 @@ export default (function App() {
       }
     })
 
-    const onBotStatus = async () => {
-      const T = await BotStatus()
-      console.log('BotStatus', T)
-      dispatch(
-        setBotStatus({
-          runStatus: T ? true : false
-        })
-      )
+    const onGlobalStatus = async () => {
+      try {
+        const T = await BotStatus()
+        console.log('BotStatus', T)
+        dispatch(
+          setBotStatus({
+            runStatus: T ? true : false
+          })
+        )
+      } catch (error) {
+        console.error('获取 Bot 状态失败', error)
+      }
+      try {
+        const T = await ExpansionsStatus()
+        console.log('ExpansionsStatus', T)
+        dispatch(
+          setExpansionsStatus({
+            runStatus: T ? true : false
+          })
+        )
+      }
+      catch (error) {
+        console.error('获取 Expansions 状态失败', error)
+      }
     }
 
-    const intervalId = setInterval(onBotStatus, 1000 * 3)
+    const intervalId = setInterval(onGlobalStatus, 1000 * 3)
 
     return () => {
       clearInterval(intervalId)
@@ -181,7 +197,7 @@ export default (function App() {
    */
   useEffect(() => {
     modulesRef.current = modules
-    // 依赖安装完成后，启动扩展器
+    // 依赖安装完成后，自动启动扩展器
     if (modules.nodeModulesStatus) {
       // notification('依赖加载完成')
       // 确保启动扩展器

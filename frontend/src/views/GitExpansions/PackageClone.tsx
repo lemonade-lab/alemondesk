@@ -1,18 +1,29 @@
 import { extractRepoInfo, isGitRepositoryFormat } from '@/api'
 import { useNotification } from '@/context/Notification'
 import { Button, Input, SecondaryDiv, Switch } from '@alemonjs/react-ui'
-import { GitClone, GitReposList } from '@wailsjs/go/windowgit/App'
+import { Spin } from 'antd'
+import classNames from 'classnames'
 import { useState } from 'react'
 
-const PackageClone = ({
-  space,
-  data,
-  setData
-}: {
+export type PackageCloneProps = {
   space: string
-  data: any[]
-  setData: (data: any[]) => void
-}) => {
+  show: boolean
+  onSubmit: (
+    params: {
+      url: string
+      branch: string
+      depth: number
+      space: string
+      force: boolean
+      repository: string
+    },
+    options: {
+      finished: () => void
+    }
+  ) => Promise<void>
+}
+
+const PackageClone = ({ space, show, onSubmit }: PackageCloneProps) => {
   const notification = useNotification()
   const [sub, setSub] = useState(false)
   const [values, setValues] = useState({
@@ -51,27 +62,21 @@ const PackageClone = ({
       // 根据 url 解析成仓库地址
       const { username, repository, platform } = extractRepoInfo(value)
 
-      if (data.find(item => item.Name === repository)) {
-        notification('该仓库已存在', 'warning')
-        setSub(false)
-        return
-      }
-
-      notification('正在添加仓库..')
-
-      await GitClone({
-        RepoURL: value,
-        Branch: values.branch,
-        Depth: values.depth,
-        Space: space,
-        Force: values.force
-      }).then(() => {
-        notification('添加成功')
-        // 更新列表
-        GitReposList(space).then(res => {
-          setData(res || [])
-        })
-      })
+      onSubmit(
+        {
+          url: value,
+          branch: values.branch,
+          depth: values.depth,
+          space: space,
+          force: values.force,
+          repository
+        },
+        {
+          finished: () => {
+            setSub(false)
+          }
+        }
+      )
     } catch (error: any) {
       notification('操作失败:' + error.message, 'error')
     } finally {
@@ -80,55 +85,66 @@ const PackageClone = ({
   }
 
   return (
-    <SecondaryDiv className='border-t'>
-      <form className="px-4 py-2 flex flex-col gap-4" onSubmit={onAdd}>
-        <div className="flex gap-2 justify-center items-center">
-          <div className="w-28">仓库地址:</div>
-          <Input
-            type="text"
-            value={values.repoUrl}
-            className="px-2 rounded-md w-full"
-            onChange={e => setValues({ ...values, repoUrl: e.target.value })}
-            placeholder="请输入仓库地址"
-          />
-        </div>
-        <div className="flex gap-2 justify-center items-center">
-          <div className="w-28">分支:</div>
-          <Input
-            className="px-2 rounded-md w-full"
-            type="text"
-            value={values.branch}
-            onChange={e => setValues({ ...values, branch: e.target.value })}
-            placeholder="请输入分支名称"
-          />
-        </div>
-        <div className="flex gap-2 justify-center items-center">
-          <div className="w-28">深度:</div>
-          <Input
-            type="number"
-            className="px-2 rounded-md w-full"
-            value={values.depth}
-            onChange={e => {
-              // min 0
-              if (Number(e.target.value) < 0) {
-                setValues({ ...values, depth: 0 })
-                return
-              }
-              setValues({ ...values, depth: Number(e.target.value) })
-            }}
-          />
-        </div>
-        <div className="flex gap-2 justify-center items-center">
-          <div className="w-28">是否强制覆盖:</div>
-          <Switch
-            value={values.force}
-            onChange={checked => setValues({ ...values, force: checked })}
-          />
-        </div>
-        <Button className="px-2 rounded-md" type="submit">
-          Clone
-        </Button>
-      </form>
+    <SecondaryDiv className={classNames('p-4', !show && 'hidden')}>
+      <Spin spinning={sub} tip="操作中...">
+        <form className="px-4 py-2 flex flex-col gap-4" onSubmit={onAdd}>
+          <div className="flex gap-2 justify-center items-center">
+            <div className="w-28">仓库地址:</div>
+            <Input
+              type="text"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck="false"
+              value={values.repoUrl}
+              className="px-2 rounded-md w-full"
+              onChange={e => setValues({ ...values, repoUrl: e.target.value })}
+              placeholder="请输入仓库地址"
+            />
+          </div>
+          <div className="flex gap-2 justify-center items-center">
+            <div className="w-28">分支:</div>
+            <Input
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck="false"
+              className="px-2 rounded-md w-full"
+              type="text"
+              value={values.branch}
+              onChange={e => setValues({ ...values, branch: e.target.value })}
+              placeholder="请输入分支名称"
+            />
+          </div>
+          <div className="flex gap-2 justify-center items-center">
+            <div className="w-28">深度:</div>
+            <Input
+              type="number"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck="false"
+              className="px-2 rounded-md w-full"
+              value={values.depth}
+              onChange={e => {
+                // min 0
+                if (Number(e.target.value) < 0) {
+                  setValues({ ...values, depth: 0 })
+                  return
+                }
+                setValues({ ...values, depth: Number(e.target.value) })
+              }}
+            />
+          </div>
+          <div className="flex gap-2 justify-center items-center">
+            <div className="w-28">是否强制覆盖:</div>
+            <Switch
+              value={values.force}
+              onChange={checked => setValues({ ...values, force: checked })}
+            />
+          </div>
+          <Button className="px-2 rounded-md" type="submit">
+            Clone
+          </Button>
+        </form>
+      </Spin>
     </SecondaryDiv>
   )
 }

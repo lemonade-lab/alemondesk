@@ -34,8 +34,8 @@ function BotLogList({
   }
 
   return (
-    <div className="flex-1 flex flex-col shadow-md w-[calc(100vw-4rem)]">
-      <PrimaryDiv className="border-b">
+    <div className="flex-1 flex flex-col shadow-md w-[calc(100vw-6rem)]">
+      <PrimaryDiv className="border-b ">
         <div className="flex gap-4 justify-between items-center px-2 py-1">
           <div className="flex-1 gap-2 items-center">{headerLeft}</div>
           <div className="flex gap-4">
@@ -53,12 +53,12 @@ function BotLogList({
           <div className="flex-1 items-center gap-2">{headerRight}</div>
         </div>
       </PrimaryDiv>
-      <Box className='scrollbar h-[calc(100vh-6rem)]'>
+      <Box rootClassName="py-2" className='scrollbar h-[calc(100vh-7rem)]'>
         {log.message.length === 0 ? (
           <div className="text-gray-400">暂无日志</div>
         ) : (
           log.message.map((msg, idx) => (
-              <SecondaryDiv className="select-all rounded-md break-words" key={idx}>
+              <SecondaryDiv className="px-2 select-all rounded-md break-words" key={idx}>
                 {parseLogMessage(msg)}
               </SecondaryDiv>
             ))

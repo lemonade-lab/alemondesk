@@ -56,6 +56,9 @@ const FileEdit = ({
             <div className="relative">
               <Input
                 value={inputValue}
+                autoCapitalize="off"
+  autoCorrect="off"
+  spellCheck="false"
                 placeholder="文件名称"
                 onChange={e => setInputValue(e.target.value)}
                 style={{ minWidth: 120 }}

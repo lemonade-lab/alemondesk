@@ -3,13 +3,13 @@ import { debounce } from 'lodash'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useNotification } from '@/context/Notification'
-import { Button, SecondaryDiv, Select, Tooltip } from '@alemonjs/react-ui'
+import { Button, SecondaryDiv, Select } from '@alemonjs/react-ui'
 import { SidebarDiv } from '@alemonjs/react-ui'
 import { Input } from '@alemonjs/react-ui'
 import PackageInfo, { PackageInfoType } from './PackageInfo'
 import ExpansionsCard from './ExpansionsCard'
 import Init from './Init'
-import { EnterOutlined, SyncOutlined } from '@ant-design/icons'
+import { EnterOutlined } from '@ant-design/icons'
 import { AppReadFiles } from '@wailsjs/go/windowapp/App'
 import { ExpansionsPostMessage } from '@wailsjs/go/windowexpansions/App'
 import { YarnCommands } from '@wailsjs/go/windowyarn/App'
@@ -164,7 +164,7 @@ export default function Expansions() {
       // 重新获取扩展列表
       ExpansionsPostMessage({
         type: 'get-expansions',
-        data: {}
+        data: ''
       })
     })
   }, [])
@@ -201,12 +201,15 @@ export default function Expansions() {
             <Input
               type="text"
               name="name"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck="false"
               placeholder="输入扩展名(可选)"
               value={inputValue}
               onChange={handleChange}
               className="w-full px-2 py-1 rounded-sm"
             />
-            <Button className='px-2 rounded-full' onClick={onClickSync}>
+            <Button className="px-2 rounded-full" onClick={onClickSync}>
               <EnterOutlined />
             </Button>
           </div>

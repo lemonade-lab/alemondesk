@@ -39,7 +39,7 @@ type GitRepoInfo struct {
 }
 
 // 获取指定目录下的所有仓库
-func (a *App) GitReposList(name string) ([]GitRepoInfo, error) {
+func (a *App) GitReposList(name string) []GitRepoInfo {
 	var repos []GitRepoInfo
 	path := paths.GetBotPackagesPath(config.BotName)
 	if name == "plugins" {
@@ -48,7 +48,7 @@ func (a *App) GitReposList(name string) ([]GitRepoInfo, error) {
 	// 读取目录
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		return repos, err
+		return repos
 	}
 
 	for _, entry := range entries {
@@ -95,7 +95,7 @@ func (a *App) GitReposList(name string) ([]GitRepoInfo, error) {
 		}
 	}
 
-	return repos, nil
+	return repos
 }
 
 // 克隆参数
@@ -108,7 +108,7 @@ type GitCloneOptions struct {
 }
 
 // 克隆仓库
-func (a *App) GitClone(params GitCloneOptions) (bool, error) {
+func (a *App) GitClone(params GitCloneOptions) bool {
 	space := params.Space
 	repoUrl := params.RepoURL
 	branch := params.Branch
@@ -121,7 +121,7 @@ func (a *App) GitClone(params GitCloneOptions) (bool, error) {
 	}
 	// 确保目录存在
 	if err := os.MkdirAll(path, 0755); err != nil {
-		return false, err
+		return false
 	}
 
 	// 从 URL 中提取仓库名称
@@ -133,10 +133,13 @@ func (a *App) GitClone(params GitCloneOptions) (bool, error) {
 		if force {
 			// 强制覆盖：删除已存在的目录
 			if err := os.RemoveAll(clonePath); err != nil {
-				return false, fmt.Errorf("删除已存在目录失败: %v", err)
+				logger.Error("删除已存在目录失败:", clonePath, err)
+				return false
 			}
 		} else {
-			return false, fmt.Errorf("目录已存在: %s", clonePath)
+			// 目录已存在且不强制覆盖，返回失败
+			logger.Error("目录已存在，克隆失败:", clonePath)
+			return false
 		}
 	}
 
@@ -156,13 +159,14 @@ func (a *App) GitClone(params GitCloneOptions) (bool, error) {
 	// 使用 PlainClone 方法克隆仓库
 	_, err := git.PlainClone(clonePath, false, cloneOpts)
 	if err != nil {
-		return false, fmt.Errorf("克隆仓库失败: %v", err)
+		logger.Error("克隆仓库错误:", err)
+		return false
 	}
 
-	return true, nil
+	return true
 }
 
-func GitPull(space string, name string) (bool, error) {
+func GitPull(space string, name string) bool {
 	path := paths.GetBotPackagesPath(config.BotName)
 	if space == "plugins" {
 		path = paths.GetBotPluginsPath(config.BotName)
@@ -173,14 +177,14 @@ func GitPull(space string, name string) (bool, error) {
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
 		logger.Error("打开仓库错误:", repoPath, err)
-		return false, err
+		return false
 	}
 
 	// 获取工作树
 	worktree, err := repo.Worktree()
 	if err != nil {
 		logger.Error("获取工作树错误:", err)
-		return false, err
+		return false
 	}
 
 	// 拉取最新更改
@@ -190,13 +194,13 @@ func GitPull(space string, name string) (bool, error) {
 	})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
 		logger.Error("拉取错误:", err)
-		return false, err
+		return false
 	}
 
-	return true, nil
+	return true
 }
 
-func (a *App) GitFetch(space string, repoUrl string) (bool, error) {
+func (a *App) GitFetch(space string, repoUrl string) bool {
 	// 根据 space 参数确定路径
 	path := paths.GetBotPackagesPath(config.BotName)
 	if space == "plugins" {
@@ -208,14 +212,14 @@ func (a *App) GitFetch(space string, repoUrl string) (bool, error) {
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
 		logger.Error("打开仓库错误:", repoPath, err)
-		return false, err
+		return false
 	}
 
 	// 获取远程
 	remote, err := repo.Remote("origin")
 	if err != nil {
 		logger.Error("获取远程错误:", err)
-		return false, err
+		return false
 	}
 
 	// 拉取最新更改
@@ -224,13 +228,13 @@ func (a *App) GitFetch(space string, repoUrl string) (bool, error) {
 	})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
 		logger.Error("拉取错误:", err)
-		return false, err
+		return false
 	}
 
-	return true, nil
+	return true
 }
 
-func (a *App) GitDelete(space string, name string) (bool, error) {
+func (a *App) GitDelete(space string, name string) bool {
 	// 根据 space 参数确定路径
 	path := paths.GetBotPackagesPath(config.BotName)
 	if space == "plugins" {
@@ -242,13 +246,13 @@ func (a *App) GitDelete(space string, name string) (bool, error) {
 	err := os.RemoveAll(repoPath)
 	if err != nil {
 		logger.Error("删除仓库错误:", repoPath, err)
-		return false, err
+		return false
 	}
 
-	return true, nil
+	return true
 }
 
-func (a *App) GitCheckout(space string, name string, branch string) (bool, error) {
+func (a *App) GitCheckout(space string, name string, branch string) bool {
 	// 根据 space 参数确定路径
 	path := paths.GetBotPackagesPath(config.BotName)
 	if space == "plugins" {
@@ -260,14 +264,14 @@ func (a *App) GitCheckout(space string, name string, branch string) (bool, error
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
 		logger.Error("打开仓库错误:", repoPath, err)
-		return false, err
+		return false
 	}
 
 	// 获取工作树
 	worktree, err := repo.Worktree()
 	if err != nil {
 		logger.Error("获取工作树错误:", err)
-		return false, err
+		return false
 	}
 
 	// 切换分支
@@ -277,8 +281,8 @@ func (a *App) GitCheckout(space string, name string, branch string) (bool, error
 	})
 	if err != nil {
 		logger.Error("切换分支错误:", err)
-		return false, err
+		return false
 	}
 
-	return true, nil
+	return true
 }

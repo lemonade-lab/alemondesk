@@ -51,6 +51,9 @@ const RunForm = ({
       <div className="flex items-center gap-2">
         <div className=" w-24">登录名</div>
         <Input
+        autoCapitalize="off"
+  autoCorrect="off"
+  spellCheck="false"
           value={fromValue.login}
           onChange={e => onValueChange({ ...fromValue, login: e.target.value })}
           className="w-full px-2 rounded-md"
@@ -62,6 +65,9 @@ const RunForm = ({
         <Input
           value={fromValue.port}
           type="number"
+          autoCapitalize="off"
+  autoCorrect="off"
+  spellCheck="false"
           onChange={e => {
             const value = Number(e.target.value)
             if (value < 0) {
@@ -82,6 +88,9 @@ const RunForm = ({
         <Input
           value={fromValue.serverPort}
           type="number"
+          autoCapitalize="off"
+  autoCorrect="off"
+  spellCheck="false"
           onChange={e => {
             const value = Number(e.target.value)
             if (value < 0) {

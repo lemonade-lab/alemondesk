@@ -3,7 +3,7 @@ package windowbot
 import (
 	"alemonapp/src/config"
 	"alemonapp/src/logger"
-	"alemonapp/src/logic"
+	logicbot "alemonapp/src/logic/bot"
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
 	"context"
@@ -25,7 +25,7 @@ func (a *App) Startup(ctx context.Context) {
 }
 
 func (a *App) BotStatus() bool {
-	return logic.IsRunning(config.BotName)
+	return logicbot.IsRunning(config.BotName)
 }
 
 func (a *App) BotRun(p1 []string) {
@@ -37,7 +37,7 @@ func (a *App) BotRun(p1 []string) {
 		return
 	}
 	// 运行机器人
-	_, err := logic.Run(config.BotName, p1)
+	_, err := logicbot.Run(config.BotName, p1)
 	if err != nil {
 		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
 			"value": 0,
@@ -59,7 +59,7 @@ func (a *App) BotClose() {
 		return
 	}
 	// 停止机器人
-	_, err := logic.Stop(config.BotName)
+	_, err := logicbot.Stop(config.BotName)
 	if err != nil {
 		// 无变化。
 		logger.Error("停止机器人失败:", err)

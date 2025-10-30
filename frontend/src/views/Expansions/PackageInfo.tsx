@@ -1,4 +1,4 @@
-import { MouseEventHandler, useEffect, useRef, useState } from 'react'
+import { Fragment, MouseEventHandler, useEffect, useRef, useState } from 'react'
 import Markdown from '../../common/Markdown'
 import logoURL from '@/assets/logo.jpg'
 import { useDispatch, useSelector } from 'react-redux'
@@ -344,7 +344,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
             <div className="flex gap-2 items-center">
               <div>Version: {pkgInfo['dist-tags'].latest}</div>
               {expansions.package.find(item => item.name == pkgInfo.name) ? (
-                <>
+                <Fragment>
                   {!pkgInfo['isLink'] && (
                     <div className="flex items-center gap-1 cursor-pointer" onClick={onClickUpdate}>
                       <SyncOutlined /> 更新
@@ -358,7 +358,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
                       <UploadOutlined /> 卸载
                     </div>
                   )}
-                </>
+                </Fragment>
               ) : (
                 <div
                   className="flex items-center gap-1 cursor-pointer"

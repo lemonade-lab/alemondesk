@@ -1,4 +1,4 @@
-package expansions
+package logicbot
 
 import (
 	"alemonapp/src/files"
@@ -10,23 +10,24 @@ import (
 	"path"
 )
 
-// 是否在运行
+// 判断机器人是否在运行
 func IsRunning(name string) bool {
 	pm := process.GetProcessManager()
 	return pm.IsRunning(name)
 }
 
-// 运行
-func Run(name string) (string, error) {
+// 运行机器人
+func Run(name string, args []string) (string, error) {
 	manager := files.GetNodeJSManager()
 	nodeExe, err := manager.GetNodeExePath()
 	// 检查系统是否安装了 Node.js
 	if err != nil {
 		return "未找到NodeJS", err
 	}
+
 	pm := process.GetProcessManager()
 	if pm.IsRunning(name) {
-		return "已经在运行", nil
+		return "机器人已经在运行", nil
 	}
 	files := []string{
 		paths.GetBotDependencyPath(name),
@@ -36,11 +37,14 @@ func Run(name string) (string, error) {
 	if !nodeModules {
 		return "请先安装依赖", os.ErrNotExist
 	}
-	// 目录
+	// 机器人目录
 	botPath := paths.CreateBotPath(name)
 	var indexPath string
 	tryFiles := []string{
-		path.Join("alemonjs", "desktop.js"),
+		path.Join("alemonjs", "index.js"),
+		"index.js",
+		path.Join("src", "index.js"),
+		path.Join("lib", "index.js"),
 	}
 	found := false
 	for _, fp := range tryFiles {
@@ -51,7 +55,7 @@ func Run(name string) (string, error) {
 		}
 	}
 	if !found {
-		return "启动脚本不存在,请新建desktop.js", os.ErrNotExist
+		return "启动脚本不存在,请新建index.js", os.ErrNotExist
 	}
 
 	// 日志和 PID 文件路径
@@ -59,12 +63,13 @@ func Run(name string) (string, error) {
 	pidFile := paths.GetPidFilePath(name)
 	// 交给进程管理器托管
 	pm.AddProcess(process.NodeProcessConfig{
-		Name:     name + "-desk",
+		Name:     name,
 		Dir:      botPath,
 		Node:     nodeExe,
 		ScriptJS: indexPath,
 		// LogPath:     logPath,
 		PidFile:     pidFile,
+		Args:        args,
 		EnvFilePath: paths.GetBotEnvFilePath(name),
 		// 支持直接加环境变量
 		Env: map[string]string{
@@ -75,7 +80,7 @@ func Run(name string) (string, error) {
 		},
 	})
 	// 启动
-	proc := pm.GetProcess(name + "-desk")
+	proc := pm.GetProcess(name)
 	if proc == nil {
 		return "进程未注册", os.ErrNotExist
 	}
@@ -86,10 +91,10 @@ func Run(name string) (string, error) {
 	return "", nil
 }
 
-// 停止
+// 停止机器人
 func Stop(name string) (string, error) {
 	pm := process.GetProcessManager()
-	proc := pm.GetProcess(name + "-desk")
+	proc := pm.GetProcess(name)
 	if proc == nil {
 		return "进程未注册", os.ErrNotExist
 	}
@@ -100,10 +105,10 @@ func Stop(name string) (string, error) {
 	return "", nil
 }
 
-// 重启
+// 重启机器人
 func Restart(name string) (string, error) {
 	pm := process.GetProcessManager()
-	proc := pm.GetProcess(name + "-desk")
+	proc := pm.GetProcess(name)
 	if proc == nil {
 		return "进程未注册", os.ErrNotExist
 	}
@@ -132,13 +137,13 @@ func Info(name string) (models.BotInfoResponse, error) {
 
 	pm := process.GetProcessManager()
 
-	proc := pm.GetProcess(name + "-desk")
+	proc := pm.GetProcess(name)
 	if proc == nil {
 		return models.BotInfoResponse{
 			Code: 0,
 			Msg:  "进程未注册",
 			Data: models.BotInfo{
-				Name:        name + "-desk",
+				Name:        name,
 				Status:      0,
 				Pid:         0,
 				Port:        0,
@@ -154,7 +159,7 @@ func Info(name string) (models.BotInfoResponse, error) {
 			Code: 1,
 			Msg:  "获取进程信息成功",
 			Data: models.BotInfo{
-				Name:        name + "-desk",
+				Name:        name,
 				Status:      1,
 				Pid:         pid,
 				Port:        proc.Config.Port,
@@ -167,7 +172,7 @@ func Info(name string) (models.BotInfoResponse, error) {
 		Code: 0,
 		Msg:  "进程未运行",
 		Data: models.BotInfo{
-			Name:        name + "-desk",
+			Name:        name,
 			Status:      0,
 			Pid:         0,
 			Port:        0,

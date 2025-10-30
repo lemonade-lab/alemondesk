@@ -7,6 +7,7 @@ import rehypeRaw from 'rehype-raw'
 import rehypeAttr from 'rehype-attr'
 import { useEffect } from 'react'
 import { ThemeMode } from '@wailsjs/go/windowtheme/App'
+import classNames from 'classnames'
 
 const useTheme = () => {
   // theme
@@ -44,11 +45,11 @@ const useTheme = () => {
  * @param param0
  * @returns
  */
-const Markdown = ({ source }: { source: string }) => {
+const Markdown = ({ source, className }: { source: string; className?: string }) => {
   useTheme()
   return (
     <MarkdownPreview
-      className="animate__animated animate__fadeIn select-text"
+      className={classNames(className, 'animate__animated animate__fadeIn select-text')}
       style={{
         padding: '0.5rem',
         backgroundColor: '#FFFFFF00'

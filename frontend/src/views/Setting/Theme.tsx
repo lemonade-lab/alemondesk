@@ -131,6 +131,9 @@ const Theme = () => {
                       <div className="flex gap-2 items-center">
                         <Input
                           type="text"
+                          autoCapitalize="off"
+  autoCorrect="off"
+  spellCheck="false"
                           value={item.color}
                           className="rounded px-1"
                           onChange={value => {
@@ -144,6 +147,9 @@ const Theme = () => {
                         />
                         <Input
                           type="color"
+                          autoCapitalize="off"
+  autoCorrect="off"
+  spellCheck="false"
                           value={item.color}
                           onChange={value => {
                             const color = value.target.value
@@ -164,6 +170,9 @@ const Theme = () => {
                         <Input
                           type="text"
                           value={item.color}
+                          autoCapitalize="off"
+  autoCorrect="off"
+  spellCheck="false"
                           className="rounded px-1"
                           onChange={value => {
                             const color = value.target.value
@@ -176,6 +185,9 @@ const Theme = () => {
                         />
                         <Input
                           type="color"
+                          autoCapitalize="off"
+  autoCorrect="off"
+  spellCheck="false"
                           value={item.color}
                           onChange={value => {
                             const color = value.target.value

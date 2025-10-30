@@ -4,7 +4,7 @@ import (
 	"alemonapp/src/config"
 	"alemonapp/src/files"
 	"alemonapp/src/logger"
-	"alemonapp/src/logic"
+	logicyarn "alemonapp/src/logic/yarn"
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
 	"context"
@@ -47,7 +47,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 		}
 
 		// 安装依赖
-		res, error := logic.Install(config.BotName)
+		res, error := logicyarn.Install(config.BotName)
 		data := 0
 		if res {
 			data = 1
@@ -60,7 +60,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 		})
 	} else if p1.Type == "remove" {
 		// 移除依赖
-		res, error := logic.Remove(config.BotName, p1.Args)
+		res, error := logicyarn.Remove(config.BotName, p1.Args)
 		data := 0
 		if res {
 			data = 1
@@ -72,7 +72,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 		})
 	} else if p1.Type == "add" {
 		// 添加依赖
-		res, error := logic.Add(config.BotName, p1.Args)
+		res, error := logicyarn.Add(config.BotName, p1.Args)
 		data := 0
 		if res {
 			data = 1
@@ -84,7 +84,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 		})
 	} else if p1.Type == "cmd" {
 		// 执行命令
-		res, error := logic.Cmd(config.BotName, p1.Args)
+		res, error := logicyarn.Cmd(config.BotName, p1.Args)
 		data := 0
 		if res {
 			data = 1

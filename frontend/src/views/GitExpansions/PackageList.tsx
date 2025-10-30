@@ -6,61 +6,28 @@ import { AppExists, AppReadFiles, AppWriteFiles } from '@wailsjs/go/windowapp/Ap
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 import YAML from 'js-yaml'
+import classNames from 'classnames'
+import { windowgit } from '@wailsjs/go/models'
 
 export default function PackageList({
   data,
-  space,
+  show,
   onDelete,
-  setSelect,
-  setReadme
+  onSelect
 }: {
-  data: any[]
-  space: string
+  data: windowgit.GitRepoInfo[]
+  show: boolean
+  onSelect: (item: windowgit.GitRepoInfo) => void
   onDelete: (name: string) => void
-  setSelect: (select: string) => void
-  setReadme: (readme: string) => void
 }) {
   const notification = useNotification()
-  const app = useSelector((state: RootState) => state.app)
-
-  const [appsMap, setAppsMap] = useState<{
-    [s: string]: boolean
-  }>({})
-  const [configValues, setConfigValues] = useState<any>({})
-
-  const updateConfig = async () => {
-    const dir = app.userDataTemplatePath + '/alemon.config.yaml'
-    const isDir = await AppExists(dir)
-    if (!isDir) {
-      return
-    }
-    const data = await AppReadFiles(dir)
-    if (data && data != '') {
-      try {
-        const config = YAML.load(data) as {
-          apps?: string[] | { [s: string]: boolean }
-        }
-        setConfigValues(config)
-        if (config.apps && Array.isArray(config.apps)) {
-          const map: { [s: string]: boolean } = {}
-          config.apps.forEach(item => {
-            map[item] = true
-          })
-          setAppsMap(map)
-        } else if (config.apps && typeof config.apps === 'object') {
-          setAppsMap(config.apps)
-        }
-      } catch (error) {
-        console.error('Error parsing YAML:', error)
-      }
-    }
-  }
-
-  useEffect(() => {
-    updateConfig()
-  }, [])
   return (
-    <SecondaryDiv className="flex flex-col gap-1 px-2 border-t py-2  overflow-auto  h-[calc(100vh-3.7rem)]">
+    <SecondaryDiv
+      className={classNames({
+        'hidden': !show,
+        'flex flex-col gap-1 px-2 border-t py-2  overflow-auto  h-[calc(100vh-3.7rem)]': show
+      })}
+    >
       {data.map((item, index) => (
         <PrimaryDiv
           className="px-2 py-1 flex justify-between items-center rounded-md cursor-pointer"
@@ -71,15 +38,7 @@ export default function PackageList({
               notification('该仓库损坏，无法查看', 'warning')
               return
             }
-            const dir = `${app.userDataTemplatePath}/${space}/${item.Name}/README.md`
-            const T = await AppExists(dir)
-            if (!T) {
-              notification('该仓库没有README.md文件', 'warning')
-              return
-            }
-            const data = await AppReadFiles(dir)
-            setSelect('readme')
-            setReadme(data)
+            onSelect(item)
           }}
         >
           <div>
@@ -87,12 +46,16 @@ export default function PackageList({
             {!item.IsFullRepo && '(损坏)'}
           </div>
           <div className="flex gap-2">
-            <Dropdown
+            <Button className="px-2 rounded-md" onClick={e => {
+                    e.stopPropagation()
+                    onDelete(item.Name)
+                  }}><DeleteFilled /></Button>
+            {/* <Dropdown
               buttons={[
                 {
                   children: appsMap[item.Name] ? '禁用' : '启动',
                   className: 'px-1 py-0',
-                  onClick: (e) => {
+                  onClick: e => {
                     e.stopPropagation()
                     // 其实就是更新配置文件
                     const newMap = { ...appsMap }
@@ -123,7 +86,7 @@ export default function PackageList({
               ]}
             >
               <Button className="px-2 rounded-md">操作</Button>
-            </Dropdown>
+            </Dropdown> */}
           </div>
         </PrimaryDiv>
       ))}
