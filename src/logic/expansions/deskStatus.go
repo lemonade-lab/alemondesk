@@ -18,7 +18,7 @@ func IsRunning(name string) bool {
 }
 
 // 运行
-func Run(name string) (string, error) {
+func Run(name string, HandleMessage func(message map[string]interface{})) (string, error) {
 	manager := files.GetNodeJSManager()
 	nodeExe, err := manager.GetNodeExePath()
 	// 检查系统是否安装了 Node.js
@@ -63,8 +63,10 @@ func Run(name string) (string, error) {
 		Node:     nodeExe,
 		ScriptJS: indexPath,
 		// LogPath:     logPath,
-		PidFile:     pidFile,
-		EnvFilePath: paths.GetBotEnvFilePath(name),
+		PidFile:              pidFile,
+		EnvFilePath:          paths.GetBotEnvFilePath(name),
+		CommunicationEnabled: true, // 开启通讯
+		HandleMessage:        HandleMessage,
 		// 支持直接加环境变量
 		Env: map[string]string{
 			// 关闭日志时间
@@ -177,4 +179,10 @@ func Info(name string) (models.BotInfoResponse, error) {
 			CreateAt:    createAt,
 		},
 	}, nil
+}
+
+func Managed(name string) *process.ManagedProcess {
+	pm := process.GetProcessManager()
+	expansionsName := name + "-desk"
+	return pm.GetProcess(expansionsName)
 }

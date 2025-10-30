@@ -109,6 +109,7 @@ export default (function App() {
     })
     // 监听 expansions消息
     EventsOn('expansions', data => {
+      // console.log('expansions message', data)
       try {
         if (/^action:/.test(data.type)) {
           const actions = data.type.split(':')
@@ -211,6 +212,7 @@ export default (function App() {
    */
   useEffect(() => {
     if (expansions.runStatus) {
+      console.log('扩展器已启动，获取扩展器列表')
       // 获取扩展器列表
       ExpansionsPostMessage({ type: 'get-expansions' })
     }

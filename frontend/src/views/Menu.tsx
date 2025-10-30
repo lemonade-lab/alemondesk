@@ -2,10 +2,15 @@ import { BarDiv } from '@alemonjs/react-ui'
 import { NavDiv } from '@alemonjs/react-ui'
 import classNames from 'classnames'
 import {
+  AppstoreAddOutlined,
   AppstoreFilled,
+  AppstoreOutlined,
+  ContainerFilled,
+  ContainerOutlined,
   HomeFilled,
   ProductFilled,
   RobotFilled,
+  RobotOutlined,
   SettingFilled,
   ShoppingFilled
 } from '@ant-design/icons'
@@ -24,7 +29,7 @@ const MenuButton = () => {
     onClick: (path: string) => void
   }[] = [
     {
-      Icon: <RobotFilled size={20} />,
+      Icon: <RobotOutlined size={20} />,
       path: '/bot-log',
       className: 'steps-5',
       onClick: path => {
@@ -32,7 +37,7 @@ const MenuButton = () => {
       }
     },
     {
-      Icon: <ProductFilled size={20} />,
+      Icon: <ContainerOutlined size={20} />,
       path: '/git-expansions',
       className: '',
       onClick: path => {
@@ -40,7 +45,7 @@ const MenuButton = () => {
       }
     },
     {
-      Icon: <ShoppingFilled size={20} />,
+      Icon: <AppstoreAddOutlined size={20} />,
       path: '/expansions',
       className: 'steps-6',
       onClick: path => {
@@ -48,7 +53,7 @@ const MenuButton = () => {
       }
     },
     {
-      Icon: <AppstoreFilled size={20} />,
+      Icon: <AppstoreOutlined size={20} />,
       path: '/application',
       className: classNames('steps-7', {
         'opacity-50': !expansions.runStatus

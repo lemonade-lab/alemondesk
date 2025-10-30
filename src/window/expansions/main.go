@@ -51,7 +51,24 @@ func (a *App) ExpansionsRun(p1 []string) {
 		})
 		return
 	}
-	_, err := logicexpansions.Run(expansionsName)
+	_, err := logicexpansions.Run(expansionsName, func(message map[string]interface{}) {
+		// 处理来自扩展器进程的消息
+		msgType, ok := message["type"].(string)
+		if !ok {
+			return
+		}
+		switch msgType {
+		case "get-expansions":
+			// 这里可以通过事件系统通知前端
+			runtime.EventsEmit(a.ctx, "expansions", map[string]interface{}{
+				"type": "get-expansions",
+				"name": expansionsName,
+				"data": message["data"],
+			})
+		default:
+			logger.Info("[%s] Unknown message type: %s", expansionsName, msgType)
+		}
+	})
 	if err != nil {
 		// 通知前端扩展器状态变化
 		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
@@ -87,6 +104,24 @@ func (a *App) ExpansionsClose() {
 func (a *App) ExpansionsStatus() bool {
 	expansionsName := config.BotName
 	return logicexpansions.IsRunning(expansionsName)
+}
+
+type ExpansionsPostMessageParams struct {
+	Type string `json:"type"`
+	Data string `json:"data,omitempty"`
+}
+
+func (a *App) ExpansionsPostMessage(params ExpansionsPostMessageParams) {
+	if params.Type == "get-expansions" {
+		managed := logicexpansions.Managed(config.BotName)
+		err := managed.Send(map[string]interface{}{
+			"type": "get-expansions",
+		})
+		if err != nil {
+			logger.Error("发送消息到扩展器失败:", err)
+		}
+		return
+	}
 }
 
 func (a *App) registerEventHandlers() {
@@ -181,24 +216,6 @@ func (a *App) getThemeVariables() map[string]interface{} {
 		"--text-color":       "#333333",
 		// 添加更多主题变量...
 	}
-}
-
-type ExpansionsPostMessageParams struct {
-	Type string `json:"type"`
-	Data string `json:"data,omitempty"`
-}
-
-func (a *App) ExpansionsPostMessage(params ExpansionsPostMessageParams) {
-	// 向指定的 nodejs 进程发送消息
-
-	// 这里可以调用你的 expansions 包来实际发送消息
-	// 例如: expansions.SendMessage(config.BotName, params.Type, params.Data)
-
-	// 同时通过事件系统通知前端
-	runtime.EventsEmit(a.ctx, "expansions-message-sent", map[string]interface{}{
-		"type": params.Type,
-		"data": params.Data,
-	})
 }
 
 type MessageData struct {

@@ -7,7 +7,7 @@ import Box from './layout/Box'
 
 // 解析字符串。如果发现是error字样要进行高亮
 const parseLogMessage = (message: string) => {
-  const errorRegex = /error/i
+  const errorRegex = /\[ERROR\]/i
   if (errorRegex.test(message)) {
     return <span className="text-red-500 ">{message}</span>
   }

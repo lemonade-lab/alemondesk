@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strconv"
@@ -17,16 +18,18 @@ import (
 
 // node 进程信息
 type NodeProcessConfig struct {
-	Name        string
-	Dir         string
-	Node        string
-	ScriptJS    string
-	LogPath     string
-	PidFile     string
-	EnvFilePath string
-	Env         map[string]string
-	Port        int
-	Args        []string
+	Name                 string
+	Dir                  string
+	Node                 string
+	ScriptJS             string
+	LogPath              string
+	PidFile              string
+	EnvFilePath          string
+	Env                  map[string]string
+	Port                 int
+	Args                 []string
+	CommunicationEnabled bool
+	HandleMessage        func(message map[string]interface{})
 }
 
 // 持久化结构体（包含状态）
@@ -44,6 +47,7 @@ type ManagedProcess struct {
 	Status         string
 	RestartWait    time.Duration
 	mu             sync.Mutex
+	stdinPipe      io.WriteCloser // 新增：用于向Node.js发送消息
 	RestartCount   int
 	MaxRestarts    int
 	LastStartTime  time.Time
@@ -154,31 +158,28 @@ func NewManagedProcess(cfg NodeProcessConfig) *ManagedProcess {
 	}
 }
 
+type multiplexWriter struct {
+	writers []io.Writer
+}
+
+func (m *multiplexWriter) Write(p []byte) (n int, err error) {
+	for _, w := range m.writers {
+		w.Write(p) // 忽略单个错误，确保所有writer都能收到
+	}
+	return len(p), nil
+}
+
 // 启动进程
 func (mp *ManagedProcess) Start() error {
 	mp.mu.Lock()
 	defer mp.mu.Unlock()
 	// 检查进程是否已经在运行
 	if mp.Status == StatusRunning {
-		return fmt.Errorf("%s already running", mp.Config.Name)
+		logger.Warn("%s 已经在运行中，无法重复启动", mp.Config.Name)
+		return nil
 	}
 	// 日志文件
-	// var botLoggerWriter *logger.RobotLoggerWriter
 	var err error
-	// 检查日志文件路径是否存在
-	// if mp.Config.LogPath != "" {
-	// var l = new(zapcore.Level)
-	// confLogLevel := os.Getenv("APP_LOG_LEVEL")
-	// if err := l.UnmarshalText([]byte(confLogLevel)); err != nil {
-	// 	fmt.Printf("unable to unmarshal zapcore.Level: %v\n", err)
-	// }
-
-	// botLogger, err := logger.GetOrCreateBotLogger(mp.Config.Name, *l)
-	// if err != nil {
-	// 	fmt.Printf("unable to create logger: %v\n", err)
-	// }
-	// botLoggerWriter = logger.NewRobotLoggerWriter(botLogger)
-	// }
 	mp.Ctx, mp.Cancel = context.WithCancel(context.Background())
 	args := append([]string{mp.Config.ScriptJS}, mp.Config.Args...)
 	mp.Cmd = utils.CommandContext(mp.Ctx, mp.Config.Node, args...)
@@ -188,8 +189,30 @@ func (mp *ManagedProcess) Start() error {
 		mp.Cmd.Env = append(mp.Cmd.Env, fmt.Sprintf("%s=%s", key, value))
 	}
 
-	mp.Cmd.Stdout = &logger.LogWriter{Level: "info"}
-	mp.Cmd.Stderr = &logger.LogWriter{Level: "error"}
+	// 仅开启通讯的进程设置标准输入输出管道
+	if mp.Config.CommunicationEnabled {
+		// 创建多路复用writer
+		multiStdout := &multiplexWriter{
+			writers: []io.Writer{
+				&logger.LogWriter{Level: "info"},
+				&IPCMessageWriter{ // IPC消息处理
+					ProcessName:    mp.Config.Name,
+					MessageHandler: mp.Config.HandleMessage,
+				},
+			},
+		}
+		mp.Cmd.Stdout = multiStdout
+		mp.Cmd.Stderr = &logger.LogWriter{Level: "error"}
+		stdinPipe, err := mp.Cmd.StdinPipe()
+		if err != nil {
+			logger.Error("[%s] create stdin pipe failed: %v", mp.Config.Name, err)
+			return err
+		}
+		mp.stdinPipe = stdinPipe
+	} else {
+		mp.Cmd.Stdout = &logger.LogWriter{Level: "info"}
+		mp.Cmd.Stderr = &logger.LogWriter{Level: "error"}
+	}
 
 	if mp.Config.Dir != "" {
 		mp.Cmd.Dir = mp.Config.Dir

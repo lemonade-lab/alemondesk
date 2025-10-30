@@ -3,10 +3,10 @@ import { usePop } from '@/context/Pop'
 import { RootState } from '@/store'
 import { Button } from '@alemonjs/react-ui'
 import { PrimaryDiv } from '@alemonjs/react-ui'
-import { SecondaryDiv } from '@alemonjs/react-ui'
-import { Switch } from '@alemonjs/react-ui'
+// import { SecondaryDiv } from '@alemonjs/react-ui'
+// import { Switch } from '@alemonjs/react-ui'
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import GuideCommon from '../Guide/Common'
 import { AppDownloadFiles, AppExists, AppGetConfig, AppSetConfig, GetAppLogsFilePath } from '@wailsjs/go/windowapp/App'
@@ -97,15 +97,15 @@ const Common = () => {
           </div>
           <div className="flex flex-col gap-4">
             {[
-              {
-                title: '开机自启',
-                children: (
-                  <Switch
-                    value={desktopCheckeds.autoLaunch}
-                    onChange={checked => onChangeDesktop('AUTO_LAUNCH', checked)}
-                  />
-                )
-              },
+              // {
+              //   title: '开机自启',
+              //   children: (
+              //     <Switch
+              //       value={desktopCheckeds.autoLaunch}
+              //       onChange={checked => onChangeDesktop('AUTO_LAUNCH', checked)}
+              //     />
+              //   )
+              // },
               {
                 title: '依赖锁文件',
                 description: 'yarn.lock',
@@ -164,40 +164,40 @@ const Common = () => {
                   </Button>
                 )
               },
-              {
-                title: '以指定目录打开应用',
-                description: '目录不存在pkg时，将新建机器人',
-                children: (
-                  <>
-                    {/* <Button
-                      className="px-2 rounded-md border"
-                      onClick={() => {
-                        // window.app.selectDirectory().then(dir => {
-                        //   const path = dir[0]
-                        //   if (typeof path === 'string') {
-                        //     window.app.reStart(path)
-                        //   }
-                        // })
-                      }}
-                    >
-                      恢复默认
-                    </Button> */}
-                    <Button
-                      className="px-2 rounded-md border  steps-common-2"
-                      onClick={() => {
-                        // window.app.selectDirectory().then(dir => {
-                        //   const path = dir[0]
-                        //   if (typeof path === 'string') {
-                        //     window.app.reStart(path)
-                        //   }
-                        // })
-                      }}
-                    >
-                      选择
-                    </Button>
-                  </>
-                )
-              }
+              // {
+              //   title: '以指定目录打开应用',
+              //   description: '目录不存在pkg时，将新建机器人',
+              //   children: (
+              //     <Fragment>
+              //       {/* <Button
+              //         className="px-2 rounded-md border"
+              //         onClick={() => {
+              //           // window.app.selectDirectory().then(dir => {
+              //           //   const path = dir[0]
+              //           //   if (typeof path === 'string') {
+              //           //     window.app.reStart(path)
+              //           //   }
+              //           // })
+              //         }}
+              //       >
+              //         恢复默认
+              //       </Button> */}
+              //       <Button
+              //         className="px-2 rounded-md border  steps-common-2"
+              //         onClick={() => {
+              //           // window.app.selectDirectory().then(dir => {
+              //           //   const path = dir[0]
+              //           //   if (typeof path === 'string') {
+              //           //     window.app.reStart(path)
+              //           //   }
+              //           // })
+              //         }}
+              //       >
+              //         选择
+              //       </Button>
+              //     </Fragment>
+              //   )
+              // }
             ].map((item, index) => (
               <div key={index} className="flex gap-2 justify-between">
                 <div className="flex flex-row gap-2 items-center">
