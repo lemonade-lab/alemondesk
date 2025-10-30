@@ -59,17 +59,11 @@ func (a *App) ExpansionsRun(p1 []string) {
 		if !ok {
 			return
 		}
-		switch msgType {
-		case "get-expansions":
-			// 这里可以通过事件系统通知前端
-			runtime.EventsEmit(a.ctx, "expansions", map[string]interface{}{
-				"type": "get-expansions",
-				"name": expansionsName,
-				"data": message["data"],
-			})
-		default:
-			logger.Info("[%s] Unknown message type: %s", expansionsName, msgType)
-		}
+		// 这里可以通过事件系统通知前端
+		runtime.EventsEmit(a.ctx, "expansions", map[string]interface{}{
+			"type": msgType,
+			"data": message["data"],
+		})
 	})
 
 	_, err := logicexpansions.Run(expansionsName)
@@ -116,15 +110,13 @@ type ExpansionsPostMessageParams struct {
 }
 
 func (a *App) ExpansionsPostMessage(params ExpansionsPostMessageParams) {
-	if params.Type == "get-expansions" {
-		managed := logicexpansions.Managed(config.BotName)
-		err := managed.Send(map[string]interface{}{
-			"type": "get-expansions",
-		})
-		if err != nil {
-			logger.Error("发送消息到扩展器失败:", err)
-		}
-		return
+	managed := logicexpansions.Managed(config.BotName)
+	err := managed.Send(map[string]interface{}{
+		"type": params.Type,
+		"data": params.Data,
+	})
+	if err != nil {
+		logger.Error("发送消息到扩展器失败:", err)
 	}
 }
 

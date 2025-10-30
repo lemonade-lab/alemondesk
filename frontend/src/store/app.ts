@@ -6,6 +6,7 @@ interface State {
   userDataPackagePath: string
   preloadPath: string
   logMainPath: string
+  resourcePath: string
 }
 
 const initialState: State = {
@@ -13,7 +14,8 @@ const initialState: State = {
   userDataNodeModulesPath: '',
   userDataPackagePath: '',
   preloadPath: '',
-  logMainPath: ''
+  logMainPath: '',
+  resourcePath: ''
 }
 
 const notificationSlice = createSlice({

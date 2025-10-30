@@ -6,6 +6,7 @@ export namespace windowapp {
 	    userDataPackagePath: string;
 	    preloadPath: string;
 	    logMainPath: string;
+	    resourcePath: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new PathsState(source);
@@ -18,6 +19,7 @@ export namespace windowapp {
 	        this.userDataPackagePath = source["userDataPackagePath"];
 	        this.preloadPath = source["preloadPath"];
 	        this.logMainPath = source["logMainPath"];
+	        this.resourcePath = source["resourcePath"];
 	    }
 	}
 

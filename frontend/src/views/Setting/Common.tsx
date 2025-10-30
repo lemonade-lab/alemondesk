@@ -3,54 +3,24 @@ import { usePop } from '@/context/Pop'
 import { RootState } from '@/store'
 import { Button } from '@alemonjs/react-ui'
 import { PrimaryDiv } from '@alemonjs/react-ui'
-// import { SecondaryDiv } from '@alemonjs/react-ui'
-// import { Switch } from '@alemonjs/react-ui'
 import _ from 'lodash'
 import { Fragment, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import GuideCommon from '../Guide/Common'
 import { AppDownloadFiles, AppExists, AppGetConfig, AppSetConfig, GetAppLogsFilePath } from '@wailsjs/go/windowapp/App'
-import { GetVersions } from '@wailsjs/go/windowcontroller/App'
+// import { GetVersions } from '@wailsjs/go/windowcontroller/App'
 import { BotResetTemplate } from '@wailsjs/go/windowbot/App'
 import { YarnCommands } from '@wailsjs/go/windowyarn/App'
 
 const Common = () => {
   const app = useSelector((state: RootState) => state.app)
-  const [desktopCheckeds, setDesktopChecked] = useState({
-    autoLaunch: false,
-    autoCheck: false,
-    autoStart: false
-  })
   const notification = useNotification()
-
-  // 初始化更新
-  const initUpdate = async () => {
-    AppGetConfig(['AUTO_LAUNCH', 'AUTO_INSTALL', 'AUTO_RUN_EXTENSION']).then(T => {
-      setDesktopChecked({
-        autoLaunch: T.AUTO_LAUNCH === 'true',
-        autoCheck: T.AUTO_INSTALL === 'true',
-        autoStart: T.AUTO_RUN_EXTENSION === 'true'
-      })
-    })
-  }
-
-  const update = _.throttle(async (key: string, checked: boolean) => {
-    const T = await AppSetConfig(key, checked ? 'true' : 'false')
-    if (T) {
-      setDesktopChecked({
-        ...desktopCheckeds,
-        [key]: checked
-      })
-    }
-  }, 500)
 
   /**
    *
    * @param status
    */
-  const onChangeDesktop = (key: string, status: boolean) => {
-    update(key, status)
-  }
+
 
   const { setPopValue } = usePop()
 
@@ -78,15 +48,6 @@ const Common = () => {
     })
   }
 
-  const [commandKey, setCommandKey] = useState('ctrl')
-
-  useEffect(() => {
-    console.log('初始化通用设置')
-    initUpdate()
-    GetVersions().then(res => {
-      setCommandKey(res.platform == 'darwin' ? 'command' : 'ctrl')
-    })
-  }, [])
 
   return (
     <div className="animate__animated animate__fadeIn flex-1 flex-col flex">
@@ -164,40 +125,6 @@ const Common = () => {
                   </Button>
                 )
               },
-              // {
-              //   title: '以指定目录打开应用',
-              //   description: '目录不存在pkg时，将新建机器人',
-              //   children: (
-              //     <Fragment>
-              //       {/* <Button
-              //         className="px-2 rounded-md border"
-              //         onClick={() => {
-              //           // window.app.selectDirectory().then(dir => {
-              //           //   const path = dir[0]
-              //           //   if (typeof path === 'string') {
-              //           //     window.app.reStart(path)
-              //           //   }
-              //           // })
-              //         }}
-              //       >
-              //         恢复默认
-              //       </Button> */}
-              //       <Button
-              //         className="px-2 rounded-md border  steps-common-2"
-              //         onClick={() => {
-              //           // window.app.selectDirectory().then(dir => {
-              //           //   const path = dir[0]
-              //           //   if (typeof path === 'string') {
-              //           //     window.app.reStart(path)
-              //           //   }
-              //           // })
-              //         }}
-              //       >
-              //         选择
-              //       </Button>
-              //     </Fragment>
-              //   )
-              // }
             ].map((item, index) => (
               <div key={index} className="flex gap-2 justify-between">
                 <div className="flex flex-row gap-2 items-center">
@@ -209,29 +136,6 @@ const Common = () => {
                 <div className="flex gap-2">{item.children}</div>
               </div>
             ))}
-            {/* <SecondaryDiv className="flex flex-col gap-2  shadow-inner rounded-md p-2">
-              <div className="">快捷键</div>
-              {[
-                {
-                  title: '开发者工具',
-                  children: (
-                    <div className="flex gap-1">
-                      <div className="border px-2 rounded-md">{commandKey}</div>
-                      <div className="border px-2 rounded-md">F12</div>
-                    </div>
-                  )
-                }
-              ].map((item, index) => {
-                return (
-                  <div key={index} className="flex gap-2 justify-between">
-                    <div className="flex flex-row gap-2 items-center">
-                      <div>{item.title}</div>
-                    </div>
-                    {item.children}
-                  </div>
-                )
-              })}
-            </SecondaryDiv> */}
           </div>
           <GuideCommon />
         </PrimaryDiv>

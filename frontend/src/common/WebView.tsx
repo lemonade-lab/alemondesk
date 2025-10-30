@@ -1,8 +1,8 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
-import { textContent } from './textContent'
 
 interface WebViewProps {
   src: string
+  preload?: string
 }
 
 export interface WebViewHandle {
@@ -11,7 +11,7 @@ export interface WebViewHandle {
   getIframe: () => HTMLIFrameElement | null
 }
 
-const WebView = forwardRef<WebViewHandle, WebViewProps>(({ src }, ref) => {
+const WebView = forwardRef<WebViewHandle, WebViewProps>(({ src, preload }, ref) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // 暴露方法给外部 ref
@@ -35,39 +35,18 @@ const WebView = forwardRef<WebViewHandle, WebViewProps>(({ src }, ref) => {
     []
   )
 
-  useEffect(() => {
-    const iframe = iframeRef.current
-    if (!iframe) return
-
-    const handleLoad = () => {
-      // 尝试注入预加载脚本
-      try {
-        const iframeWindow = iframe.contentWindow
-        if (iframeWindow && iframeWindow.document) {
-          const script = iframeWindow.document.createElement('script')
-          script.textContent = textContent
-          iframeWindow.document.head.appendChild(script)
-        }
-      } catch (error) {
-        console.log('跨域 iframe，无法直接注入脚本')
-      }
-    }
-
-    iframe.addEventListener('load', handleLoad)
-
-    return () => {
-      iframe.removeEventListener('load', handleLoad)
-    }
-  }, [src])
 
   return (
     <iframe
       ref={iframeRef}
-      id="myIframe"
       src={src}
-      style={{ width: '100%', height: '500px', border: 'none' }}
       allowFullScreen
       loading="lazy"
+      title=""
+      id="active-frame"
+      className="m-0 p-0 size-full"
+      sandbox="allow-scripts"
+      allow="cross-origin-isolated; autoplay; clipboard-read; clipboard-write;"
     />
   )
 })

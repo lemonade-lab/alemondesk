@@ -14,11 +14,13 @@ interface Sidebar {
   expansions_name: string
   name: string
   icon: string
-  command: string
+  commond: string
 }
 
-const createTextHtmlURL = (html: string) =>
-  `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
+const createTextHtmlURL = (html: string) => {
+  return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+}
+  
 
 export default function Webviews() {
   const location = useLocation()
@@ -31,11 +33,12 @@ export default function Webviews() {
 
   // 点击侧边栏
   const handleSidebarClick = (viewItem: Sidebar) => {
-    if (viewItem.command === command.name) {
+    console.log('点击侧边栏', viewItem)
+    if (viewItem.commond === command.name) {
       return
     }
     // 记录当前的命令
-    dispatch(setCommand(viewItem.command))
+    dispatch(setCommand(viewItem.commond))
   }
 
   useEffect(() => {
@@ -81,17 +84,8 @@ export default function Webviews() {
     <section className=" flex flex-col flex-1 shadow-md">
       <div className="flex flex-1">
         <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1 ">
-          {/* { (
-            <div className="flex-1 flex justify-center items-center">
-              <div className="flex-col flex justify-center items-center">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-bg">
-                  <LoadingOutlined />
-                </div>
-                <div className="mt-2">加载中...</div>
-              </div>
-            </div>
-          )} */}
           {view && <WebView src={createTextHtmlURL(view)} />}
+          {/* {view && <WebView src={`/resource://-/${app.resourcePath}/index.html`} />} */}
           {!view && (
             <div className="flex-1 flex justify-center items-center">
               <div className="flex-col flex justify-center items-center">
@@ -115,7 +109,7 @@ export default function Webviews() {
                   onClick={() => handleSidebarClick(viewItem)}
                   className={classNames(
                     'p-1 size-[3.28rem] rounded-md border text-sm relative flex cursor-pointer justify-center items-center duration-700 transition-all  ',
-                    { 'bg-secondary-bg': viewItem.command === command.name }
+                    { 'bg-secondary-bg': viewItem.commond === command.name }
                   )}
                 >
                   {createIcon(viewItem)}

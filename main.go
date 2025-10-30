@@ -75,13 +75,14 @@ func main() {
 
 	// 创建应用选项
 	appOptions := &options.App{
-		Title:     "ALemonDesk",
-		MaxWidth:  1400,
-		MaxHeight: 900,
-		Width:     960,
-		Height:    600,
-		MinWidth:  960,
-		MinHeight: 600,
+		Title:             "ALemonDesk",
+		MaxWidth:          1400,
+		MaxHeight:         900,
+		Width:             960,
+		Height:            600,
+		MinWidth:          960,
+		MinHeight:         600,
+		HideWindowOnClose: false, // 关闭窗口时隐藏应用
 		Debug: options.Debug{
 			OpenInspectorOnStartup: false,
 		},
@@ -107,6 +108,9 @@ func main() {
 			wyarn,
 			wgit,
 		},
+		// Windows: options.Windows{
+		// 	wexpansions.CreateHideWebview()
+		// },
 	}
 
 	// macOS 特定配置 - 启用交通灯按钮
