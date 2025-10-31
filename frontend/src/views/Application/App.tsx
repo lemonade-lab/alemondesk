@@ -9,6 +9,7 @@ import { SidebarDiv } from '@alemonjs/react-ui'
 import { TagDiv } from '@alemonjs/react-ui'
 import { AntdIcon } from '@/common/AntdIcon'
 import WebView from '@/common/WebView'
+import { RESOURCE_PROTOCOL_PREFIX } from '@/api/config'
 
 interface Sidebar {
   expansions_name: string
@@ -62,7 +63,7 @@ export default function Webviews() {
 
   // 创建图标地址
   const createIconURL = (viewItem: Sidebar) => {
-    return `resource://-/${app.userDataTemplatePath}/node_modules/${viewItem.expansions_name}/${viewItem.icon}`
+    return `${RESOURCE_PROTOCOL_PREFIX}${app.userDataTemplatePath}/node_modules/${viewItem.expansions_name}/${viewItem.icon}`
   }
 
   const createIcon = (viewItem: Sidebar) => {
@@ -90,7 +91,7 @@ export default function Webviews() {
               rules={[
                 {
                   protocol: 'resource://-/',
-                  work: '/resource://-/',
+                  work: RESOURCE_PROTOCOL_PREFIX,
                 }
               ]}
             />

@@ -1,54 +1,23 @@
 import { useNotification } from '@/context/Notification'
-import { usePop } from '@/context/Pop'
+import { FeatModal } from '@/context/Pop'
 import { RootState } from '@/store'
 import { Button } from '@alemonjs/react-ui'
 import { PrimaryDiv } from '@alemonjs/react-ui'
 import _ from 'lodash'
-import { Fragment, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import GuideCommon from '../Guide/Common'
-import { AppDownloadFiles, AppExists, AppGetConfig, AppSetConfig, GetAppLogsFilePath } from '@wailsjs/go/windowapp/App'
-// import { GetVersions } from '@wailsjs/go/windowcontroller/App'
-import { BotResetTemplate } from '@wailsjs/go/windowbot/App'
-import { YarnCommands } from '@wailsjs/go/windowyarn/App'
+import {
+  AppDownloadFiles,
+  AppExists,
+  GetAppLogsFilePath
+} from '@wailsjs/go/windowapp/App'
+import { BotResetBot, BotResetTemplate, BotResetTemplateAndBot } from '@wailsjs/go/windowbot/App'
 
 const Common = () => {
   const app = useSelector((state: RootState) => state.app)
   const notification = useNotification()
-
-  /**
-   *
-   * @param status
-   */
-
-
-  const { setPopValue } = usePop()
-
-  const openModal = () => {
-    setPopValue({
-      open: true,
-      title: '重置扩展与机器人',
-      description: '危险！该操作将以当前版本初始内容对所有扩展和机器人进行重置!',
-      buttonText: '重置并重载',
-      data: {},
-      code: 0,
-      onConfirm: () => {
-        BotResetTemplate().then(res => {
-          if (res) {
-            notification('重置成功，开始重新安装依赖...')
-            YarnCommands({
-              type: 'install',
-              args: ['--ignore-warnings']
-            })
-          } else {
-            notification('重置失败')
-          }
-        })
-      }
-    })
-  }
-
-
+  const [open, setOpen] = useState(false)
   return (
     <div className="animate__animated animate__fadeIn flex-1 flex-col flex">
       <div className="flex-col gap-2 flex-1 flex p-6 ">
@@ -112,19 +81,19 @@ const Common = () => {
                 )
               },
               {
-                title: '重置扩展与机器人',
+                title: '重置模板与机器人',
                 description: '以当前版本为准',
                 children: (
                   <Button
                     className="px-2 rounded-md border"
                     onClick={() => {
-                      openModal()
+                      setOpen(true)
                     }}
                   >
                     重置
                   </Button>
                 )
-              },
+              }
             ].map((item, index) => (
               <div key={index} className="flex gap-2 justify-between">
                 <div className="flex flex-row gap-2 items-center">
@@ -140,6 +109,44 @@ const Common = () => {
           <GuideCommon />
         </PrimaryDiv>
       </div>
+      <FeatModal
+        open={open}
+        title="选择重置"
+        textOk="启动"
+        onClose={() => setOpen(false)}
+        footer={null}
+      >
+        <div className="flex flex-col gap-4">
+          <Button
+            className="px-2 rounded-md border"
+            onClick={async () => {
+              BotResetBot()
+              setOpen(false)
+            }}
+          >
+            仅重置机器人
+          </Button>
+          <Button
+            className="px-2 rounded-md border"
+            onClick={async () => {
+              BotResetTemplate()
+              setOpen(false)
+            }}
+          >
+            仅重置模板
+          </Button>
+          <Button
+            className="px-2 rounded-md border"
+            onClick={async () => {
+              BotResetTemplateAndBot()
+              setOpen(false)
+            }}
+          >
+            重置模板与机器人
+          </Button>
+        </div>
+        <div className="flex flex-col gap-4"></div>
+      </FeatModal>
     </div>
   )
 }

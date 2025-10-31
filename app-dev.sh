@@ -12,6 +12,7 @@ yarn --cwd frontend install
 if [ ! -f "resources/node_modules.tar.gz" ]; then
    # 处理后端依赖
    yarn --cwd resources/template install
+   find resources/template/node_modules -type l -exec rm {} + # 得删除软链接
    # 立即压缩依赖文件
    tar -czf resources/node_modules.tar.gz -C resources/template node_modules
    # 删除未压缩的依赖文件夹以节省空间

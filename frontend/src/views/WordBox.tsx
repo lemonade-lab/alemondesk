@@ -14,6 +14,7 @@ import { AntdIcon } from '@/common/AntdIcon'
 import { setCommand } from '@/store/command'
 import { ExpansionsClose, ExpansionsRun } from '@wailsjs/go/windowexpansions/App'
 import { YarnCommands } from '@wailsjs/go/windowyarn/App'
+import { RESOURCE_PROTOCOL_PREFIX } from '@/api/config'
 interface Sidebar {
   expansions_name: string
   name: string
@@ -39,7 +40,7 @@ export default function WordBox() {
   }
 
   const createIconURL = (viewItem: Sidebar) => {
-    return `resource://-/${app.userDataTemplatePath}/node_modules/${viewItem.expansions_name}/${viewItem.icon}`
+    return `${RESOURCE_PROTOCOL_PREFIX}${app.userDataTemplatePath}/node_modules/${viewItem.expansions_name}/${viewItem.icon}`
   }
 
   // 点击外部关闭下拉菜单

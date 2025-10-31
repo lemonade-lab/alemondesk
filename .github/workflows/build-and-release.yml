@@ -49,14 +49,14 @@ jobs:
       - name: install template dependencies
         run: |
             yarn --cwd resources/template install
-      - name: delete bin (Linux/macOS)
+      - name: delete link (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
-          rm -rf resources/template/node_modules/.bin
-      - name: delete bin (Windows)
+          find resources/template/node_modules -type l -exec rm {} +
+      - name: delete link (Windows)
         if: runner.os == 'Windows'
         run: |
-          Remove-Item resources/template/node_modules/.bin -Recurse -Force
+          Get-ChildItem -Path resources/template/node_modules -Recurse | Where-Object { $_.LinkType -ne $null } | Remove-Item -Force
       - name: compress
         run: |
             tar -czf resources/node_modules.tar.gz -C resources/template node_modules

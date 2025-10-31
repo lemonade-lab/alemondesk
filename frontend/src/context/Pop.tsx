@@ -1,16 +1,17 @@
 import { Button } from '@alemonjs/react-ui'
 import { Modal } from '@alemonjs/react-ui'
-import { createContext, useState, ReactNode, useContext, PropsWithChildren } from 'react'
+import { createContext, useState, ReactNode, useContext, PropsWithChildren, Fragment } from 'react'
 import { ControllerOnClick } from '@wailsjs/go/windowcontroller/App'
 import classNames from 'classnames'
 
 type ModalProps = PropsWithChildren & {
   open: boolean
-  onClose: () => void
+  onClose?: () => void
   title: string
-  onOk: () => void
+  onOk?: () => void
   textOk?: string
   textCancel?: string
+  footer?: ReactNode
 }
 
 export const BaseModal = ({
@@ -20,36 +21,47 @@ export const BaseModal = ({
   children,
   onOk,
   textOk,
-  textCancel
+  textCancel,
+  footer
 }: ModalProps) => {
   return (
-    <Modal isOpen={open} onClose={onClose}>
+    <Modal isOpen={open} onClose={() => onClose && onClose()}>
       <h2 className="text-xl mb-4">{title}</h2>
       <div>{children}</div>
       <div className="flex justify-end gap-2">
-        <Button onClick={onClose} className="mt-4 px-4 py-2   rounded ">
-          {textCancel || '取消'}
-        </Button>
-        <Button onClick={onOk} className="mt-4 px-4 py-2   rounded ">
-          {textOk || '确定'}
-        </Button>
+        {
+          footer === null ? null : footer
+        }
+        {
+          footer === undefined && (
+            <Fragment>
+              <Button onClick={() => onClose && onClose()} className="mt-4 px-4 py-2   rounded ">
+                {textCancel || '取消'}
+            </Button>
+            <Button onClick={() => onOk && onOk()} className="mt-4 px-4 py-2   rounded ">
+              {textOk || '确定'}
+            </Button>
+          </Fragment>
+        )}
       </div>
     </Modal>
   )
 }
 
 const positionClass = ['center', 'bottom-end', 'bottom-start', 'top-end', 'top-start'] as const
-export function FeatModal(props: ModalProps & { position?: typeof positionClass[number] }) {
+export function FeatModal(props: ModalProps & { position?: (typeof positionClass)[number] }) {
   const { open, position = 'center', ...reset } = props
   if (!open) return null
   return (
-    <div className={classNames('z-50', {
-      ['fixed inset-0 flex items-center justify-center']: position === 'center',
-      ['fixed bottom-4 right-4']: position === 'bottom-end',
-      ['fixed bottom-4 left-4']: position === 'bottom-start',
-      ['fixed top-4 right-4']: position === 'top-end',
-      ['fixed top-4 left-4']: position === 'top-start'
-    })}>
+    <div
+      className={classNames('z-50', {
+        ['fixed inset-0 flex items-center justify-center']: position === 'center',
+        ['fixed bottom-4 right-4']: position === 'bottom-end',
+        ['fixed bottom-4 left-4']: position === 'bottom-start',
+        ['fixed top-4 right-4']: position === 'top-end',
+        ['fixed top-4 left-4']: position === 'top-start'
+      })}
+    >
       <BaseModal open={open} {...reset} />
     </div>
   )

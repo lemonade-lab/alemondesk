@@ -20,7 +20,7 @@ func CreateAssetServer(assets *embed.FS) *assetserver.Options {
 				if strings.HasPrefix(r.URL.Path, resourcePrefix) {
 					filePath := r.URL.Path[len(resourcePrefix):]
 
-					// 路径安全检查
+					// TODO 需要验证，是否存在跨 work 目录地址资源。
 					filePath = filepath.Clean(filePath)
 					if filePath == "" || strings.Contains(filePath, "..") {
 						http.Error(w, "Invalid file path", http.StatusBadRequest)

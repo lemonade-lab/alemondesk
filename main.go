@@ -40,6 +40,7 @@ func main() {
 	if err := logger.Init(); err != nil {
 		logger.Error("初始化日志失败:", err)
 	}
+	// 程序退出时关闭日志
 	defer logger.Close()
 
 	// 从嵌入里解出文件

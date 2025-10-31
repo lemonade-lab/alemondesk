@@ -6,8 +6,16 @@ export function BotClose() {
   return window['go']['windowbot']['App']['BotClose']();
 }
 
+export function BotResetBot() {
+  return window['go']['windowbot']['App']['BotResetBot']();
+}
+
 export function BotResetTemplate() {
   return window['go']['windowbot']['App']['BotResetTemplate']();
+}
+
+export function BotResetTemplateAndBot() {
+  return window['go']['windowbot']['App']['BotResetTemplateAndBot']();
 }
 
 export function BotRun(arg1) {

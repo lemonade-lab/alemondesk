@@ -2,11 +2,13 @@ package windowbot
 
 import (
 	"alemonapp/src/config"
+	"alemonapp/src/files"
 	"alemonapp/src/logger"
 	logicbot "alemonapp/src/logic/bot"
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
 	"context"
+	"os"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -68,12 +70,67 @@ func (a *App) BotClose() {
 	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
 		"value": 0,
 	})
-	return
 }
 
 // 重置机器人模板
-func (a *App) BotResetTemplate() bool {
-	// 创建默认机器人
-	err := utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))
-	return err == nil
+func (a *App) BotResetTemplateAndBot() {
+	botPath := paths.CreateBotPath(config.BotName)
+	templatePath := paths.GetBotTemplate()
+
+	// 删除模板目录
+	if err := os.RemoveAll(templatePath); err != nil {
+		logger.Error("删除模板目录失败:", err)
+		return
+	}
+
+	files.ReCreate()
+
+	// 删除现有机器人目录
+	if err := os.RemoveAll(botPath); err != nil {
+		logger.Error("删除机器人目录失败:", err)
+		return
+	}
+
+	// 不存在的时候创建机器人目录
+	if _, err := os.Stat(botPath); os.IsNotExist(err) {
+		utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))
+	}
+
+	// 重载APP
+	runtime.WindowReloadApp(a.ctx)
+}
+
+// 重置机器人模板
+func (a *App) BotResetTemplate() {
+	templatePath := paths.GetBotTemplate()
+
+	// 删除模板目录
+	if err := os.RemoveAll(templatePath); err != nil {
+		logger.Error("删除模板目录失败:", err)
+		return
+	}
+
+	files.ReCreate()
+
+	// 重载APP
+	runtime.WindowReloadApp(a.ctx)
+}
+
+// 重置机器人
+func (a *App) BotResetBot() {
+	botPath := paths.CreateBotPath(config.BotName)
+
+	// 删除现有机器人目录
+	if err := os.RemoveAll(botPath); err != nil {
+		logger.Error("删除机器人目录失败:", err)
+		return
+	}
+
+	// 不存在的时候创建机器人目录
+	if _, err := os.Stat(botPath); os.IsNotExist(err) {
+		utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))
+	}
+
+	// 重载APP
+	runtime.WindowReloadApp(a.ctx)
 }

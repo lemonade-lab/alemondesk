@@ -69,6 +69,10 @@ func Create(ResourcesFiles fs.FS) {
 	}
 }
 
+func ReCreate() {
+	Create(resourcesFiles)
+}
+
 func getNodejsResourcePath() string {
 	return filepath.Join(paths.GetResourcePath(), "nodejs")
 }

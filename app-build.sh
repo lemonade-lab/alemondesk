@@ -7,7 +7,7 @@ yarn --cwd frontend install
 yarn --cwd frontend build
 
 yarn --cwd resources/template install
-rm -rf resources/template/node_modules/.bin # 得删除依赖里的.bin文件夹，内部有软链接
+find resources/template/node_modules -type l -exec rm {} + # 得删除软链接
 tar -czf resources/node_modules.tar.gz -C resources/template node_modules
 rm -rf resources/template/node_modules
 

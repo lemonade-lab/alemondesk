@@ -12,6 +12,7 @@ import { AntdIcon } from '@/common/AntdIcon'
 import { YarnCommands } from '@wailsjs/go/windowyarn/App'
 import { EventsOn } from '@wailsjs/runtime/runtime'
 import { ExpansionsPostMessage } from '@wailsjs/go/windowexpansions/App'
+import { RESOURCE_PROTOCOL_PREFIX } from '@/api/config'
 
 export type PackageInfoType = {
   [key: string]: any
@@ -277,7 +278,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
     if (pkgInfo['__logo_url']) {
       url = pkgInfo['__logo_url']
     } else if (pkgInfo['__logo']) {
-      url = `resource://-/${pkgInfo['__logo']}`
+      url = `${RESOURCE_PROTOCOL_PREFIX}${pkgInfo['__logo']}`
     } else {
       url = logoURL
     }

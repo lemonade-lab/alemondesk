@@ -61,30 +61,32 @@ func GetLogFilePath() string {
 }
 
 func Info(format string, v ...interface{}) {
-	msg := fmt.Sprintf("[INFO] "+format, v...)
-	output(msg)
+	output("INFO", format, v...)
 }
 
 func Warn(format string, v ...interface{}) {
-	msg := fmt.Sprintf("[WARN] "+format, v...)
-	output(msg)
+	output("WARN", format, v...)
 }
 
 func Error(format string, v ...interface{}) {
-	msg := fmt.Sprintf("[ERROR] "+format, v...)
-	output(msg)
+	output("ERROR", format, v...)
 }
 
 func Debug(format string, v ...interface{}) {
-	msg := fmt.Sprintf("[DEBUG] "+format, v...)
-	output(msg)
+	output("DEBUG", format, v...)
 }
 
-func output(msg string) {
+func output(name string, format string, v ...interface{}) {
+	// 不是开发模式下，忽略 DEBUG 日志
+	if !config.IsDev() && name == "DEBUG" {
+		return
+	}
+	msg := fmt.Sprintf("["+name+"] "+format, v...)
 	// 如果有前端上下文，发送到前端
 	if curCtx == nil {
 		return
 	}
+
 	wailsRuntime.EventsEmit(curCtx, "terminal", fmt.Sprintf("%s\n", msg))
 
 	// 获取调用者信息
@@ -120,6 +122,10 @@ func (lw *LogWriter) Write(p []byte) (n int, err error) {
 		Info("%s", msg)
 	case "error":
 		Error("%s", msg)
+	case "debug":
+		Debug("%s", msg)
+	case "warn":
+		Warn("%s", msg)
 	default:
 		Info("%s", msg)
 	}
