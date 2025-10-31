@@ -34,6 +34,8 @@ func (a *App) Startup(ctx context.Context) {
 }
 
 const expansionsStatus = "expansions-status"
+const webviewHideMessage = "webview-hide-message"
+const webviewOnHideMessage = "webview-on-hide-message"
 
 func (a *App) ExpansionsRun(p1 []string) {
 	botPath := paths.GetBotPath(config.BotName)
@@ -122,44 +124,14 @@ func (a *App) ExpansionsPostMessage(params ExpansionsPostMessageParams) {
 }
 
 func (a *App) registerEventHandlers() {
-	// 监听来自前端的各种事件
-	runtime.EventsOn(a.ctx, "expansions-post-message", func(data ...interface{}) {
-		logger.Debug("expansions-post-message: %v", data)
-		// [map[data:map[name:@alemonjs/process value:map[]] type:webview-get-expansions]]
-		if len(data) > 0 {
-			if params, ok := data[0].(map[string]interface{}); ok {
-				logger.Debug("expansions-post-message: %v", params)
-				msgType, _ := params["type"].(string)
-				switch msgType {
-				case "webview-get-expansions":
-					{
-						// 处理获取扩展信息的请求
-					}
-				}
-			}
-		}
-	})
-
 	// 隐藏消息窗口
-	runtime.EventsOn(a.ctx, "webview-hide-message-create", func(data ...interface{}) {
-		logger.Debug("webview-hide-message-create: %v", data)
-		if len(data) > 0 {
-			if params, ok := data[0].(map[string]interface{}); ok {
-				if name, exists := params["_name"].(string); exists {
-					logger.Debug("webview-hide-message-create: %s", name)
-				}
-			}
-		}
-	})
-
-	// 隐藏消息窗口
-	runtime.EventsOn(a.ctx, "webview-hide-message", func(data ...interface{}) {
+	runtime.EventsOn(a.ctx, webviewHideMessage, func(data ...interface{}) {
 		logger.Debug("webview-hide-message: %v", data)
 		if len(data) > 0 {
 			if params, ok := data[0].(map[string]interface{}); ok {
 				name, _ := params["_name"].(string)
-				// a.SendHideMessage(name, params)
 				if paramsType, exists := params["type"].(string); exists {
+					logger.Debug(name, paramsType)
 					switch paramsType {
 					case "css-variables":
 						{
@@ -169,23 +141,23 @@ func (a *App) registerEventHandlers() {
 							if err := json.Unmarshal([]byte(themeVars), &parsedVars); err != nil {
 								logger.Error("解析css变量失败:", err)
 							}
-							// 回复消息
-							runtime.EventsEmit(a.ctx, "webview-hide-message-reply", map[string]interface{}{
+							d := map[string]interface{}{
 								"_name": name,
 								"type":  paramsType,
 								"data":  parsedVars,
-							})
+							}
+							runtime.EventsEmit(a.ctx, webviewOnHideMessage, d)
 						}
-
 					case "theme-mode":
 						{
 							mode := logictheme.GetThemeMode()
-							// 回复消息
-							runtime.EventsEmit(a.ctx, "webview-hide-message-reply", map[string]interface{}{
+							logger.Debug("主题模式:", mode)
+							d := map[string]interface{}{
 								"_name": name,
 								"type":  paramsType,
 								"data":  mode,
-							})
+							}
+							runtime.EventsEmit(a.ctx, webviewOnHideMessage, d)
 						}
 					}
 				}

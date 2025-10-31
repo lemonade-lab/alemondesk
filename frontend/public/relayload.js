@@ -2,6 +2,10 @@ function EventsOnMultiple(eventName, callback, maxCallbacks) {
     return window.runtime.EventsOnMultiple(eventName, callback, maxCallbacks);
 }
 
+function EventsOff(eventName, ...additionalEventNames) {
+    return window.runtime.EventsOff(eventName, ...additionalEventNames);
+}
+
 function EventsOn(eventName, callback) {
     return EventsOnMultiple(eventName, callback, -1);
 }
@@ -11,23 +15,12 @@ function EventsEmit(eventName) {
     return window.runtime.EventsEmit.apply(null, args);
 }
 
-const select = {
-    // 发送消息
-    postMessage: 'webview-post-message',
-    // 接收消息
-    onMessage: 'webview-on-message',
-    // 主题变量
-    cssVariables: 'webview-css-variables',
-    // 主题变化
-    onCSSVariables: 'webview-on-css-variables',
-    // 得到扩展列表
-    getExpansions: 'webview-get-expansions',
-    // 扩展消息
-    onExpansionsMessage: 'webview-on-expansions-message'
-}
+const eventName = 'webview-hide-message';
+const obEventName = 'webview-on-hide-message';
 
-const createOn = (callback, eventName, name) => {
+const createOn = (_, callback, name) => {
     const handler = (data) => {
+        // 属于自己的消息才处理
         if (data.name === name) {
             callback && callback(data.value)
         }
@@ -35,102 +28,109 @@ const createOn = (callback, eventName, name) => {
     EventsOn(eventName, handler)
 }
 
-const postMessage = async (data, name, typing) => {
-    await EventsEmit('expansions-post-message', {
+const createEmit = async (data, name, typing) => {
+    return EventsEmit(eventName, {
+        _name: name,
         type: typing,
-        data: {
-            name: name,
-            value: data
-        }
+        data: data
     })
 }
 
-const appDesktopHideAPI = {
-    create: (name) => {
-        EventsEmit('webview-hide-message-create', {
-            _name: name
-        })
+class appDesktopHideAPI {
 
-        return {
-            send: (data) => {
-                EventsEmit('webview-hide-message', {
-                    _name: name,
-                    type: data?.type || '',
-                    data: data?.data || {}
-                })
-            },
-            on: (callback) => {
-                EventsOn('webview-hide-message', (data) => {
-                    console.log('on-webview-hide-message', data)
-                    if (data._name === name && callback) {
-                        callback(data)
-                    }
-                })
+    constructor(name) {
+        this.name = name
+    }
+
+    static create(name) {
+        return new appDesktopHideAPI(name)
+    }
+
+    send(data) {
+        // 发送任意消息
+        EventsEmit(eventName, {
+            _name: this.name,
+            type: data?.type || '',
+            data: data?.data || {}
+        })
+    }
+
+    on(callback) {
+        // 订阅消息
+        EventsOn(eventName, (data) => {
+            console.log('[appDesktopHideAPI] 收到隐藏桌面消息', data)
+            if (data._name === this.name && callback) {
+                callback(data)
             }
-        }
-    },
-    themeVariables: (name) => postMessage({}, name, select.cssVariables),
-    themeOn: (name, callback) => createOn(callback, select.onCSSVariables, name)
+        })
+    }
+
+    // 卸载callback
+    off() {
+        EventsOff(eventName)
+    }
+
+    #themeVariablesEventName = 'webview-theme-variables'
+
+    themeVariables() {
+        // 发送主题变量请求
+        EventsEmit(eventName, {
+            _name: this.name,
+            type: this.#themeVariablesEventName,
+            data: {}
+        })
+    }
+
+    themeOn(callback) {
+        // 订阅主题变量变化
+        EventsOn(eventName, (data) => {
+            // 属于自己的消息才处理
+            if (data._name === this.name && callback && data.type === this.#themeVariablesEventName) {
+                callback(data.value)
+            }
+        })
+    }
 }
 
-const appDesktopAPI = {
-    create: (name) => {
-        return {
-            postMessage: (data) => postMessage(data, name, select.postMessage),
-            onMessage: (callback) => createOn(callback, select.onMessage, name),
-            expansion: {
-                getList: () => postMessage({}, name, select.getExpansions),
-                on: (callback) => createOn(callback, select.onExpansionsMessage, name)
+class appDesktopAPI extends appDesktopHideAPI {
+    static create(name) {
+        return new appDesktopAPI(name)
+    }
+
+    // 兼容性方法
+    postMessage(data) {
+        return this.send({
+            type: data.type,
+            data: data.data
+        })
+    }
+
+    onMessage(callback) {
+        return this.on((data) => {
+            if (callback) {
+                callback(data.data)
             }
+        })
+    }
+
+    // 扩展功能相关
+    #expansionEventName = 'webview-get-expansions'
+
+    expansion = {
+        getList: () => {
+            return this.send({
+                type: this.#expansionEventName
+            })
+        },
+        on: (callback) => {
+            return this.on((data) => {
+                if (data.type === this.#expansionEventName && callback) {
+                    callback(data.data)
+                }
+            })
         }
     }
 }
+
 window.appDesktopHideAPI = appDesktopHideAPI
 window.appDesktopAPI = appDesktopAPI
-
-
-// const expansionsName = '@alemonjs/process'
-
-// // 创建隐藏桌面API
-// const main = window.appDesktopHideAPI?.create(expansionsName)
-
-// console.log('expansionsName', expansionsName)
-// console.log('main', main)
-
-// // 监听隐藏消息
-// main.on(data => {
-//     if (data.type == 'css-variables') {
-//         const cssVariables = data.data
-//         try {
-//             Object.keys(cssVariables).forEach(key => {
-//                 document.documentElement.style.setProperty(`--${key}`, cssVariables[key])
-//             })
-//         } catch (e) {
-//             console.error(e)
-//         }
-
-//     } else if (data.type == 'theme-mode') {
-//         const mode = data.data
-//         if (mode === 'dark') {
-//             document.documentElement.classList.add('dark')
-//         } else {
-//             document.documentElement.classList.remove('dark')
-//         }
-//     }
-// })
-
-// // 获取 css 变量
-
-// main.send({
-//     type: 'css-variables'
-// })
-
-// // 获得 css 主题
-
-// main.send({
-//     type: 'theme-mode'
-// })
-
-
-// // 创建桌面API 
-// window.createDesktopAPI = () => window.appDesktopAPI.create(expansionsName)

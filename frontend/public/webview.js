@@ -34,6 +34,12 @@ class __Desk_WebView {
     }
 }
 
+const observeKeys = {
+    EventsOnMultiple: true
+}
+// 收集订阅
+const runtimeEventListeners = new Map();
+
 // 初始化
 window.__alemondesk_webview = new __Desk_WebView();
 
@@ -41,6 +47,26 @@ window.__alemondesk_webview = new __Desk_WebView();
 window.runtime = new Proxy({}, {
     get(target, prop) {
         return (...args) => {
+            // 处理特殊的订阅机制
+            if (observeKeys[prop]) {
+                const eventName = args[0];
+                const callback = args[1];
+                if (!runtimeEventListeners.has(eventName)) {
+                    runtimeEventListeners.set(eventName, []);
+                }
+                runtimeEventListeners.get(eventName).push(callback);
+                return new Promise((resolve, reject) => {
+                    const callbackId = window.__alemondesk_webview.callbackId++;
+                    window.__alemondesk_webview.callbacks.set(callbackId, {resolve, reject});
+                    window.__alemondesk_webview.send({
+                        global: 'runtime',
+                        type: prop,
+                        // 只传第一个参数 eventName，回调函数不传
+                        args: [eventName],
+                        callbackId: callbackId
+                    });
+                });
+            }
             return new Promise((resolve, reject) => {
                 const callbackId = window.__alemondesk_webview.callbackId++;
                 window.__alemondesk_webview.callbacks.set(callbackId, {resolve, reject});
@@ -56,22 +82,22 @@ window.runtime = new Proxy({}, {
 });
 
 // 代理 go 对象
-window.go = new Proxy({}, {
-    get(target, prop) {
-        return (...args) => {
-            return new Promise((resolve, reject) => {
-                const callbackId = window.__alemondesk_webview.callbackId++;
-                window.__alemondesk_webview.callbacks.set(callbackId, {resolve, reject});
-                window.__alemondesk_webview.send({
-                    global: 'go',
-                    type: prop,
-                    args: args,
-                    callbackId: callbackId
-                });
-            });
-        };
-    }
-});
+// window.go = new Proxy({}, {
+//     get(target, prop) {
+//         return (...args) => {
+//             return new Promise((resolve, reject) => {
+//                 const callbackId = window.__alemondesk_webview.callbackId++;
+//                 window.__alemondesk_webview.callbacks.set(callbackId, {resolve, reject});
+//                 window.__alemondesk_webview.send({
+//                     global: 'go',
+//                     type: prop,
+//                     args: args,
+//                     callbackId: callbackId
+//                 });
+//             });
+//         };
+//     }
+// });
 
 // 处理来自父窗口的响应
 window.__alemondesk_webview.on((message) => {
@@ -83,28 +109,26 @@ window.__alemondesk_webview.on((message) => {
 window.__alemondesk_webview.on(async (data) => {
     try {
         // 同样双向执行
-        if (data.global === 'go') {
-            // 处理 go 相关消息。 
-            const goProp = (window).go?.[data.type]
-            if (typeof goProp === 'function') {
-                const result = await goProp(...data.args)
-                // sendToIframe({
-                //     callbackId: data.callbackId!,
-                //     result: result
-                // })
-            } else {
-                // throw new Error(`go.${data.type} is not a function`)
+        if (data.global === 'runtime') {
+            console.log(`[WebView] 收到 runtime 事件 ${data.type} 消息`, data);
+            // 先检查是否是订阅的事件
+            if (runtimeEventListeners.has(data.type)) {
+                 const callbacks = runtimeEventListeners.get(data.type);
+                callbacks.forEach(callback => callback(...data.args));
+                return;
             }
-        } else if (data.global === 'runtime') {
-            const runtimeProp = (window).runtime?.[data.type]
-            if (typeof runtimeProp === 'function') {
-                const result = await runtimeProp(...data.args)
-                // sendToIframe({
-                //     callbackId: data.callbackId!,
-                //     result: result
-                // })
-            } else {
-                // throw new Error(`runtime.${data.type} is not a function`)
+            else {
+                // 不是订阅的。调用 runtime 方法
+                const runtimeProp = window.runtime[data.type];
+                if (typeof runtimeProp === 'function') {
+                    const result = await runtimeProp(...data.args);
+                    // 发送回调结果
+                    window.__alemondesk_webview.send({
+                        callbackId: data.callbackId,
+                        result: result
+                    });
+                    return;
+                }
             }
         }
         if (data.type === 'initialize') {

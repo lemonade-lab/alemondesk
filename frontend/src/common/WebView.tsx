@@ -1,16 +1,12 @@
-import { EventsOn } from '@wailsjs/runtime/runtime'
+import { EventsOff, EventsOn } from '@wailsjs/runtime/runtime'
 import { useEffect, useRef } from 'react'
 
 // 定义消息类型
 interface WebViewMessage {
-  global: 'go' | 'runtime'
+  global: 'go' | 'runtime' | 'message' | 'callback'
   type: string
-  args: any[]
+  args?: any[]
   callbackId?: number
-}
-
-interface CallbackMessage {
-  callbackId: number
   result?: any
   error?: string
 }
@@ -29,97 +25,6 @@ const WebView = ({ src, rules }: WebViewProps) => {
   const lastSrcRef = useRef<string>('') // 记录上次发送的内容
   const initTimestampRef = useRef<number>(0) // 初始化时间戳
 
-  const sendToIframe = (data: CallbackMessage) => {
-    if (iframeRef.current?.contentWindow) {
-      iframeRef.current.contentWindow.postMessage(data, '*')
-    }
-  }
-
-  // 处理 Go 方法调用
-  const handleGoCall = async (data: WebViewMessage) => {
-    try {
-      const goProp = (window as any).go?.[data.type]
-      if (typeof goProp === 'function') {
-        const result = await goProp(...data.args)
-        sendToIframe({
-          callbackId: data.callbackId!,
-          result: result
-        })
-      } else {
-        throw new Error(`go.${data.type} is not a function`)
-      }
-    } catch (error) {
-      sendToIframe({
-        callbackId: data.callbackId!,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      })
-    }
-  }
-
-  // 处理 Runtime 方法调用
-  const handleRuntimeCall = async (data: WebViewMessage) => {
-    try {
-      const runtimeProp = (window as any).runtime?.[data.type]
-      if (typeof runtimeProp === 'function') {
-        const result = await runtimeProp(...data.args)
-        sendToIframe({
-          callbackId: data.callbackId!,
-          result: result
-        })
-      } else {
-        throw new Error(`runtime.${data.type} is not a function`)
-      }
-    } catch (error) {
-      sendToIframe({
-        callbackId: data.callbackId!,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      })
-    }
-  }
-
-  // 监听来自 iframe 的消息
-  useEffect(() => {
-    // 监听消息。然后转发到对应的处理函数 
-    EventsOn('webview-post-message-reply', (data: any) => {
-      console.log('webview-post-message-reply', data)
-       iframeRef.current?.contentWindow?.postMessage(
-          {
-            global: 'runtime',
-            type: 'EventsOnMultiple',
-            args: [data] 
-          },
-          '*'
-        )
-    })
-    EventsOn('webview-hide-message-reply', (data: any) => {
-      console.log('webview-hide-message-reply', data)
-      iframeRef.current?.contentWindow?.postMessage(
-          {
-            global: 'runtime',
-            type: 'EventsOnMultiple',
-            args: [data] 
-          },
-          '*'
-        )
-    })
-
-    const handleMessage = (event: MessageEvent) => {
-      const data = event.data
-      // 处理 API 调用
-      const apiMessage = data as WebViewMessage
-      // 验证消息结构
-      if (!apiMessage.global || !apiMessage.type) return
-
-      if (apiMessage.global === 'go') {
-        handleGoCall(apiMessage)
-      } else if (apiMessage.global === 'runtime') {
-        handleRuntimeCall(apiMessage)
-      }
-    }
-    window.addEventListener('message', handleMessage)
-    return () => window.removeEventListener('message', handleMessage)
-  }, [])
-
   // 初始化和重建 iframe
   useEffect(() => {
     const container = containerRef.current
@@ -132,6 +37,11 @@ const WebView = ({ src, rules }: WebViewProps) => {
     if (lastSrcRef.current === src) {
       console.log('[WebView] 内容未变化，跳过推送')
       return
+    }
+
+    if(!src){
+      // 被清空内容
+      return;
     }
 
     // 生成唯一的初始化时间戳
@@ -161,6 +71,7 @@ const WebView = ({ src, rules }: WebViewProps) => {
         console.log(`[WebView] 新 iframe 已加载，发送内容 (timestamp: ${timestamp})`)
         newIframe.contentWindow.postMessage(
           {
+            global: 'message',
             type: 'initialize',
             src: src,
             rules: rules,
@@ -182,9 +93,93 @@ const WebView = ({ src, rules }: WebViewProps) => {
     iframeRef.current = newIframe
 
     console.log(`[WebView] 新 iframe 已创建并插入`)
+
+    // 开始处理消息监听
+
+    const observeKeys: {
+      [key: string]: string
+    } = {
+      EventsOnMultiple: 'EventsOnMultiple'
+    }
+    const observeType: {
+      [key: string]: string
+    } = {}
+    // 这里callback
+    const postMessage = (data: WebViewMessage) => {
+      if (iframeRef.current?.contentWindow) {
+        iframeRef.current.contentWindow.postMessage(data, '*')
+      }
+    }
+    // 处理 Runtime 方法调用
+    const handleRuntimeCall = async (data: WebViewMessage) => {
+      try {
+        const runtimeProp = (window as any).runtime?.[data.type]
+        if (typeof runtimeProp === 'function') {
+          const args = data?.args ?? []
+           console.log(`[WebView] 调用 runtime.${data.type} 方法`, args)
+          // 拦截订阅
+          if (observeKeys[data.type]) {
+            const eventName = args[0]
+            if (!eventName) return
+            if(!observeType[eventName]){
+            // 记录订阅类型，方便取消
+            observeType[eventName] = data.type
+              // 订阅事件
+              EventsOn(eventName, (...args) => {
+                console.log(`检查`, eventName, args)
+                iframeRef.current?.contentWindow?.postMessage(
+                  {
+                    global: 'runtime',
+                    type: eventName,
+                    args: args
+                  },
+                  '*'
+                )
+              })
+            }
+            return
+          }
+          const result = await runtimeProp(...args)
+          // postMessage({
+          //   global: 'callback',
+          //   type: 'callback',
+          //   callbackId: data.callbackId!,
+          //   result: result
+          // })
+        } else {
+          throw new Error(`runtime.${data.type} is not a function`)
+        }
+      } catch (error) {
+        // postMessage({
+        //   global: 'callback',
+        //   type: 'callback',
+        //   callbackId: data.callbackId!,
+        //   error: error instanceof Error ? error.message : 'Unknown error'
+        // })
+      }
+    }
+
+    const handleMessage = (event: MessageEvent) => {
+      const data = event.data
+      // 处理 API 调用
+      const apiMessage = data as WebViewMessage
+      // 验证消息结构
+      if (!apiMessage.global || !apiMessage.type) return
+      if (apiMessage.global === 'runtime') {
+        handleRuntimeCall(apiMessage)
+      }
+    }
+    window.addEventListener('message', handleMessage)
+    return () => {
+      window.removeEventListener('message', handleMessage)
+      // 清理订阅
+      Object.keys(observeType).forEach(key => {
+        EventsOff(observeType[key])
+      })
+    }
   }, [src])
 
   return <div ref={containerRef} className="m-0 p-0 w-full h-full" />
 }
 
-export default WebView
+export default WebView;
