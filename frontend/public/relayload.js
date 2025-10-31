@@ -91,38 +91,37 @@ class appDesktopAPI extends appDesktopHideAPI {
     static create(name) {
         return new appDesktopAPI(name)
     }
-
-    // 兼容性方法
+    #eventPostName = 'post-message';
+    #eventOnPostName = 'on-post-message';
     postMessage(data) {
         return this.send({
-            type: data.type,
-            data: data.data
+            type: this.#eventPostName,
+            data: {
+                name: this.name,
+                value: data
+            }
         })
     }
-
     onMessage(callback) {
         return this.on((data) => {
-            if (callback) {
+            if (callback && data.type === this.#eventOnPostName) {
                 callback(data.data)
             }
         })
     }
-
-    // 扩展功能相关
-    #expansionEventName = 'webview-get-expansions'
-
+    /**
+     * 下面的接口，是web直接调用主进程的，而非去到扩展器。
+     * 因此，可以直接读取 window？
+     */
+    #expansionEventName = 'get-expansions'
     expansion = {
         getList: () => {
-            return this.send({
-                type: this.#expansionEventName
+            return this.postMessage({
+                type: this.#expansionEventName,
             })
         },
         on: (callback) => {
-            return this.on((data) => {
-                if (data.type === this.#expansionEventName && callback) {
-                    callback(data.data)
-                }
-            })
+            return this.onMessage(callback)
         }
     }
 }

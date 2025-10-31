@@ -29,7 +29,6 @@ type NodeProcessConfig struct {
 	Port                 int
 	Args                 []string
 	CommunicationEnabled bool
-	// HandleMessage        func(message map[string]interface{})
 }
 
 // 持久化结构体（包含状态）
@@ -97,16 +96,6 @@ func (pm *ProcessManager) RemoveProcess(name string) {
 		delete(pm.Processes, name)
 		// 删除持久化配置
 		RemoveProcessConfig(name)
-		// 释放对应机器人日志资源（如果有）
-		// 注意：按当前设计，机器人名称与进程名称一致
-		// var l = new(zapcore.Level)
-		// confLogLevel := os.Getenv("APP_LOG_LEVEL")
-		// if err := l.UnmarshalText([]byte(confLogLevel)); err == nil {
-		// 	logger.DeleteBotLogger(name, *l)
-		// } else {
-		// 	// 兜底关闭
-		// 	logger.DeleteBotLogger(name, zapcore.InfoLevel)
-		// }
 	}
 }
 

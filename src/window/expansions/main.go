@@ -62,6 +62,29 @@ func (a *App) ExpansionsRun(p1 []string) {
 		if !ok {
 			return
 		}
+		// 扩展器向 webview 发送的消息
+		if len(msgType) >= 8 && msgType[:8] == "webview-" {
+			logger.Debug("webview 相关消息:", message)
+			webData := message["data"]
+			if data, ok := webData.(map[string]interface{}); ok {
+				name := data["name"]
+				value := data["value"]
+				d := map[string]interface{}{
+					"_name": name,
+					"type":  "on-post-message",
+					"data":  value,
+				}
+				// 转为json
+				jsonData, err := json.Marshal(d)
+				if err != nil {
+					logger.Error("转换css变量为json失败:", err)
+				}
+				runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
+			} else {
+				logger.Error("webview 数据格式错误:", webData)
+			}
+			return
+		}
 		// 这里可以通过事件系统通知前端
 		runtime.EventsEmit(a.ctx, "expansions", map[string]interface{}{
 			"type": msgType,
@@ -112,6 +135,7 @@ type ExpansionsPostMessageParams struct {
 	Data string `json:"data,omitempty"`
 }
 
+// 向扩展器发送消息
 func (a *App) ExpansionsPostMessage(params ExpansionsPostMessageParams) {
 	managed := logicexpansions.Managed(config.BotName)
 	err := managed.Send(map[string]interface{}{
@@ -168,6 +192,22 @@ func (a *App) registerEventHandlers() {
 								logger.Error("转换主题模式为json失败:", err)
 							}
 							runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
+						}
+					case "post-message":
+						{
+							// webview 向扩展器发送消息
+							if messageData, exists := params["data"].(map[string]interface{}); exists {
+								logger.Debug("触发 webview-post-message消息:", messageData)
+								jsonBytes, err := json.Marshal(messageData)
+								if err != nil {
+									logger.Error("转为JSON失败:", err)
+									return
+								}
+								a.ExpansionsPostMessage(ExpansionsPostMessageParams{
+									Type: "webview-post-message",
+									Data: string(jsonBytes),
+								})
+							}
 						}
 					}
 				}
