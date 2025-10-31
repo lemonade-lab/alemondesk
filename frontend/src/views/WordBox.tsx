@@ -203,8 +203,8 @@ export default function WordBox() {
               // 当依赖加载完毕后再显示操作按钮
             }
             <div className="flex flex-1">
-              <div className=" flex gap-2 justify-center items-center">
-                <Tooltip text="运行扩展器">
+              <div className="steps-1 flex gap-2 justify-center items-center">
+                  <Tooltip text="运行扩展器">
                   {expansions.runStatus ? (
                     <div
                       className=" "

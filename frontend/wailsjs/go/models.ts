@@ -5,7 +5,6 @@ export namespace windowapp {
 	    userDataNodeModulesPath: string;
 	    userDataPackagePath: string;
 	    preloadPath: string;
-	    logMainPath: string;
 	    resourcePath: string;
 	
 	    static createFrom(source: any = {}) {
@@ -18,7 +17,6 @@ export namespace windowapp {
 	        this.userDataNodeModulesPath = source["userDataNodeModulesPath"];
 	        this.userDataPackagePath = source["userDataPackagePath"];
 	        this.preloadPath = source["preloadPath"];
-	        this.logMainPath = source["logMainPath"];
 	        this.resourcePath = source["resourcePath"];
 	    }
 	}

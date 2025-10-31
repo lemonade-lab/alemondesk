@@ -639,10 +639,10 @@ aggregate-error@^3.0.0:
     clean-stack "^2.0.0"
     indent-string "^4.0.0"
 
-alemonjs@^2.1.3:
-  version "2.1.3"
-  resolved "https://registry.npmmirror.com/alemonjs/-/alemonjs-2.1.3.tgz#79f7ffa7ea6ea8d31a1800b70510801ccae95d0c"
-  integrity sha512-3eIgpBWfLme8WHMQqlMgKGS00Tu6mHQJ5pUQnosXq62xBasNWdu0VmQO9wskgz0P0OZaT/+qwjJW3m5O7i4xYA==
+alemonjs@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.npmmirror.com/alemonjs/-/alemonjs-2.1.4.tgz#7121313d0ffc5892b3938698a9b7a30b47d41c45"
+  integrity sha512-iZbe7e2iRw0k6qrXCAefCejK4ctJH/4ZvVP2T5/+S3Bv4LTR6TJY6bTowABPOGqxGfFRNFcHKTFp97CXJiSZBw==
   dependencies:
     "@koa/cors" "^5.0.0"
     axios "^1.10.0"

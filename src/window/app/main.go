@@ -31,7 +31,6 @@ type PathsState struct {
 	UserDataNodeModulesPath string `json:"userDataNodeModulesPath"`
 	UserDataPackagePath     string `json:"userDataPackagePath"`
 	PreloadPath             string `json:"preloadPath"`
-	LogMainPath             string `json:"logMainPath"`
 	ResourcePath            string `json:"resourcePath"`
 }
 
@@ -41,7 +40,6 @@ func (a *App) AppGetPathsState() PathsState {
 		UserDataNodeModulesPath: paths.GetBotDependencyPath(config.BotName),
 		UserDataPackagePath:     paths.GetBotPackageJsonFilePath(config.BotName),
 		PreloadPath:             paths.GetPreloadPath(),
-		LogMainPath:             "",
 		ResourcePath:            paths.GetResourcePath(),
 	}
 }

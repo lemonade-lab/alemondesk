@@ -5,6 +5,7 @@ import (
 	"alemonapp/src/config"
 	"alemonapp/src/logger"
 	logicexpansions "alemonapp/src/logic/expansions"
+	logictheme "alemonapp/src/logic/theme"
 	"alemonapp/src/paths"
 	"alemonapp/src/process"
 	"alemonapp/src/utils"
@@ -123,193 +124,72 @@ func (a *App) ExpansionsPostMessage(params ExpansionsPostMessageParams) {
 func (a *App) registerEventHandlers() {
 	// 监听来自前端的各种事件
 	runtime.EventsOn(a.ctx, "expansions-post-message", func(data ...interface{}) {
+		logger.Debug("expansions-post-message: %v", data)
+		// [map[data:map[name:@alemonjs/process value:map[]] type:webview-get-expansions]]
 		if len(data) > 0 {
 			if params, ok := data[0].(map[string]interface{}); ok {
-				a.handlePostMessage(params)
+				logger.Debug("expansions-post-message: %v", params)
+				msgType, _ := params["type"].(string)
+				switch msgType {
+				case "webview-get-expansions":
+					{
+						// 处理获取扩展信息的请求
+					}
+				}
 			}
 		}
 	})
 
+	// 隐藏消息窗口
 	runtime.EventsOn(a.ctx, "webview-hide-message-create", func(data ...interface{}) {
+		logger.Debug("webview-hide-message-create: %v", data)
 		if len(data) > 0 {
 			if params, ok := data[0].(map[string]interface{}); ok {
 				if name, exists := params["_name"].(string); exists {
-					a.CreateHideWebview(name)
+					logger.Debug("webview-hide-message-create: %s", name)
 				}
 			}
 		}
 	})
 
+	// 隐藏消息窗口
 	runtime.EventsOn(a.ctx, "webview-hide-message", func(data ...interface{}) {
+		logger.Debug("webview-hide-message: %v", data)
 		if len(data) > 0 {
-			if message, ok := data[0].(map[string]interface{}); ok {
-				if name, exists := message["_name"].(string); exists {
-					a.SendHideMessage(name, message)
+			if params, ok := data[0].(map[string]interface{}); ok {
+				name, _ := params["_name"].(string)
+				// a.SendHideMessage(name, params)
+				if paramsType, exists := params["type"].(string); exists {
+					switch paramsType {
+					case "css-variables":
+						{
+							themeVars := logictheme.GetThemeVariables()
+							// 解析json
+							parsedVars := make(map[string]interface{})
+							if err := json.Unmarshal([]byte(themeVars), &parsedVars); err != nil {
+								logger.Error("解析css变量失败:", err)
+							}
+							// 回复消息
+							runtime.EventsEmit(a.ctx, "webview-hide-message-reply", map[string]interface{}{
+								"_name": name,
+								"type":  paramsType,
+								"data":  parsedVars,
+							})
+						}
+
+					case "theme-mode":
+						{
+							mode := logictheme.GetThemeMode()
+							// 回复消息
+							runtime.EventsEmit(a.ctx, "webview-hide-message-reply", map[string]interface{}{
+								"_name": name,
+								"type":  paramsType,
+								"data":  mode,
+							})
+						}
+					}
 				}
 			}
 		}
 	})
-}
-
-func (a *App) handlePostMessage(params map[string]interface{}) {
-	// 处理来自前端的消息并转发到对应的扩展
-	messageType, _ := params["type"].(string)
-	data, _ := params["data"].(map[string]interface{})
-
-	// 根据消息类型处理不同的逻辑
-	switch messageType {
-	case "webview-post-message":
-		a.handleWebviewPostMessage(data)
-	case "webview-css-variables":
-		a.handleCSSVariables(data)
-	case "webview-get-expansions":
-		a.handleGetExpansions(data)
-	}
-}
-
-func (a *App) handleWebviewPostMessage(data map[string]interface{}) {
-	name, _ := data["name"].(string)
-	value, _ := data["value"].(map[string]interface{})
-
-	// 转发消息到对应的 webview
-	runtime.EventsEmit(a.ctx, "webview-on-message", map[string]interface{}{
-		"name":  name,
-		"value": value,
-	})
-}
-
-func (a *App) handleCSSVariables(data map[string]interface{}) {
-	name, _ := data["name"].(string)
-
-	// 发送主题变量到对应的 webview
-	runtime.EventsEmit(a.ctx, "webview-on-css-variables", map[string]interface{}{
-		"name":  name,
-		"value": a.getThemeVariables(),
-	})
-}
-
-func (a *App) handleGetExpansions(data map[string]interface{}) {
-	name, _ := data["name"].(string)
-
-	// 获取扩展列表并发送
-	expansionsList, err := a.GetExpansionList(name)
-	if err != nil {
-		logger.Error("Error getting expansion list: %v", err)
-		return
-	}
-
-	runtime.EventsEmit(a.ctx, "webview-on-expansions-message", map[string]interface{}{
-		"name":  name,
-		"value": expansionsList,
-	})
-}
-
-func (a *App) getThemeVariables() map[string]interface{} {
-	// 返回主题变量
-	return map[string]interface{}{
-		"--primary-color":    "#007acc",
-		"--background-color": "#ffffff",
-		"--text-color":       "#333333",
-		// 添加更多主题变量...
-	}
-}
-
-type MessageData struct {
-	Name string                 `json:"_name"`
-	Type string                 `json:"type"`
-	Data map[string]interface{} `json:"data"`
-}
-
-// 创建隐藏的 webview
-func (a *App) CreateHideWebview(name string) error {
-	a.webviews[name] = true
-
-	// 通知前端 webview 已创建
-	runtime.EventsEmit(a.ctx, "webview-created", map[string]interface{}{
-		"name": name,
-	})
-
-	return nil
-}
-
-// 发送隐藏消息
-func (a *App) SendHideMessage(name string, data map[string]interface{}) error {
-	message := MessageData{
-		Name: name,
-		Type: data["type"].(string),
-		Data: data["data"].(map[string]interface{}),
-	}
-
-	// 通过事件系统发送到前端
-	runtime.EventsEmit(a.ctx, "webview-hide-message", message)
-	return nil
-}
-
-// 处理主题变量
-func (a *App) SetThemeVariables(name string, variables map[string]interface{}) error {
-	// 存储主题变量
-	// 这里可以实现主题变量的持久化存储
-
-	// 通知前端主题变量已更新
-	runtime.EventsEmit(a.ctx, "webview-on-css-variables", map[string]interface{}{
-		"name":  name,
-		"value": variables,
-	})
-
-	return nil
-}
-
-// 获取扩展列表
-func (a *App) GetExpansionList(name string) ([]interface{}, error) {
-	// 返回扩展列表
-	// 这里可以从你的 expansions 包获取实际列表
-	expansionsList := []interface{}{
-		map[string]interface{}{
-			"id":   "expansion1",
-			"name": "示例扩展1",
-			"type": "webview",
-		},
-		map[string]interface{}{
-			"id":   "expansion2",
-			"name": "示例扩展2",
-			"type": "script",
-		},
-	}
-
-	return expansionsList, nil
-}
-
-// 新的 API 方法用于前端调用
-func (a *App) CreateDesktopHideAPI(name string) map[string]interface{} {
-	return map[string]interface{}{
-		"send": func(data map[string]interface{}) {
-			a.SendHideMessage(name, data)
-		},
-		"themeVariables": func(variables map[string]interface{}) {
-			a.SetThemeVariables(name, variables)
-		},
-	}
-}
-
-func (a *App) CreateDesktopAPI(name string) map[string]interface{} {
-	return map[string]interface{}{
-		"postMessage": func(data map[string]interface{}) {
-			b, _ := json.Marshal(map[string]interface{}{
-				"name":  name,
-				"value": data,
-			})
-			a.ExpansionsPostMessage(ExpansionsPostMessageParams{
-				Type: "webview-post-message",
-				Data: string(b),
-			})
-		},
-		"expansion": map[string]interface{}{
-			"getList": func() {
-				a.ExpansionsPostMessage(ExpansionsPostMessageParams{
-					Type: "webview-get-expansions",
-					Data: name,
-				})
-			},
-		},
-	}
 }

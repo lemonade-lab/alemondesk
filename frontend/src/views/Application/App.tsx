@@ -18,9 +18,9 @@ interface Sidebar {
 }
 
 const createTextHtmlURL = (html: string) => {
-  return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+  return html
+  // return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
 }
-  
 
 export default function Webviews() {
   const location = useLocation()
@@ -84,8 +84,17 @@ export default function Webviews() {
     <section className=" flex flex-col flex-1 shadow-md">
       <div className="flex flex-1">
         <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1 ">
-          {view && <WebView src={createTextHtmlURL(view)} />}
-          {/* {view && <WebView src={`/resource://-/${app.resourcePath}/index.html`} />} */}
+          {view && (
+            <WebView
+              src={view}
+              rules={[
+                {
+                  protocol: 'resource://-/',
+                  work: '/resource://-/',
+                }
+              ]}
+            />
+          )}
           {!view && (
             <div className="flex-1 flex justify-center items-center">
               <div className="flex-col flex justify-center items-center">

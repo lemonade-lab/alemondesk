@@ -5,7 +5,6 @@ interface State {
   userDataNodeModulesPath: string
   userDataPackagePath: string
   preloadPath: string
-  logMainPath: string
   resourcePath: string
 }
 
@@ -14,7 +13,6 @@ const initialState: State = {
   userDataNodeModulesPath: '',
   userDataPackagePath: '',
   preloadPath: '',
-  logMainPath: '',
   resourcePath: ''
 }
 
