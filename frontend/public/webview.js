@@ -92,7 +92,6 @@ window.__alemondesk_webview.on((data) => {
 // 处理 runtime 事件和初始化消息
 window.__alemondesk_webview.on(async (data) => {
     if (data.global === 'runtime') {
-        console.log(`[WebView] 收到 runtime 事件 ${data.type} 消息`, data);
         // 先检查是否是订阅的事件
         if (runtimeEventListeners.has(data.type)) {
             const callbacks = runtimeEventListeners.get(data.type);
@@ -198,7 +197,6 @@ window.__alemondesk_webview.on((data) => {
                     document.body.appendChild(element.cloneNode(true));
                 }
             });
-            console.log('[WebView] 内容初始化完成');
         }
     } catch (error) {
         console.error('[WebView] 处理初始化消息时出错:', error);

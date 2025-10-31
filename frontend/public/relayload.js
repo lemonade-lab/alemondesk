@@ -58,7 +58,6 @@ class appDesktopHideAPI {
     on(callback) {
         // 订阅消息
         EventsOn(obEventName, (data) => {
-            console.log('[WebView] 收到隐藏桌面消息', data)
             if (data._name === this.name && callback) {
                 callback(data)
             }
@@ -109,19 +108,23 @@ class appDesktopAPI extends appDesktopHideAPI {
             }
         })
     }
-    /**
-     * 下面的接口，是web直接调用主进程的，而非去到扩展器。
-     * 因此，可以直接读取 window？
-     */
     #expansionEventName = 'get-expansions'
+    #expansionOnEventName = 'on-get-expansions'
     expansion = {
         getList: () => {
-            return this.postMessage({
+            return this.send({
                 type: this.#expansionEventName,
+                data: {
+                    name: this.name,
+                }
             })
         },
         on: (callback) => {
-            return this.onMessage(callback)
+            return this.on((data) => {
+                if (callback && data.type === this.#expansionOnEventName) {
+                    callback(data.data)
+                }
+            })
         }
     }
 }
