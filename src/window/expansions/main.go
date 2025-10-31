@@ -146,7 +146,12 @@ func (a *App) registerEventHandlers() {
 								"type":  paramsType,
 								"data":  parsedVars,
 							}
-							runtime.EventsEmit(a.ctx, webviewOnHideMessage, d)
+							// 转为json
+							jsonData, err := json.Marshal(d)
+							if err != nil {
+								logger.Error("转换css变量为json失败:", err)
+							}
+							runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
 						}
 					case "theme-mode":
 						{
@@ -157,7 +162,12 @@ func (a *App) registerEventHandlers() {
 								"type":  paramsType,
 								"data":  mode,
 							}
-							runtime.EventsEmit(a.ctx, webviewOnHideMessage, d)
+							// 转为json
+							jsonData, err := json.Marshal(d)
+							if err != nil {
+								logger.Error("转换主题模式为json失败:", err)
+							}
+							runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
 						}
 					}
 				}

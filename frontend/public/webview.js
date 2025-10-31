@@ -8,7 +8,7 @@ class __Desk_WebView {
         try {
             window.parent.postMessage(data, '*');
         } catch (error) {
-            console.error('WebView 发送消息错误:', error);
+            console.error('[WebView] 发送消息错误:', error);
         }
     }
 
@@ -36,7 +36,8 @@ class __Desk_WebView {
 
 const observeKeys = {
     EventsOnMultiple: true
-}
+};
+
 // 收集订阅
 const runtimeEventListeners = new Map();
 
@@ -81,56 +82,43 @@ window.runtime = new Proxy({}, {
     }
 });
 
-// 代理 go 对象
-// window.go = new Proxy({}, {
-//     get(target, prop) {
-//         return (...args) => {
-//             return new Promise((resolve, reject) => {
-//                 const callbackId = window.__alemondesk_webview.callbackId++;
-//                 window.__alemondesk_webview.callbacks.set(callbackId, {resolve, reject});
-//                 window.__alemondesk_webview.send({
-//                     global: 'go',
-//                     type: prop,
-//                     args: args,
-//                     callbackId: callbackId
-//                 });
-//             });
-//         };
-//     }
-// });
-
 // 处理来自父窗口的响应
-window.__alemondesk_webview.on((message) => {
-    if (message.callbackId) {
-        window.__alemondesk_webview.handleResponse(message);
+window.__alemondesk_webview.on((data) => {
+    if (data.callbackId) {
+        window.__alemondesk_webview.handleResponse(data);
     }
 });
 
+// 处理 runtime 事件和初始化消息
 window.__alemondesk_webview.on(async (data) => {
-    try {
-        // 同样双向执行
-        if (data.global === 'runtime') {
-            console.log(`[WebView] 收到 runtime 事件 ${data.type} 消息`, data);
-            // 先检查是否是订阅的事件
-            if (runtimeEventListeners.has(data.type)) {
-                 const callbacks = runtimeEventListeners.get(data.type);
-                callbacks.forEach(callback => callback(...data.args));
+    if (data.global === 'runtime') {
+        console.log(`[WebView] 收到 runtime 事件 ${data.type} 消息`, data);
+        // 先检查是否是订阅的事件
+        if (runtimeEventListeners.has(data.type)) {
+            const callbacks = runtimeEventListeners.get(data.type);
+            callbacks.forEach(callback => callback(...data.args));
+            return;
+        }
+        else {
+            // 不是订阅的。调用 runtime 方法
+            const runtimeProp = window.runtime[data.type];
+            if (typeof runtimeProp === 'function') {
+                const args = data.args || [];
+                const result = await runtimeProp(...args);
+                // 发送回调结果
+                window.__alemondesk_webview.send({
+                    callbackId: data.callbackId,
+                    result: result
+                });
                 return;
             }
-            else {
-                // 不是订阅的。调用 runtime 方法
-                const runtimeProp = window.runtime[data.type];
-                if (typeof runtimeProp === 'function') {
-                    const result = await runtimeProp(...data.args);
-                    // 发送回调结果
-                    window.__alemondesk_webview.send({
-                        callbackId: data.callbackId,
-                        result: result
-                    });
-                    return;
-                }
-            }
         }
+    }
+});
+
+// 处理初始化消息，动态加载 HTML 内容
+window.__alemondesk_webview.on((data) => {
+    try {
         if (data.type === 'initialize') {
             let htmlString = data.src;
             // 规则。用来先把字符串里的资源路径替换掉
@@ -147,7 +135,7 @@ window.__alemondesk_webview.on(async (data) => {
             const doc = parser.parseFromString(htmlString, 'text/html');
             // 检查解析错误
             if (doc.body.querySelector('parsererror')) {
-                console.error('HTML 解析错误');
+                console.error('[WebView] HTML 解析错误');
                 return;
             }
             // 清空当前 body 内容
@@ -210,9 +198,9 @@ window.__alemondesk_webview.on(async (data) => {
                     document.body.appendChild(element.cloneNode(true));
                 }
             });
-            console.log('WebView 内容初始化完成');
+            console.log('[WebView] 内容初始化完成');
         }
     } catch (error) {
-        console.error('处理初始化消息时出错:', error);
+        console.error('[WebView] 处理初始化消息时出错:', error);
     }
 });

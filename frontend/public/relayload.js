@@ -57,8 +57,8 @@ class appDesktopHideAPI {
 
     on(callback) {
         // 订阅消息
-        EventsOn(eventName, (data) => {
-            console.log('[appDesktopHideAPI] 收到隐藏桌面消息', data)
+        EventsOn(obEventName, (data) => {
+            console.log('[WebView] 收到隐藏桌面消息', data)
             if (data._name === this.name && callback) {
                 callback(data)
             }
@@ -73,19 +73,14 @@ class appDesktopHideAPI {
     #themeVariablesEventName = 'webview-theme-variables'
 
     themeVariables() {
-        // 发送主题变量请求
-        EventsEmit(eventName, {
-            _name: this.name,
-            type: this.#themeVariablesEventName,
-            data: {}
+        this.send({
+            type: this.#themeVariablesEventName
         })
     }
 
     themeOn(callback) {
-        // 订阅主题变量变化
-        EventsOn(eventName, (data) => {
-            // 属于自己的消息才处理
-            if (data._name === this.name && callback && data.type === this.#themeVariablesEventName) {
+        this.on((data) => {
+            if (data._name === this.name && data.type === this.#themeVariablesEventName) {
                 callback(data.value)
             }
         })
