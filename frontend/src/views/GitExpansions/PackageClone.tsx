@@ -32,9 +32,9 @@ const PackageClone = ({ space, show, onSubmit }: PackageCloneProps) => {
     // 分支
     branch: '',
     // 深度
-    depth: 0,
+    depth: 1,
     // 是否强制覆盖
-    force: false
+    force: true
   })
   /**
    *

@@ -70,11 +70,11 @@ export namespace windowexpansions {
 export namespace windowgit {
 	
 	export class GitCloneOptions {
-	    Space: string;
-	    RepoURL: string;
-	    Branch: string;
-	    Depth: number;
-	    Force: boolean;
+	    space: string;
+	    repo_url: string;
+	    branch: string;
+	    depth: number;
+	    force: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new GitCloneOptions(source);
@@ -82,11 +82,11 @@ export namespace windowgit {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Space = source["Space"];
-	        this.RepoURL = source["RepoURL"];
-	        this.Branch = source["Branch"];
-	        this.Depth = source["Depth"];
-	        this.Force = source["Force"];
+	        this.space = source["space"];
+	        this.repo_url = source["repo_url"];
+	        this.branch = source["branch"];
+	        this.depth = source["depth"];
+	        this.force = source["force"];
 	    }
 	}
 	export class GitRepoInfo {

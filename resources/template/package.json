@@ -3,7 +3,7 @@
   "name": "alemonb",
   "type": "module",
   "dependencies": {
-    "@alemonjs/db": "^0.0.11",
+    "@alemonjs/db": "^0.0.12",
     "@alemonjs/discord": "^2.1.0-alpha.19",
     "@alemonjs/onebot": "^2.1.0-alpha.11",
     "@alemonjs/process": "^0.0.7",

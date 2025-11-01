@@ -1,7 +1,7 @@
 import {events} from '@alemonjs/process'
 
 // @alemonjs/process 内部使用的消息处理函数
- const send  = (data) => {
+const send = (data) => {
   const message = {
     type: data.type,
     data: data.data,
@@ -13,7 +13,7 @@ import {events} from '@alemonjs/process'
 }
 
 
-if(!global.wsprocess){
+if (!global.wsprocess) {
   global.wsprocess = {}
 }
 global.wsprocess.send = send
@@ -30,6 +30,10 @@ process.stdin.on('data', (data) => {
     const message = JSON.parse(d)
     // 非法消息
     if (!message.type) return;
+    if (/webview-/.test(message.type)) {
+      events[message.type](JSON.parse(message.data))
+      return;
+    }
     events[message.type](message.data)
   } catch (error) {
     // 忽略非消息数据

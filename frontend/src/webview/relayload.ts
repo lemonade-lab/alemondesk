@@ -73,6 +73,7 @@ class appDesktopAPI extends appDesktopHideAPI {
     }
     onMessage(callback: (data: any) => void) {
         return this.on((data) => {
+            console.log('[webview] onMessage', data)
             if (callback && data.type === this.#eventOnPostName) {
                 callback(data.data)
             }

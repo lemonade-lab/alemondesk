@@ -31,7 +31,7 @@ function Terminal() {
   return (
     <Fragment>
       <BotTerminal
-        headerLeft={<DatePicker hover />}
+        // headerLeft={<DatePicker hover />}
         headerRight={
           <div className="flex justify-end">
             {modules.nodeModulesStatus &&

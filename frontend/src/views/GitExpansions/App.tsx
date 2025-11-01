@@ -16,6 +16,7 @@ import { AppExists, AppReadFiles, AppWriteFiles } from '@wailsjs/go/windowapp/Ap
 import classNames from 'classnames'
 import MonacoEditor from '@/common/MonacoEditor'
 import YAML from 'js-yaml'
+import { EventsOn } from '@wailsjs/runtime/runtime'
 
 const initialSpace = 'packages'
 const spaceOptions = [initialSpace, 'plugins']
@@ -65,15 +66,7 @@ export default function Expansions() {
     }
     setSub(true)
     notification('正在删除仓库..')
-    const T = await GitDelete(space, item)
-    if (T) {
-      notification('删除成功')
-      // 更新列表
-      GitReposList(space).then(res => {
-        setData(res || [])
-      })
-    }
-    setSub(false)
+    GitDelete(space, item)
   }
 
   const onAdd: PackageCloneProps['onSubmit'] = async (value, { finished }) => {
@@ -83,18 +76,16 @@ export default function Expansions() {
       return
     }
     notification('正在添加仓库..')
-    await GitClone({
-      RepoURL: value.url,
-      Branch: value.branch,
-      Depth: value.depth,
-      Space: space,
-      Force: value.force
+    // 开始克隆
+    GitClone({
+      repo_url: value.url?.trim() || '',
+      branch: value.branch?.trim() || '',
+      depth: value.depth,
+      space: space?.trim() || '',
+      force: value.force
+    }).finally(() => {
+      finished()
     })
-    // 更新列表
-    const res = await GitReposList(space)
-    setData(res || [])
-    notification('添加成功')
-    finished()
   }
 
   const updatePackageData = async () => {
@@ -176,73 +167,93 @@ export default function Expansions() {
   }
 
   const loadRepositoryInfo = async (item: windowgit.GitRepoInfo) => {
-  // 构建文件路径
-  const basePath = `${app.userDataTemplatePath}/${space}/${item.Name}`;
-  const readmePath = `${basePath}/README.md`;
-  const packageJsonPath = `${basePath}/package.json`;
+    // 构建文件路径
+    const basePath = `${app.userDataTemplatePath}/${space}/${item.Name}`
+    const readmePath = `${basePath}/README.md`
+    const packageJsonPath = `${basePath}/package.json`
 
-  // 检查是否是当前正在显示的仓库
-  const isSameRepo = currentRepo.item && currentRepo.item.Name === item.Name && currentRepo.show;
-  
-  // 并行检查文件存在性
-  const [readmeExists, packageExists] = await Promise.all([
-    AppExists(readmePath),
-    AppExists(packageJsonPath)
-  ]);
+    // 检查是否是当前正在显示的仓库
+    const isSameRepo = currentRepo.item && currentRepo.item.Name === item.Name && currentRepo.show
 
-  // 并行读取文件内容
-  let readmeContent = '未找到 README.md 文件';
-  let packageContent = null;
-  let packageString = '';
+    // 并行检查文件存在性
+    const [readmeExists, packageExists] = await Promise.all([
+      AppExists(readmePath),
+      AppExists(packageJsonPath)
+    ])
 
-  if (readmeExists) {
-    readmeContent = await AppReadFiles(readmePath);
-  }
+    // 并行读取文件内容
+    let readmeContent = '未找到 README.md 文件'
+    let packageContent = null
+    let packageString = ''
 
-  if (packageExists) {
-    try {
-      const packageFileContent = await AppReadFiles(packageJsonPath);
-      packageString = packageFileContent;
-      packageContent = JSON.parse(packageFileContent);
-    } catch (error) {
-      console.error('解析 package.json 失败:', error);
-      packageString = '解析 package.json 失败';
-      packageContent = null;
+    if (readmeExists) {
+      readmeContent = await AppReadFiles(readmePath)
     }
-  }
 
-  // 如果是同一个仓库且正在显示，更新内容
-  if (isSameRepo) {
-    setCurrentRepo(prev => ({
-      ...prev,
-      readme: readmeContent,
+    if (packageExists) {
+      try {
+        const packageFileContent = await AppReadFiles(packageJsonPath)
+        packageString = packageFileContent
+        packageContent = JSON.parse(packageFileContent)
+      } catch (error) {
+        console.error('解析 package.json 失败:', error)
+        packageString = '解析 package.json 失败'
+        packageContent = null
+      }
+    }
+
+    // 如果是同一个仓库且正在显示，更新内容
+    if (isSameRepo) {
+      setCurrentRepo(prev => ({
+        ...prev,
+        readme: readmeContent,
+        package: packageContent,
+        packageString: packageString
+      }))
+      return
+    }
+
+    // 设置新的仓库信息
+    setCurrentRepo({
+      item,
       package: packageContent,
-      packageString: packageString
-    }));
-    return;
+      packageString: packageString,
+      show: true,
+      readme: readmeContent,
+      branches: [],
+      commits: []
+    })
   }
 
-  // 设置新的仓库信息
-  setCurrentRepo({
-    item,
-    package: packageContent,
-    packageString: packageString,
-    show: true,
-    readme: readmeContent,
-    branches: [],
-    commits: []
-  });
-};
-
-
-  useEffect(() => {
-    updateConfig()
-  }, [])
-
-  useEffect(() => {
+  const updateReposList = () => {
     GitReposList(space).then(res => {
       setData(res || [])
     })
+  }
+
+  useEffect(() => {
+    updateConfig()
+    // 监听 git 执行完毕事件
+    EventsOn('git', e => {
+      const type = e?.type
+      if (type === 'clone' || type === 'delete') {
+        // 释放loading
+        setSub(false)
+        const value = e?.value
+        if (!value) {
+          // 发通知
+          notification(type + '操作失败', 'error')
+          return
+        }
+
+        // 重新加载列表
+        updateReposList()
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    updateReposList()
   }, [space])
 
   return (

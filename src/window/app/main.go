@@ -6,7 +6,6 @@ import (
 	"alemonapp/src/paths"
 	"alemonapp/src/utils"
 	"context"
-	"encoding/json"
 	"os"
 	"path/filepath"
 )
@@ -43,89 +42,33 @@ func (a *App) AppGetPathsState() PathsState {
 	}
 }
 
-// SetConfig 设置配置
-func (a *App) AppSetConfig(KEY string, value interface{}) (bool, error) {
-	// 实现配置保存逻辑
-	configFile := paths.GetAppConfigPath()
-
-	// 读取现有配置
-	var config map[string]interface{}
-	data, err := os.ReadFile(configFile)
-	if err == nil {
-		json.Unmarshal(data, &config)
-	} else {
-		config = make(map[string]interface{})
-	}
-
-	// 更新配置
-	config[KEY] = value
-
-	// 写回文件
-	newData, err := json.MarshalIndent(config, "", "  ")
-	if err != nil {
-		return false, err
-	}
-
-	err = os.WriteFile(configFile, newData, 0644)
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
-
-// GetConfig 获取配置
-func (a *App) AppGetConfig(KEY []string) (map[string]interface{}, error) {
-	// 实现配置读取逻辑
-	configFile := paths.GetAppConfigPath()
-
-	// 读取配置文件
-	data, err := os.ReadFile(configFile)
-	if err != nil {
-		return nil, err
-	}
-
-	var config map[string]interface{}
-	err = json.Unmarshal(data, &config)
-	if err != nil {
-		return nil, err
-	}
-
-	// 提取所需键值
-	result := make(map[string]interface{})
-	for _, key := range KEY {
-		if value, exists := config[key]; exists {
-			result[key] = value
-		}
-	}
-
-	return result, nil
-}
-
 // ReadFiles 读取文件
 func (a *App) AppReadFiles(dir string) (string, error) {
 	data, err := os.ReadFile(dir)
 	if err != nil {
+		logger.Error("读取文件失败:", err)
 		return "", err
 	}
 	return string(data), nil
 }
 
 // WriteFiles 写入文件
-func (a *App) AppWriteFiles(dir string, data string) (string, error) {
+func (a *App) AppWriteFiles(dir string, data string) bool {
 	// 确保目录存在
 	dirPath := filepath.Dir(dir)
 	err := os.MkdirAll(dirPath, 0755)
 	if err != nil {
-		return "", err
+		logger.Error("创建目录失败:", err)
+		return false
 	}
 
 	err = os.WriteFile(dir, []byte(data), 0644)
 	if err != nil {
-		return "", err
+		logger.Error("写入文件失败:", err)
+		return false
 	}
 
-	return "文件写入成功", nil
+	return true
 }
 
 // Exists 检查文件或目录是否存在

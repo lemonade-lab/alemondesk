@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -100,15 +101,15 @@ func (a *App) GitReposList(name string) []GitRepoInfo {
 
 // 克隆参数
 type GitCloneOptions struct {
-	Space   string
-	RepoURL string
-	Branch  string
-	Depth   int
-	Force   bool // 新增：是否强制覆盖
+	Space   string `json:"space"` // packages 或 plugins
+	RepoURL string `json:"repo_url"`
+	Branch  string `json:"branch"`
+	Depth   int    `json:"depth"`
+	Force   bool   `json:"force"` // 新增：是否强制覆盖
 }
 
 // 克隆仓库
-func (a *App) GitClone(params GitCloneOptions) bool {
+func (a *App) GitClone(params GitCloneOptions) {
 	space := params.Space
 	repoUrl := params.RepoURL
 	branch := params.Branch
@@ -121,7 +122,14 @@ func (a *App) GitClone(params GitCloneOptions) bool {
 	}
 	// 确保目录存在
 	if err := os.MkdirAll(path, 0755); err != nil {
-		return false
+		// 发送git-clone-error事件
+		logger.Error("创建目录失败:", err)
+
+		runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+			"type":  "clone",
+			"value": 0,
+		})
+		return
 	}
 
 	// 从 URL 中提取仓库名称
@@ -134,12 +142,16 @@ func (a *App) GitClone(params GitCloneOptions) bool {
 			// 强制覆盖：删除已存在的目录
 			if err := os.RemoveAll(clonePath); err != nil {
 				logger.Error("删除已存在目录失败:", clonePath, err)
-				return false
+				runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+					"type":  "clone",
+					"value": 0,
+				})
+				return
 			}
 		} else {
 			// 目录已存在且不强制覆盖，返回失败
 			logger.Error("目录已存在，克隆失败:", clonePath)
-			return false
+			return
 		}
 	}
 
@@ -160,81 +172,20 @@ func (a *App) GitClone(params GitCloneOptions) bool {
 	_, err := git.PlainClone(clonePath, false, cloneOpts)
 	if err != nil {
 		logger.Error("克隆仓库错误:", err)
-		return false
+		runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+			"type":  "clone",
+			"value": 0,
+		})
+		return
 	}
-
-	return true
-}
-
-func GitPull(space string, name string) bool {
-	path := paths.GetBotPackagesPath(config.BotName)
-	if space == "plugins" {
-		path = paths.GetBotPluginsPath(config.BotName)
-	}
-	repoPath := filepath.Join(path, name)
-
-	// 打开仓库
-	repo, err := git.PlainOpen(repoPath)
-	if err != nil {
-		logger.Error("打开仓库错误:", repoPath, err)
-		return false
-	}
-
-	// 获取工作树
-	worktree, err := repo.Worktree()
-	if err != nil {
-		logger.Error("获取工作树错误:", err)
-		return false
-	}
-
-	// 拉取最新更改
-	err = worktree.Pull(&git.PullOptions{
-		RemoteName: "origin",
-		Progress:   os.Stdout,
+	// 发送克隆成功事件
+	runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+		"type":  "clone",
+		"value": 1,
 	})
-	if err != nil && err != git.NoErrAlreadyUpToDate {
-		logger.Error("拉取错误:", err)
-		return false
-	}
-
-	return true
 }
 
-func (a *App) GitFetch(space string, repoUrl string) bool {
-	// 根据 space 参数确定路径
-	path := paths.GetBotPackagesPath(config.BotName)
-	if space == "plugins" {
-		path = paths.GetBotPluginsPath(config.BotName)
-	}
-	repoPath := filepath.Join(path, repoUrl)
-
-	// 打开仓库
-	repo, err := git.PlainOpen(repoPath)
-	if err != nil {
-		logger.Error("打开仓库错误:", repoPath, err)
-		return false
-	}
-
-	// 获取远程
-	remote, err := repo.Remote("origin")
-	if err != nil {
-		logger.Error("获取远程错误:", err)
-		return false
-	}
-
-	// 拉取最新更改
-	err = remote.Fetch(&git.FetchOptions{
-		Progress: os.Stdout,
-	})
-	if err != nil && err != git.NoErrAlreadyUpToDate {
-		logger.Error("拉取错误:", err)
-		return false
-	}
-
-	return true
-}
-
-func (a *App) GitDelete(space string, name string) bool {
+func (a *App) GitDelete(space string, name string) {
 	// 根据 space 参数确定路径
 	path := paths.GetBotPackagesPath(config.BotName)
 	if space == "plugins" {
@@ -246,13 +197,85 @@ func (a *App) GitDelete(space string, name string) bool {
 	err := os.RemoveAll(repoPath)
 	if err != nil {
 		logger.Error("删除仓库错误:", repoPath, err)
-		return false
+		runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+			"type":  "delete",
+			"value": 0,
+		})
+		return
 	}
-
-	return true
+	runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+		"type":  "delete",
+		"value": 1,
+	})
 }
 
-func (a *App) GitCheckout(space string, name string, branch string) bool {
+func GitPull(space string, name string) {
+	path := paths.GetBotPackagesPath(config.BotName)
+	if space == "plugins" {
+		path = paths.GetBotPluginsPath(config.BotName)
+	}
+	repoPath := filepath.Join(path, name)
+
+	// 打开仓库
+	repo, err := git.PlainOpen(repoPath)
+	if err != nil {
+		logger.Error("打开仓库错误:", repoPath, err)
+		return
+	}
+
+	// 获取工作树
+	worktree, err := repo.Worktree()
+	if err != nil {
+		logger.Error("获取工作树错误:", err)
+		return
+	}
+
+	// 拉取最新更改
+	err = worktree.Pull(&git.PullOptions{
+		RemoteName: "origin",
+		Progress:   os.Stdout,
+	})
+	if err != nil && err != git.NoErrAlreadyUpToDate {
+		logger.Error("拉取错误:", err)
+		return
+	}
+
+}
+
+func (a *App) GitFetch(space string, repoUrl string) {
+	// 根据 space 参数确定路径
+	path := paths.GetBotPackagesPath(config.BotName)
+	if space == "plugins" {
+		path = paths.GetBotPluginsPath(config.BotName)
+	}
+	repoPath := filepath.Join(path, repoUrl)
+
+	// 打开仓库
+	repo, err := git.PlainOpen(repoPath)
+	if err != nil {
+		logger.Error("打开仓库错误:", repoPath, err)
+		return
+	}
+
+	// 获取远程
+	remote, err := repo.Remote("origin")
+	if err != nil {
+		logger.Error("获取远程错误:", err)
+		return
+	}
+
+	// 拉取最新更改
+	err = remote.Fetch(&git.FetchOptions{
+		Progress: os.Stdout,
+	})
+	if err != nil && err != git.NoErrAlreadyUpToDate {
+		logger.Error("拉取错误:", err)
+		return
+	}
+
+}
+
+func (a *App) GitCheckout(space string, name string, branch string) {
 	// 根据 space 参数确定路径
 	path := paths.GetBotPackagesPath(config.BotName)
 	if space == "plugins" {
@@ -264,14 +287,14 @@ func (a *App) GitCheckout(space string, name string, branch string) bool {
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
 		logger.Error("打开仓库错误:", repoPath, err)
-		return false
+		return
 	}
 
 	// 获取工作树
 	worktree, err := repo.Worktree()
 	if err != nil {
 		logger.Error("获取工作树错误:", err)
-		return false
+		return
 	}
 
 	// 切换分支
@@ -281,8 +304,7 @@ func (a *App) GitCheckout(space string, name string, branch string) bool {
 	})
 	if err != nil {
 		logger.Error("切换分支错误:", err)
-		return false
+		return
 	}
 
-	return true
 }

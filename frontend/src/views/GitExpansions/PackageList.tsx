@@ -1,11 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Button, Dropdown, PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
+import { Button, PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
 import { DeleteFilled } from '@ant-design/icons'
 import { useNotification } from '@/context/Notification'
-import { AppExists, AppReadFiles, AppWriteFiles } from '@wailsjs/go/windowapp/App'
-import { RootState } from '@/store'
-import { useSelector } from 'react-redux'
-import YAML from 'js-yaml'
 import classNames from 'classnames'
 import { windowgit } from '@wailsjs/go/models'
 

@@ -64,7 +64,7 @@ func (a *App) ExpansionsRun(p1 []string) {
 		}
 		// 扩展器向 webview 发送的消息
 		if len(msgType) >= 8 && msgType[:8] == "webview-" {
-			logger.Debug("webview 相关消息:", message)
+			logger.Debug("expansions to webview:", message)
 			webviewEventMap := map[string]string{
 				"webview-on-message":            "on-post-message",
 				"webview-on-expansions-message": "on-get-expansions",
@@ -206,7 +206,7 @@ func (a *App) registerEventHandlers() {
 						{
 							// webview 向扩展器发送消息
 							if messageData, exists := params["data"].(map[string]interface{}); exists {
-								logger.Debug("触发 webview-post-message消息:", messageData)
+								logger.Debug("webview to expansions:", messageData)
 								jsonBytes, err := json.Marshal(messageData)
 								if err != nil {
 									logger.Error("转为JSON失败:", err)

@@ -37,7 +37,6 @@ func (a *App) BotRun(p1 []string) {
 		})
 		return
 	}
-	logger.Info("启动机器人:", config.BotName, "参数:", p1)
 	// 运行机器人
 	_, err := logicbot.Run(config.BotName, p1)
 	if err != nil {

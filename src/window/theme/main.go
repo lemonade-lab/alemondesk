@@ -53,10 +53,10 @@ func (a *App) ThemeResetTheme() bool {
 	return true
 }
 
-func (a *App) ThemeSave(variables string) error {
+func (a *App) ThemeSave(variables string) bool {
 	// 写入配置文件
 	err := logictheme.SetThemeVariables(variables, true)
-	return err
+	return err == nil
 }
 
 // DownloadFiles 下载文件

@@ -7,15 +7,11 @@ export function AppDownloadFiles(arg1:string):Promise<void>;
 
 export function AppExists(arg1:string):Promise<boolean>;
 
-export function AppGetConfig(arg1:Array<string>):Promise<Record<string, any>>;
-
 export function AppGetPathsState():Promise<windowapp.PathsState>;
 
 export function AppReadFiles(arg1:string):Promise<string>;
 
-export function AppSetConfig(arg1:string,arg2:any):Promise<boolean>;
-
-export function AppWriteFiles(arg1:string,arg2:string):Promise<string>;
+export function AppWriteFiles(arg1:string,arg2:string):Promise<boolean>;
 
 export function GetAppLogsFilePath():Promise<string>;
 

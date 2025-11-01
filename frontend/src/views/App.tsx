@@ -100,6 +100,7 @@ export default (function App() {
     })
     // 监听 expansions状态
     EventsOn('expansions-status', data => {
+      console.log('expansions-status', data)
       const value = data.value
       dispatch(
         setExpansionsStatus({

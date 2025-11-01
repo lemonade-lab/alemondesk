@@ -35,7 +35,7 @@ export default function WordBox() {
   const [inputValue, setInputValue] = useState('')
   const dropdownRef = useRef<HTMLDivElement | null>(null)
 
-  const commandViewList = useMemo(()=>{
+  const commandViewList = useMemo(() => {
     return expansions.package?.flatMap(item => {
       const commond = item.alemonjs?.desktop?.commond || []
       const command = item.alemonjs?.desktop?.command || []
@@ -47,7 +47,7 @@ export default function WordBox() {
         })) || []
       )
     })
-  },[expansions.package])
+  }, [expansions.package])
 
   // 公共样式常量
   const onClose = () => {
@@ -70,7 +70,6 @@ export default function WordBox() {
     }
   }, [])
 
- 
   return (
     <div className="flex-[6] flex gap-2 justify-between items-center">
       {isDropdownOpen ? (
@@ -120,7 +119,11 @@ export default function WordBox() {
                 >
                   <div className="flex gap-2">
                     <div className="flex items-center justify-center ">
-                      <ExpansionIcon name={item.name} icon={item.icon} expansions_name={item.expansions_name} />
+                      <ExpansionIcon
+                        name={item.name}
+                        icon={item.icon}
+                        expansions_name={item.expansions_name}
+                      />
                     </div>
                     <div className="flex items-center justify-center ">{item.name}</div>
                   </div>
@@ -145,14 +148,12 @@ export default function WordBox() {
               <Tooltip text="重载依赖">
                 <div
                   onClick={() => {
-                    if (!modules.nodeModulesStatus) {
-                      notification('依赖未加载', 'warning')
-                      return
-                    }
                     YarnCommands({
                       type: 'install',
                       args: ['--ignore-warnings']
                     })
+                     // 前往日志中心
+                    dispatch(setCommand('view./bot-log'))
                   }}
                 >
                   <ReloadOutlined />
@@ -209,6 +210,8 @@ export default function WordBox() {
                           notification('依赖未加载', 'warning')
                           return
                         }
+                        // 前往日志中心
+                        dispatch(setCommand('view./bot-log'))
                         ExpansionsRun([])
                       }}
                     >

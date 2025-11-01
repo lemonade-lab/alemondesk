@@ -34,7 +34,8 @@ type YarnCommandsParams struct {
 }
 
 func (a *App) YarnCommands(p1 YarnCommandsParams) {
-	if p1.Type == "install" {
+	switch p1.Type {
+	case "install":
 		// 不存在，则尝试从已有的压缩文件中解压
 		destPath := paths.GetBotDependencyPath(config.BotName)
 		alemonjsPath := path.Join(destPath, "alemonjs")
@@ -58,7 +59,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 			"data":  data,
 			"error": error,
 		})
-	} else if p1.Type == "remove" {
+	case "remove":
 		// 移除依赖
 		res, error := logicyarn.Remove(config.BotName, p1.Args)
 		data := 0
@@ -70,7 +71,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 			"data":  data,
 			"error": error,
 		})
-	} else if p1.Type == "add" {
+	case "add":
 		// 添加依赖
 		res, error := logicyarn.Add(config.BotName, p1.Args)
 		data := 0
@@ -82,7 +83,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 			"data":  data,
 			"error": error,
 		})
-	} else if p1.Type == "cmd" {
+	case "cmd":
 		// 执行命令
 		res, error := logicyarn.Cmd(config.BotName, p1.Args)
 		data := 0
@@ -95,5 +96,4 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 			"error": error,
 		})
 	}
-	return
 }

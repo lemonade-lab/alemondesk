@@ -12,6 +12,6 @@ export function ThemeMode():Promise<string>;
 
 export function ThemeResetTheme():Promise<boolean>;
 
-export function ThemeSave(arg1:string):Promise<void>;
+export function ThemeSave(arg1:string):Promise<boolean>;
 
 export function ThemeSetMode(arg1:string):Promise<void>;
