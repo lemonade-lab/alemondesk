@@ -40,19 +40,23 @@ const webviewOnHideMessage = "webview-on-hide-message"
 func (a *App) ExpansionsRun(p1 []string) {
 	botPath := paths.GetBotPath(config.BotName)
 	if !utils.ExistsPath([]string{botPath}) {
-		// 通知前端扩展器状态变化
-		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-			"value": 0,
-		})
+		// context有效性
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+				"value": 0,
+			})
+		}
 		return
 	}
 	expansionsName := config.BotName
 	// 判断是否在运行
 	if logicexpansions.IsRunning(expansionsName) {
-		// 通知前端扩展器状态变化
-		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-			"value": 1,
-		})
+		// context有效性
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+				"value": 1,
+			})
+		}
 		return
 	}
 
@@ -76,7 +80,8 @@ func (a *App) ExpansionsRun(p1 []string) {
 			}
 			webData := message["data"]
 			if data, ok := webData.(map[string]interface{}); ok {
-				name := data["name"]
+				// ✅ 安全的类型断言
+				name, _ := data["name"].(string)
 				value := data["value"]
 				d := map[string]interface{}{
 					"_name": name,
@@ -87,47 +92,63 @@ func (a *App) ExpansionsRun(p1 []string) {
 				jsonData, err := json.Marshal(d)
 				if err != nil {
 					logger.Error("转换css变量为json失败:", err)
+					return
 				}
-				runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
+				// context有效性
+				if a.ctx != nil {
+					runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
+				}
 			} else {
 				logger.Error("webview 数据格式错误:", webData)
 			}
 			return
 		}
-		// 这里可以通过事件系统通知前端
-		runtime.EventsEmit(a.ctx, "expansions", map[string]interface{}{
-			"type": msgType,
-			"data": message["data"],
-		})
+		// context有效性
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, "expansions", map[string]interface{}{
+				"type": msgType,
+				"data": message["data"],
+			})
+		}
 	})
 
 	_, err := logicexpansions.Run(expansionsName, p1)
 	if err != nil {
-		// 通知前端扩展器状态变化
-		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-			"value": 0,
-		})
+		// context有效性
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+				"value": 0,
+			})
+		}
 		return
 	}
-	// 通知前端扩展器状态变化
-	runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-		"value": 1,
-	})
+	// context有效性
+	if a.ctx != nil {
+		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+			"value": 1,
+		})
+	}
 }
 
 func (a *App) ExpansionsClose() {
 	botPath := paths.GetBotPath(config.BotName)
 	if !utils.ExistsPath([]string{botPath}) {
-		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-			"value": 0,
-		})
+		// context有效性
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+				"value": 0,
+			})
+		}
 		return
 	}
 	expansionsName := config.BotName
 	_, err := logicexpansions.Stop(expansionsName)
-	runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
-		"value": 0,
-	})
+	// context有效性
+	if a.ctx != nil {
+		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+			"value": 0,
+		})
+	}
 	if err != nil {
 		logger.Error("停止扩展器失败:", err)
 		return
@@ -146,13 +167,24 @@ type ExpansionsPostMessageParams struct {
 
 // 向扩展器发送消息
 func (a *App) ExpansionsPostMessage(params ExpansionsPostMessageParams) {
+	// 先检查扩展器是否正在运行
+	if !logicexpansions.IsRunning(config.BotName) {
+		logger.Warn("扩展器未运行，无法发送消息")
+		return
+	}
+
 	managed := logicexpansions.Managed(config.BotName)
+	if managed == nil {
+		logger.Error("获取扩展器管理实例失败")
+		return
+	}
+
 	err := managed.Send(map[string]interface{}{
 		"type": params.Type,
 		"data": params.Data,
 	})
 	if err != nil {
-		logger.Error("发送消息到扩展器失败:", err)
+		logger.Error("发送消息到扩展器失败: %v", err)
 	}
 }
 
@@ -173,6 +205,7 @@ func (a *App) registerEventHandlers() {
 							parsedVars := make(map[string]interface{})
 							if err := json.Unmarshal([]byte(themeVars), &parsedVars); err != nil {
 								logger.Error("解析css变量失败:", err)
+								return
 							}
 							d := map[string]interface{}{
 								"_name": name,
@@ -183,8 +216,12 @@ func (a *App) registerEventHandlers() {
 							jsonData, err := json.Marshal(d)
 							if err != nil {
 								logger.Error("转换css变量为json失败:", err)
+								return
 							}
-							runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
+							// context有效性
+							if a.ctx != nil {
+								runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
+							}
 						}
 					case "theme-mode":
 						{
@@ -199,8 +236,12 @@ func (a *App) registerEventHandlers() {
 							jsonData, err := json.Marshal(d)
 							if err != nil {
 								logger.Error("转换主题模式为json失败:", err)
+								return
 							}
-							runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
+							// context有效性
+							if a.ctx != nil {
+								runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
+							}
 						}
 					case "post-message":
 						{

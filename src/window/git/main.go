@@ -124,11 +124,13 @@ func (a *App) GitClone(params GitCloneOptions) {
 	if err := os.MkdirAll(path, 0755); err != nil {
 		// 发送git-clone-error事件
 		logger.Error("创建目录失败:", err)
-
-		runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
-			"type":  "clone",
-			"value": 0,
-		})
+		// context有效性
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+				"type":  "clone",
+				"value": 0,
+			})
+		}
 		return
 	}
 
@@ -142,10 +144,13 @@ func (a *App) GitClone(params GitCloneOptions) {
 			// 强制覆盖：删除已存在的目录
 			if err := os.RemoveAll(clonePath); err != nil {
 				logger.Error("删除已存在目录失败:", clonePath, err)
-				runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
-					"type":  "clone",
-					"value": 0,
-				})
+				// context有效性
+				if a.ctx != nil {
+					runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+						"type":  "clone",
+						"value": 0,
+					})
+				}
 				return
 			}
 		} else {
@@ -172,17 +177,23 @@ func (a *App) GitClone(params GitCloneOptions) {
 	_, err := git.PlainClone(clonePath, false, cloneOpts)
 	if err != nil {
 		logger.Error("克隆仓库错误:", err)
-		runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
-			"type":  "clone",
-			"value": 0,
-		})
+		// context有效性
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+				"type":  "clone",
+				"value": 0,
+			})
+		}
 		return
 	}
 	// 发送克隆成功事件
-	runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
-		"type":  "clone",
-		"value": 1,
-	})
+	// context有效性
+	if a.ctx != nil {
+		runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+			"type":  "clone",
+			"value": 1,
+		})
+	}
 }
 
 func (a *App) GitDelete(space string, name string) {
@@ -197,16 +208,22 @@ func (a *App) GitDelete(space string, name string) {
 	err := os.RemoveAll(repoPath)
 	if err != nil {
 		logger.Error("删除仓库错误:", repoPath, err)
-		runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
-			"type":  "delete",
-			"value": 0,
-		})
+		// context有效性
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+				"type":  "delete",
+				"value": 0,
+			})
+		}
 		return
 	}
-	runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
-		"type":  "delete",
-		"value": 1,
-	})
+	// context有效性
+	if a.ctx != nil {
+		runtime.EventsEmit(a.ctx, "git", map[string]interface{}{
+			"type":  "delete",
+			"value": 1,
+		})
+	}
 }
 
 func GitPull(space string, name string) {

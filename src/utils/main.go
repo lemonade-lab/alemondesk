@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 func CopyDir(src, dest string) error {
@@ -29,8 +29,8 @@ func CopyFolder(src, dest string) error {
 		return fmt.Errorf("read dir %s failed: %w", src, err)
 	}
 	for _, entry := range entries {
-		sourcePath := path.Join(src, entry.Name())
-		targetPath := path.Join(dest, entry.Name())
+		sourcePath := filepath.Join(src, entry.Name())
+		targetPath := filepath.Join(dest, entry.Name())
 		if entry.Name() == "logs" || entry.Name() == "log" {
 			continue
 		}
@@ -73,7 +73,10 @@ func CopyFile(src, dest string) error {
 	if err != nil {
 		return fmt.Errorf("chmod fail: %w", err)
 	}
-	return destFile.Sync()
+	if err := destFile.Sync(); err != nil {
+		return fmt.Errorf("sync file failed: %w", err)
+	}
+	return nil
 }
 
 func ClearFolder(targetPath string) error {
@@ -85,7 +88,7 @@ func ClearFolder(targetPath string) error {
 		return fmt.Errorf("read dir fail: %w", err)
 	}
 	for _, entry := range entries {
-		entryPath := path.Join(targetPath, entry.Name())
+		entryPath := filepath.Join(targetPath, entry.Name())
 		if entry.Name() == "logs" || entry.Name() == "log" {
 			continue
 		}
@@ -97,10 +100,9 @@ func ClearFolder(targetPath string) error {
 	return nil
 }
 
-func ExistsPath(path []string) bool {
-	for _, p := range path {
-		_, err := os.Stat(p)
-		if os.IsNotExist(err) {
+func ExistsPath(paths []string) bool {
+	for _, p := range paths {
+		if _, err := os.Stat(p); err != nil {
 			return false
 		}
 	}

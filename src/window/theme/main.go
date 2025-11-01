@@ -36,7 +36,10 @@ func (a *App) ThemeSetMode(mode string) {
 // 读取主题配置文件并发送给前端
 func (a *App) ThemeLoadVariables() {
 	themeVars := logictheme.GetThemeVariables()
-	runtime.EventsEmit(a.ctx, "theme", themeVars)
+	// context有效性
+	if a.ctx != nil {
+		runtime.EventsEmit(a.ctx, "theme", themeVars)
+	}
 }
 
 // 恢复默认主题

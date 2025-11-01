@@ -1,12 +1,15 @@
 import { Button } from '@alemonjs/react-ui'
+import classNames from 'classnames'
 import { useState, useRef, useEffect } from 'react'
 
 // 链接组件
 const LinkText = ({
   url,
-  onAction
+  onAction,
+  className
 }: {
   url: string
+  className?: string
   onAction: (url: string, action: 'copy' | 'open') => void
 }) => {
   const [showActions, setShowActions] = useState(false)
@@ -41,7 +44,7 @@ const LinkText = ({
   return (
     <span
       ref={containerRef}
-      className="relative inline-block"
+      className={classNames(className, 'relative inline-block')}
     >
       <span
         className="text-blue-500 underline cursor-pointer hover:text-blue-700 px-1 rounded hover:bg-blue-50 transition-colors"
@@ -51,7 +54,7 @@ const LinkText = ({
       </span>
 
       {showActions && (
-        <div className="select-none absolute left-0 top-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 p-1 min-w-32">
+        <div className="text-base select-none absolute left-0 top-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 p-1 min-w-32">
           <div className="flex flex-col gap-1">
             <Button
               className="justify-start"

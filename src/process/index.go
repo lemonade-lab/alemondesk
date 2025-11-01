@@ -152,10 +152,16 @@ type multiplexWriter struct {
 }
 
 func (m *multiplexWriter) Write(p []byte) (n int, err error) {
+	// ✅ 记录最后一个错误
+	var lastErr error
 	for _, w := range m.writers {
-		w.Write(p) // 忽略单个错误，确保所有writer都能收到
+		if _, writeErr := w.Write(p); writeErr != nil {
+			lastErr = writeErr
+			logger.Warn("multiplexWriter: write failed: %v", writeErr)
+		}
 	}
-	return len(p), nil
+	// 即使有错误也返回成功长度，确保所有writer都尝试写入
+	return len(p), lastErr
 }
 
 // 启动进程
@@ -166,6 +172,10 @@ func (mp *ManagedProcess) Start() error {
 	if mp.Status == StatusRunning {
 		logger.Warn("%s 已经在运行中，无法重复启动", mp.Config.Name)
 		return nil
+	}
+	// 取消旧的 context，防止泄漏
+	if mp.Cancel != nil {
+		mp.Cancel()
 	}
 	// 日志文件
 	var err error
@@ -180,12 +190,17 @@ func (mp *ManagedProcess) Start() error {
 
 	// 仅开启通讯的进程设置标准输入输出管道
 	if mp.Config.CommunicationEnabled {
+		// 获取消息处理器
+		handleMessagesMu.RLock()
+		messageHandler := handleMessages[mp.Config.Name]
+		handleMessagesMu.RUnlock()
+		
 		// 创建多路复用writer
 		multiStdout := &multiplexWriter{
 			writers: []io.Writer{
 				&IPCMessageWriter{ // IPC消息处理
 					ProcessName:    mp.Config.Name,
-					MessageHandler: handleMessages[mp.Config.Name],
+					MessageHandler: messageHandler,
 				},
 			},
 		}
@@ -234,33 +249,46 @@ func (mp *ManagedProcess) cleanupPIDFile() {
 func (mp *ManagedProcess) monitor() {
 	_ = mp.Cmd.Wait()
 	mp.cleanupPIDFile()
+	
 	mp.mu.Lock()
-	defer mp.mu.Unlock()
+	// 关闭 stdin 管道
+	if mp.stdinPipe != nil {
+		_ = mp.stdinPipe.Close()
+		mp.stdinPipe = nil
+	}
+
 	if mp.Status != StatusRunning {
-		if mp.Status == StatusStopped {
-			// mp.Config.Port = 0
-		}
+		mp.mu.Unlock()
 		return
 	}
+	
+	// 计算运行时长和是否需要重启
 	alive := time.Since(mp.LastStartTime)
+	shouldRestart := false
+	
 	if alive > 30*time.Second {
 		mp.RestartCount = 0
 	} else {
 		mp.RestartCount++
 	}
+	
 	if mp.RestartCount <= mp.MaxRestarts {
+		shouldRestart = true
 		logger.Info("[%s] exited, restarting in %v (count: %d/%d)\n", mp.Config.Name, mp.RestartWait, mp.RestartCount, mp.MaxRestarts)
-		go func() {
-			time.Sleep(mp.RestartWait)
-			mp.Start()
-		}()
 	} else {
-		mp.Status = StatusStopped
-		// mp.Config.Port = 0
 		logger.Info("[%s] too many restarts, giving up!\n", mp.Config.Name)
 	}
-	// 持久化状态
+	
+	// 更新状态
+	mp.Status = StatusStopped
 	SaveProcess(mp.Config.Name, mp.Config, mp.Status)
+	mp.mu.Unlock()
+	
+	// 在锁外处理重启，避免死锁
+	if shouldRestart {
+		time.Sleep(mp.RestartWait)
+		mp.Start()
+	}
 }
 
 // 停止进程
@@ -268,6 +296,13 @@ func (mp *ManagedProcess) Stop() error {
 	mp.mu.Lock()
 	defer mp.mu.Unlock()
 	mp.Status = StatusStopped
+
+	// 关闭 stdin 管道
+	if mp.stdinPipe != nil {
+		_ = mp.stdinPipe.Close()
+		mp.stdinPipe = nil
+	}
+
 	if mp.Cancel != nil {
 		mp.Cancel()
 	}
@@ -285,7 +320,7 @@ func (mp *ManagedProcess) Stop() error {
 
 // 重启进程
 func (mp *ManagedProcess) Restart() error {
-	fmt.Printf("[%s] Restarting...\n", mp.Config.Name)
+	logger.Info("[%s] Restarting...", mp.Config.Name)
 	mp.Stop()
 	time.Sleep(mp.RestartWait)
 	return mp.Start()
@@ -294,10 +329,25 @@ func (mp *ManagedProcess) Restart() error {
 // 启动所有进程
 func (pm *ProcessManager) StartAll() {
 	pm.mu.Lock()
-	defer pm.mu.Unlock()
+	processes := make([]*ManagedProcess, 0, len(pm.Processes))
 	for _, p := range pm.Processes {
-		go p.Start()
+		processes = append(processes, p)
 	}
+	pm.mu.Unlock()
+	
+	// 使用 WaitGroup 追踪所有启动的 goroutine
+	var wg sync.WaitGroup
+	for _, p := range processes {
+		wg.Add(1)
+		go func(proc *ManagedProcess) {
+			defer wg.Done()
+			if err := proc.Start(); err != nil {
+				logger.Error("[%s] 启动失败: %v", proc.Config.Name, err)
+			}
+		}(p)
+	}
+	// 可选：等待所有进程启动完成
+	// wg.Wait()
 }
 
 // 停止所有进程
@@ -311,17 +361,26 @@ func (pm *ProcessManager) StopAll() {
 
 // 定时健康检查：每 30 秒检查一次进程是否存活
 func (mp *ManagedProcess) healthCheckLoop() {
+	// ✅ 防止ticker泄漏
 	mp.healthTicker = time.NewTicker(TIME_OUT)
-	defer mp.healthTicker.Stop()
+	defer func() {
+		mp.healthTicker.Stop()
+		mp.healthTicker = nil
+	}()
+	
 	for {
 		select {
 		case <-mp.healthTicker.C:
 			if !mp.isProcessAlive() {
-				fmt.Printf("[%s] health check failed, process not alive, restarting...\n", mp.Config.Name)
-				go mp.Restart()
+				logger.Info("[%s] health check failed, process not alive, restarting...", mp.Config.Name)
+				// 直接调用 Restart，避免启动多个重启 goroutine
+				if err := mp.Restart(); err != nil {
+					logger.Error("[%s] restart failed: %v", mp.Config.Name, err)
+				}
 				return
 			}
 		case <-mp.healthStopChan:
+			logger.Debug("[%s] health check stopped", mp.Config.Name)
 			return
 		}
 	}
@@ -329,9 +388,17 @@ func (mp *ManagedProcess) healthCheckLoop() {
 
 // 停止健康检查
 func (mp *ManagedProcess) stopHealthCheck() {
-	select {
-	case mp.healthStopChan <- struct{}{}:
-	default:
+	// ✅ 防止向nil channel发送
+	if mp.healthStopChan != nil {
+		select {
+		case mp.healthStopChan <- struct{}{}:
+		default:
+		}
+	}
+	// ✅ 停止ticker防止泄漏
+	if mp.healthTicker != nil {
+		mp.healthTicker.Stop()
+		mp.healthTicker = nil
 	}
 }
 
@@ -403,7 +470,14 @@ func (pm *ProcessManager) ReviveAll() error {
 		if persist.Status == StatusRunning {
 			// 添加进程
 			pm.AddProcess(persist.Config)
-			go pm.Processes[name].Start()
+			// ✅ 使用闭包捕获变量
+			go func(processName string) {
+				if proc := pm.GetProcess(processName); proc != nil {
+					if err := proc.Start(); err != nil {
+						logger.Error("[%s] 复活失败: %v", processName, err)
+					}
+				}
+			}(name)
 		}
 	}
 	return nil

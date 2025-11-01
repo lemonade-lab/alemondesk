@@ -8,6 +8,9 @@ import rehypeAttr from 'rehype-attr'
 import { useEffect } from 'react'
 import { ThemeMode } from '@wailsjs/go/windowtheme/App'
 import classNames from 'classnames'
+import LinkText from './LinkText'
+import { BrowserOpenURL, ClipboardSetText } from '@wailsjs/runtime/runtime'
+import { useNotification } from '@/context/Notification'
 
 const useTheme = () => {
   // theme
@@ -46,6 +49,7 @@ const useTheme = () => {
  * @returns
  */
 const Markdown = ({ source, className }: { source: string; className?: string }) => {
+  const notification = useNotification()
   useTheme()
   return (
     <MarkdownPreview
@@ -56,16 +60,29 @@ const Markdown = ({ source, className }: { source: string; className?: string })
       }}
       source={source}
       components={{
-        a: ({ node, ...props }) => (
-          <span
-            {...props}
-            onClick={e => e.preventDefault()}
-            title="链接已禁用"
-            style={{ cursor: 'not-allowed' }}
-          >
-            {props.children}
-          </span>
-        )
+        // 该为必然是 外部浏览器打开
+        a: ({ node, ...props }) => {
+          if(typeof props.children !== 'object' || !props.children || !('props' in props.children)){
+            return <span>{props.children}</span>
+          }
+          const href = props.children.props?.href ?? ''
+          if(!href){
+            return <span>{props.children}</span>
+          }
+          return <LinkText url={href} onAction={async (url: string, action: 'copy' | 'open') => {
+            try {
+              if (action === 'copy') {
+                await ClipboardSetText(url)
+                notification('已复制到剪贴板')
+              } else if (action === 'open') {
+                await BrowserOpenURL(url)
+              }
+            } catch (error) {
+              console.error('操作失败:', error)
+              notification('操作失败', 'error')
+            }
+          }} />
+        }
       }}
       rehypePlugins={[
         // rehypeSanitize, // 清理不安全的 HTML

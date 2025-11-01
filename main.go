@@ -16,6 +16,7 @@ import (
 	windowyarn "alemonapp/src/window/yarn"
 	"context"
 	"embed"
+	"log"
 	"os"
 	"runtime"
 
@@ -38,7 +39,9 @@ func main() {
 
 	// 初始化日志
 	if err := logger.Init(); err != nil {
-		logger.Error("初始化日志失败:", err)
+		// logger 未初始化，直接输出到标准错误并退出
+		log.Printf("[FATAL] 初始化日志失败: %v\n", err)
+		os.Exit(1)
 	}
 	// 程序退出时关闭日志
 	defer logger.Close()
@@ -50,20 +53,32 @@ func main() {
 	_, err := files.GetSystemExePath()
 	// 不存在的话解压 Node.js
 	if err != nil {
-		// 解压 Node.js
-		files.ExtractNodeJS()
+		logger.Info("系统未找到 Node.js，开始解压内置 Node.js")
+		if extractErr := files.ExtractNodeJS(); extractErr != nil {
+			logger.Error("解压 Node.js 失败: %v，将尝试使用系统 Node.js", extractErr)
+		} else {
+			logger.Info("Node.js 解压成功")
+		}
 	}
 
 	// 检查 Node.js 安装
 	manager := files.GetNodeJSManager()
-	if _, err := manager.GetNodeExePath(); err != nil {
-		logger.Error("获取 Node.js 路径失败: %v", err)
+	nodePath, err := manager.GetNodeExePath()
+	if err != nil {
+		logger.Error("获取 Node.js 路径失败: %v，某些功能可能无法正常使用", err)
+	} else {
+		logger.Info("Node.js 路径: %s", nodePath)
 	}
 
 	// 不存在的时候创建机器人目录
 	botPath := paths.CreateBotPath(config.BotName)
 	if _, err := os.Stat(botPath); os.IsNotExist(err) {
-		utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))
+		logger.Info("机器人目录不存在，开始创建: %s", botPath)
+		if copyErr := utils.CopyDir(paths.GetBotTemplate(), botPath); copyErr != nil {
+			logger.Error("创建机器人目录失败: %v", copyErr)
+		} else {
+			logger.Info("机器人目录创建成功")
+		}
 	}
 
 	// Create an instance of the app structure

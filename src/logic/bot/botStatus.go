@@ -7,7 +7,7 @@ import (
 	"alemonapp/src/process"
 	"alemonapp/src/utils"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 // 判断机器人是否在运行
@@ -41,14 +41,14 @@ func Run(name string, args []string) (string, error) {
 	botPath := paths.CreateBotPath(name)
 	var indexPath string
 	tryFiles := []string{
-		path.Join("alemonjs", "index.js"),
+		filepath.Join("alemonjs", "index.js"),
 		"index.js",
-		path.Join("src", "index.js"),
-		path.Join("lib", "index.js"),
+		filepath.Join("src", "index.js"),
+		filepath.Join("lib", "index.js"),
 	}
 	found := false
 	for _, fp := range tryFiles {
-		if _, err := os.Stat(path.Join(botPath, fp)); err == nil {
+		if _, err := os.Stat(filepath.Join(botPath, fp)); err == nil {
 			indexPath = fp
 			found = true
 			break

@@ -5,15 +5,23 @@ import (
 	"alemonapp/src/paths"
 	"fmt"
 	"os"
+	"sync"
 )
 
-var curTheme = "light"
+var (
+	curTheme  = "light"
+	themeMu sync.RWMutex
+)
 
 func GetThemeMode() string {
+	themeMu.RLock()
+	defer themeMu.RUnlock()
 	return curTheme
 }
 
 func SetThemeMode(mode string) {
+	themeMu.Lock()
+	defer themeMu.Unlock()
 	curTheme = mode
 }
 

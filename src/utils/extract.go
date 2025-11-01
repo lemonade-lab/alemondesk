@@ -156,11 +156,15 @@ func extractTarReader(tarReader *tar.Reader, destPath string) error {
 				return err
 			}
 
-			if _, err := io.Copy(file, tarReader); err != nil {
-				file.Close()
-				return err
+			_, copyErr := io.Copy(file, tarReader)
+			closeErr := file.Close()
+			
+			if copyErr != nil {
+				return copyErr
 			}
-			file.Close()
+			if closeErr != nil {
+				return fmt.Errorf("failed to close file %s: %w", targetPath, closeErr)
+			}
 		case tar.TypeSymlink:
 			if err := os.Symlink(header.Linkname, targetPath); err != nil {
 				return err
@@ -208,12 +212,18 @@ func extractZip(srcPath, destPath string) error {
 			return err
 		}
 
-		_, err = io.Copy(dstFile, srcFile)
-		srcFile.Close()
-		dstFile.Close()
+		_, copyErr := io.Copy(dstFile, srcFile)
+		srcCloseErr := srcFile.Close()
+		dstCloseErr := dstFile.Close()
 
-		if err != nil {
-			return err
+		if copyErr != nil {
+			return copyErr
+		}
+		if srcCloseErr != nil {
+			return fmt.Errorf("failed to close source file: %w", srcCloseErr)
+		}
+		if dstCloseErr != nil {
+			return fmt.Errorf("failed to close destination file %s: %w", targetPath, dstCloseErr)
 		}
 	}
 	return nil

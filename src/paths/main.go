@@ -10,7 +10,20 @@ import (
 
 func GetUserHomeDir() string {
 	appName := "ALemonDesk"
-	usr, _ := user.Current()
+	usr, err := user.Current()
+	if err != nil {
+		// 如果获取用户失败，尝试从环境变量获取
+		home := os.Getenv("HOME")
+		if home == "" {
+			home = os.Getenv("USERPROFILE") // Windows
+		}
+		if home == "" {
+			// 最后的回退方案：使用临时目录
+			home = os.TempDir()
+		}
+		return filepath.Join(home, appName)
+	}
+	
 	home := usr.HomeDir
 	switch runtime.GOOS {
 	case "windows":

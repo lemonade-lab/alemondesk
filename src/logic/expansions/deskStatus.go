@@ -7,7 +7,7 @@ import (
 	"alemonapp/src/process"
 	"alemonapp/src/utils"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 // 是否在运行
@@ -42,11 +42,11 @@ func Run(name string, args []string) (string, error) {
 	botPath := paths.CreateBotPath(name)
 	var indexPath string
 	tryFiles := []string{
-		path.Join("alemonjs", "desktop.js"),
+		filepath.Join("alemonjs", "desktop.js"),
 	}
 	found := false
 	for _, fp := range tryFiles {
-		if _, err := os.Stat(path.Join(botPath, fp)); err == nil {
+		if _, err := os.Stat(filepath.Join(botPath, fp)); err == nil {
 			indexPath = fp
 			found = true
 			break

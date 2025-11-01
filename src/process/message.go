@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -39,26 +40,44 @@ func (mp *ManagedProcess) Send(message map[string]interface{}) error {
 	mp.mu.Lock()
 	defer mp.mu.Unlock()
 
-	if mp.stdinPipe == nil {
-		return fmt.Errorf("stdin pipe not available")
+	// 检查进程是否正在运行
+	if mp.Status != "running" {
+		return fmt.Errorf("进程未运行")
 	}
 
-	message["name"] = mp.Config.Name[:len(mp.Config.Name)-5]
+	if mp.stdinPipe == nil {
+		return fmt.Errorf("stdin 管道不可用")
+	}
+
+	// 安全地处理名称截取，避免越界
+	if len(mp.Config.Name) >= 5 {
+		message["name"] = mp.Config.Name[:len(mp.Config.Name)-5]
+	} else {
+		message["name"] = mp.Config.Name
+	}
 	message["from"] = "go"
 	message["timestamp"] = time.Now().Unix()
 	message["__STDIN_JSON_DATA"] = true
 
 	data, err := json.Marshal(message)
 	if err != nil {
-		return err
+		return fmt.Errorf("序列化消息失败: %v", err)
 	}
 
 	_, err = mp.stdinPipe.Write(append(data, '\n'))
-	return err
+	if err != nil {
+		return fmt.Errorf("写入管道失败: %v", err)
+	}
+	return nil
 }
 
-var handleMessages = make(map[string]func(message map[string]interface{}))
+var (
+	handleMessages   = make(map[string]func(message map[string]interface{}))
+	handleMessagesMu sync.RWMutex
+)
 
 func SetHandleMessage(name string, message func(message map[string]interface{})) {
+	handleMessagesMu.Lock()
+	defer handleMessagesMu.Unlock()
 	handleMessages[name+"-desk"] = message
 }

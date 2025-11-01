@@ -10,19 +10,26 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sync"
 
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-var curCtx context.Context
+var (
+	curCtx context.Context
+	ctxMu  sync.RWMutex
+)
 
 func Startup(ctx context.Context) {
+	ctxMu.Lock()
+	defer ctxMu.Unlock()
 	curCtx = ctx
 }
 
 var (
-	logFile *os.File
-	logger  *log.Logger
+	logFile  *os.File
+	logger   *log.Logger
+	loggerMu sync.RWMutex
 )
 
 func GetLogsFilePath() (string, error) {
@@ -36,6 +43,16 @@ func GetLogsFilePath() (string, error) {
 }
 
 func Init() error {
+	loggerMu.Lock()
+	defer loggerMu.Unlock()
+	
+	// 关闭旧的日志文件，防止资源泄漏
+	if logFile != nil {
+		_ = logFile.Close()
+		logFile = nil
+		logger = nil
+	}
+	
 	logPath, err := GetLogsFilePath()
 	if err != nil {
 		return err
@@ -54,6 +71,9 @@ func Init() error {
 }
 
 func GetLogFilePath() string {
+	loggerMu.RLock()
+	defer loggerMu.RUnlock()
+	
 	if logFile != nil {
 		return logFile.Name()
 	}
@@ -82,20 +102,19 @@ func output(name string, format string, v ...interface{}) {
 		return
 	}
 	msg := fmt.Sprintf("["+name+"] "+format, v...)
-	// 如果有前端上下文，发送到前端
-	if curCtx == nil {
-		return
-	}
-
-	wailsRuntime.EventsEmit(curCtx, "terminal", fmt.Sprintf("%s\n", msg))
-
+	
 	// 获取调用者信息
 	_, file, line, _ := runtime.Caller(2)
 	file = filepath.Base(file)
 
-	// 输出到文件
-	if logger != nil {
-		logger.Printf("%s:%d %s", file, line, msg)
+	// 获取 logger 的副本，避免长时间持有锁
+	loggerMu.RLock()
+	l := logger
+	loggerMu.RUnlock()
+
+	// 输出到文件（始终执行）
+	if l != nil {
+		l.Printf("%s:%d %s", file, line, msg)
 	}
 
 	// 同时在控制台输出（开发模式）
@@ -103,12 +122,27 @@ func output(name string, format string, v ...interface{}) {
 		log.Printf("%s:%d %s", file, line, msg)
 	}
 
+	// 如果有前端上下文，发送到前端
+	ctxMu.RLock()
+	ctx := curCtx
+	ctxMu.RUnlock()
+	
+	if ctx != nil {
+		wailsRuntime.EventsEmit(ctx, "terminal", fmt.Sprintf("%s\n", msg))
+	}
 }
 
-func Close() {
+func Close() error {
+	loggerMu.Lock()
+	defer loggerMu.Unlock()
+	
 	if logFile != nil {
-		logFile.Close()
+		err := logFile.Close()
+		logFile = nil
+		logger = nil
+		return err
 	}
+	return nil
 }
 
 type LogWriter struct {

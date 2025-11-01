@@ -15,14 +15,53 @@ import (
 	"sync"
 )
 
-var resourcesFiles fs.FS
+var (
+	resourcesFiles fs.FS
+	resourcesMu    sync.RWMutex
+)
+
+// copyResourceFile 复制单个资源文件（避免 defer 累积）
+func copyResourceFile(sourcePath, targetPath string) error {
+	resourcesMu.RLock()
+	defer resourcesMu.RUnlock()
+
+	if resourcesFiles == nil {
+		return fmt.Errorf("资源文件系统未初始化")
+	}
+
+	curFile, err := resourcesFiles.Open(sourcePath)
+	if err != nil {
+		return fmt.Errorf("打开资源文件失败: %w", err)
+	}
+	defer curFile.Close()
+
+	file, err := os.Create(targetPath)
+	if err != nil {
+		return fmt.Errorf("创建目标文件失败: %w", err)
+	}
+	defer file.Close()
+
+	if _, err := io.Copy(file, curFile); err != nil {
+		return fmt.Errorf("复制文件失败: %w", err)
+	}
+
+	return nil
+}
 
 // init 函数用于解压资源
 func Create(ResourcesFiles fs.FS) {
+	resourcesMu.Lock()
 	resourcesFiles = ResourcesFiles
+	resourcesMu.Unlock()
+
 	workPAth := paths.GetWorkPath()
+
 	// 解压资源
-	err := fs.WalkDir(resourcesFiles, ".", func(p string, d fs.DirEntry, err error) error {
+	resourcesMu.RLock()
+	resources := resourcesFiles
+	resourcesMu.RUnlock()
+
+	err := fs.WalkDir(resources, ".", func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			logger.Error("资源初始化失败: %v", err)
 			return err
@@ -37,26 +76,8 @@ func Create(ResourcesFiles fs.FS) {
 				return err
 			}
 		} else {
-			// 打开文件
-			curFile, err := resourcesFiles.Open(p)
-			if err != nil {
-				logger.Error("资源初始化失败: %v", err)
-				return err
-			}
-			// 关闭文件
-			defer curFile.Close()
-
-			// 打开文件
-			file, err := os.Create(targetPath)
-			if err != nil {
-				logger.Error("资源初始化失败: %v", err)
-				return err
-			}
-			// 关闭文件
-			defer file.Close()
-
-			// 复制文件
-			if _, err := io.Copy(file, curFile); err != nil {
+			// 复制文件（使用独立函数避免 defer 累积）
+			if err := copyResourceFile(p, targetPath); err != nil {
 				logger.Error("资源初始化失败: %v", err)
 				return err
 			}
@@ -72,9 +93,17 @@ func Create(ResourcesFiles fs.FS) {
 
 // Reset 恢复指定路径下的文件
 func Reset(curTargetPath string) error {
+	resourcesMu.RLock()
+	resources := resourcesFiles
+	resourcesMu.RUnlock()
+
+	if resources == nil {
+		return fmt.Errorf("资源文件系统未初始化")
+	}
+
 	workPAth := paths.GetWorkPath()
 	// 解压资源
-	err := fs.WalkDir(resourcesFiles, ".", func(p string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(resources, ".", func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			logger.Error("资源初始化失败: %v", err)
 			return err
@@ -96,26 +125,8 @@ func Reset(curTargetPath string) error {
 				return err
 			}
 		} else {
-			// 打开文件
-			curFile, err := resourcesFiles.Open(p)
-			if err != nil {
-				logger.Error("资源初始化失败: %v", err)
-				return err
-			}
-			// 关闭文件
-			defer curFile.Close()
-
-			// 打开文件
-			file, err := os.Create(targetPath)
-			if err != nil {
-				logger.Error("资源初始化失败: %v", err)
-				return err
-			}
-			// 关闭文件
-			defer file.Close()
-
-			// 复制文件
-			if _, err := io.Copy(file, curFile); err != nil {
+			// 复制文件（使用独立函数避免 defer 累积）
+			if err := copyResourceFile(p, targetPath); err != nil {
 				logger.Error("资源初始化失败: %v", err)
 				return err
 			}
@@ -131,14 +142,18 @@ func Reset(curTargetPath string) error {
 
 // ResetSingleFile 恢复单个文件
 func ResetSingleFile(targetPath string) error {
-	if resourcesFiles == nil {
+	resourcesMu.RLock()
+	resources := resourcesFiles
+	resourcesMu.RUnlock()
+
+	if resources == nil {
 		return fmt.Errorf("资源文件系统未初始化")
 	}
 
 	logger.Debug("开始恢复单个文件: %s", targetPath)
 
 	// 直接尝试打开资源文件（使用相对路径）
-	curFile, err := resourcesFiles.Open(targetPath)
+	curFile, err := resources.Open(targetPath)
 	if err != nil {
 		return fmt.Errorf("打开资源文件失败: %w", err)
 	}
@@ -181,8 +196,16 @@ func ResetSingleFile(targetPath string) error {
 
 // restoreSingleFile 恢复单个文件
 func restoreSingleFile(sourcePath, targetPath string) error {
+	resourcesMu.RLock()
+	resources := resourcesFiles
+	resourcesMu.RUnlock()
+
+	if resources == nil {
+		return fmt.Errorf("资源文件系统未初始化")
+	}
+
 	// 打开源文件
-	curFile, err := resourcesFiles.Open(sourcePath)
+	curFile, err := resources.Open(sourcePath)
 	if err != nil {
 		return fmt.Errorf("打开源文件失败: %w", err)
 	}
@@ -211,13 +234,17 @@ func restoreSingleFile(sourcePath, targetPath string) error {
 
 // ResetWithFilter 恢复指定路径下的文件，可自定义过滤条件
 func ResetWithFilter(targetPath string, filter func(path string, d fs.DirEntry) bool) error {
-	if resourcesFiles == nil {
+	resourcesMu.RLock()
+	resources := resourcesFiles
+	resourcesMu.RUnlock()
+
+	if resources == nil {
 		return fmt.Errorf("资源文件系统未初始化")
 	}
 
 	workPath := paths.GetWorkPath()
 
-	return fs.WalkDir(resourcesFiles, ".", func(p string, d fs.DirEntry, err error) error {
+	return fs.WalkDir(resources, ".", func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -320,7 +347,12 @@ func (m *NodeJSManager) GetNodeJSPath() (string, error) {
 	// 读取目录
 	entries, err := os.ReadDir(nodejsBasePath)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to read nodejs directory: %w", err)
+	}
+
+	// 检查目录是否为空
+	if len(entries) == 0 {
+		return "", fmt.Errorf("no nodejs version found in %s", nodejsBasePath)
 	}
 
 	// 找到第一个目录作为版本目录
@@ -343,7 +375,7 @@ func (m *NodeJSManager) GetNodeJSPath() (string, error) {
 		}
 	}
 
-	return "", os.ErrNotExist
+	return "", fmt.Errorf("no nodejs directory found in %s", nodejsBasePath)
 }
 
 // 得到系统的 Node.js 可执行文件路径
@@ -367,7 +399,7 @@ func (m *NodeJSManager) GetNodeExePath() (string, error) {
 	}
 	m.mu.RUnlock()
 
-	// 得到系统nodejs路径
+	// 优先使用系统nodejs路径
 	systemNode, err := GetSystemExePath()
 	if err == nil {
 		m.mu.Lock()
@@ -376,10 +408,10 @@ func (m *NodeJSManager) GetNodeExePath() (string, error) {
 		return m.nodeExePath, nil
 	}
 
+	// 尝试从管理的 Node.js 中获取
 	dir, err := m.GetNodeJSPath()
 	if err != nil {
-		logger.Error("获取 Node.js 路径失败: %v", err)
-		return "node", nil
+		return "", fmt.Errorf("获取 Node.js 路径失败: %w", err)
 	}
 
 	// 确定可执行文件名
@@ -393,15 +425,13 @@ func (m *NodeJSManager) GetNodeExePath() (string, error) {
 
 	// 检查文件是否存在
 	if _, err := os.Stat(exePath); os.IsNotExist(err) {
-		logger.Error("Node.js 可执行文件不存在: %s", exePath)
-		return "node", nil
+		return "", fmt.Errorf("node.js 可执行文件不存在: %s", exePath)
 	}
 
 	// 确保返回绝对路径
 	absExePath, err := filepath.Abs(exePath)
 	if err != nil {
-		logger.Error("获取 Node.js 可执行文件绝对路径失败: %v", err)
-		return "node", nil
+		return "", fmt.Errorf("获取 Node.js 可执行文件绝对路径失败: %w", err)
 	}
 
 	m.mu.Lock()

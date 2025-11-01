@@ -32,30 +32,42 @@ func (a *App) BotStatus() bool {
 func (a *App) BotRun(p1 []string) {
 	botPath := paths.GetBotPath(config.BotName)
 	if !utils.ExistsPath([]string{botPath}) {
-		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
-			"value": 0,
-		})
+		// context有效性
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+				"value": 0,
+			})
+		}
 		return
 	}
 	// 运行机器人
 	_, err := logicbot.Run(config.BotName, p1)
 	if err != nil {
-		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
-			"value": 0,
-		})
+		// context有效性
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+				"value": 0,
+			})
+		}
 		return
 	}
-	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
-		"value": 1,
-	})
+	// context有效性
+	if a.ctx != nil {
+		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+			"value": 1,
+		})
+	}
 }
 
 func (a *App) BotClose() {
 	botPath := paths.GetBotPath(config.BotName)
 	if !utils.ExistsPath([]string{botPath}) {
-		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
-			"value": 0,
-		})
+		// context有效性
+		if a.ctx != nil {
+			runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+				"value": 0,
+			})
+		}
 		logger.Error("机器人路径不存在:", botPath)
 		return
 	}
@@ -66,9 +78,12 @@ func (a *App) BotClose() {
 		logger.Error("停止机器人失败:", err)
 		return
 	}
-	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
-		"value": 0,
-	})
+	// context有效性
+	if a.ctx != nil {
+		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+			"value": 0,
+		})
+	}
 }
 
 // 重置机器人
@@ -83,7 +98,10 @@ func (a *App) BotResetBot() {
 
 	// 不存在的时候创建机器人目录
 	if _, err := os.Stat(botPath); os.IsNotExist(err) {
-		utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))
+		if err := utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName)); err != nil {
+			logger.Error("创建机器人目录失败: %v", err)
+			return
+		}
 	}
 
 	// 重载APP
