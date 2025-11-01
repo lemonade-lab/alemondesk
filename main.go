@@ -47,8 +47,9 @@ func main() {
 	files.Create(ResourcesFiles)
 
 	// 判断系统是否有 Node.js
-	has := files.HasSystemNodeJS()
-	if !has {
+	_, err := files.GetSystemExePath()
+	// 不存在的话解压 Node.js
+	if err != nil {
 		// 解压 Node.js
 		files.ExtractNodeJS()
 	}

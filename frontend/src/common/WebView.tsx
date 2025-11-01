@@ -58,7 +58,7 @@ const WebView = ({ src, rules }: WebViewProps) => {
 
     // 创建新的 iframe
     const newIframe = document.createElement('iframe')
-    newIframe.src = '/webview.html'
+    newIframe.src = '/index.webview.html'
     newIframe.allowFullscreen = true
     newIframe.title = 'WebView'
     newIframe.id = 'active-frame'

@@ -39,7 +39,7 @@ const MenuButton = () => {
     {
       Icon: <ContainerOutlined size={20} />,
       path: '/git-expansions',
-      className: '',
+      className: 'steps-5-1',
       onClick: path => {
         dispatch(setCommand(`view.${path}`))
       }
@@ -100,7 +100,8 @@ const MenuButton = () => {
       <NavDiv className="p-1 flex-col  rounded-full flex gap-3">
         <BarDiv
           className={classNames(
-            'steps-4 size-8 rounded-full  flex items-center justify-center cursor-pointer transition-all duration-700'
+            'steps-8',
+            'size-8 rounded-full  flex items-center justify-center cursor-pointer transition-all duration-700'
           )}
           onClick={() => dispatch(setCommand(`view./settings`))}
         >

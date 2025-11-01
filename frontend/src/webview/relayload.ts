@@ -1,52 +1,22 @@
-function EventsOnMultiple(eventName, callback, maxCallbacks) {
-    return window.runtime.EventsOnMultiple(eventName, callback, maxCallbacks);
-}
-
-function EventsOff(eventName, ...additionalEventNames) {
-    return window.runtime.EventsOff(eventName, ...additionalEventNames);
-}
-
-function EventsOn(eventName, callback) {
-    return EventsOnMultiple(eventName, callback, -1);
-}
-
-function EventsEmit(eventName) {
-    let args = [eventName].slice.call(arguments);
-    return window.runtime.EventsEmit.apply(null, args);
-}
+import { EventsEmit, EventsOn, EventsOff } from '@wailsjs/runtime/runtime';
 
 const eventName = 'webview-hide-message';
 const obEventName = 'webview-on-hide-message';
 
-const createOn = (_, callback, name) => {
-    const handler = (data) => {
-        // 属于自己的消息才处理
-        if (data.name === name) {
-            callback && callback(data.value)
-        }
-    }
-    EventsOn(eventName, handler)
-}
-
-const createEmit = async (data, name, typing) => {
-    return EventsEmit(eventName, {
-        _name: name,
-        type: typing,
-        data: data
-    })
-}
-
 class appDesktopHideAPI {
-
-    constructor(name) {
+    name: string
+    constructor(name: string) {
         this.name = name
     }
 
-    static create(name) {
+    static create(name: string) {
         return new appDesktopHideAPI(name)
     }
 
-    send(data) {
+    send(data: {
+        type?: string;
+        data?: any;
+    }) {
         // 发送任意消息
         EventsEmit(eventName, {
             _name: this.name,
@@ -55,7 +25,7 @@ class appDesktopHideAPI {
         })
     }
 
-    on(callback) {
+    on(callback: (data: any) => void) {
         // 订阅消息
         EventsOn(obEventName, (data) => {
             if (data._name === this.name && callback) {
@@ -77,7 +47,7 @@ class appDesktopHideAPI {
         })
     }
 
-    themeOn(callback) {
+    themeOn(callback: (data: any) => void) {
         this.on((data) => {
             if (data._name === this.name && data.type === this.#themeVariablesEventName) {
                 callback(data.value)
@@ -87,12 +57,12 @@ class appDesktopHideAPI {
 }
 
 class appDesktopAPI extends appDesktopHideAPI {
-    static create(name) {
+    static create(name: string) {
         return new appDesktopAPI(name)
     }
     #eventPostName = 'post-message';
     #eventOnPostName = 'on-post-message';
-    postMessage(data) {
+    postMessage(data: any) {
         return this.send({
             type: this.#eventPostName,
             data: {
@@ -101,7 +71,7 @@ class appDesktopAPI extends appDesktopHideAPI {
             }
         })
     }
-    onMessage(callback) {
+    onMessage(callback: (data: any) => void) {
         return this.on((data) => {
             if (callback && data.type === this.#eventOnPostName) {
                 callback(data.data)
@@ -119,7 +89,7 @@ class appDesktopAPI extends appDesktopHideAPI {
                 }
             })
         },
-        on: (callback) => {
+        on: (callback: (data: any) => void) => {
             return this.on((data) => {
                 if (callback && data.type === this.#expansionOnEventName) {
                     callback(data.data)
@@ -128,6 +98,15 @@ class appDesktopAPI extends appDesktopHideAPI {
         }
     }
 }
+
+// 声明 window.runtime 类型
+declare global {
+    interface Window {
+        appDesktopHideAPI: typeof appDesktopHideAPI;
+        appDesktopAPI: typeof appDesktopAPI;
+    }
+}
+
 
 window.appDesktopHideAPI = appDesktopHideAPI
 window.appDesktopAPI = appDesktopAPI

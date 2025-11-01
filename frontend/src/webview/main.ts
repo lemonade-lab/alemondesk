@@ -1,10 +1,14 @@
+export {};
+
 class __Desk_WebView {
+    callbackId: number;
+    callbacks: Map<number, { resolve: Function, reject: Function }>;
     constructor() {
         this.callbackId = 1;
         this.callbacks = new Map();
     }
 
-    send(data) {
+    send(data: any) {
         try {
             window.parent.postMessage(data, '*');
         } catch (error) {
@@ -12,7 +16,7 @@ class __Desk_WebView {
         }
     }
 
-    on(callback) {
+    on(callback: (data: any) => void) {
         window.addEventListener('message', (event) => {
             if (event.data) {
                 callback(event.data);
@@ -21,22 +25,33 @@ class __Desk_WebView {
     }
 
     // 处理回调响应
-    handleResponse(message) {
+    handleResponse(message: any) {
         if (message.callbackId && this.callbacks.has(message.callbackId)) {
             const callback = this.callbacks.get(message.callbackId);
             if (message.error) {
-                callback.reject(new Error(message.error));
+                callback && callback.reject(new Error(message.error));
             } else {
-                callback.resolve(message.result);
+                callback && callback.resolve(message.result);
             }
             this.callbacks.delete(message.callbackId);
         }
     }
 }
 
-const observeKeys = {
+const observeKeys: {
+    [key: string | symbol]: boolean
+} = {
     EventsOnMultiple: true
 };
+
+
+// 声明 window.runtime 类型
+declare global {
+    interface Window {
+        runtime: any;
+        __alemondesk_webview: __Desk_WebView;
+    }
+}
 
 // 收集订阅
 const runtimeEventListeners = new Map();
@@ -47,7 +62,7 @@ window.__alemondesk_webview = new __Desk_WebView();
 // 代理 runtime 对象
 window.runtime = new Proxy({}, {
     get(target, prop) {
-        return (...args) => {
+        return (...args: any[]) => {
             // 处理特殊的订阅机制
             if (observeKeys[prop]) {
                 const eventName = args[0];
@@ -58,7 +73,7 @@ window.runtime = new Proxy({}, {
                 runtimeEventListeners.get(eventName).push(callback);
                 return new Promise((resolve, reject) => {
                     const callbackId = window.__alemondesk_webview.callbackId++;
-                    window.__alemondesk_webview.callbacks.set(callbackId, {resolve, reject});
+                    window.__alemondesk_webview.callbacks.set(callbackId, { resolve, reject });
                     window.__alemondesk_webview.send({
                         global: 'runtime',
                         type: prop,
@@ -70,7 +85,7 @@ window.runtime = new Proxy({}, {
             }
             return new Promise((resolve, reject) => {
                 const callbackId = window.__alemondesk_webview.callbackId++;
-                window.__alemondesk_webview.callbacks.set(callbackId, {resolve, reject});
+                window.__alemondesk_webview.callbacks.set(callbackId, { resolve, reject });
                 window.__alemondesk_webview.send({
                     global: 'runtime',
                     type: prop,
@@ -90,15 +105,27 @@ window.__alemondesk_webview.on((data) => {
 });
 
 // 处理 runtime 事件和初始化消息
-window.__alemondesk_webview.on(async (data) => {
+window.__alemondesk_webview.on(async (data: {
+    global: string;
+    type: string;
+    args?: any[];
+    callbackId: number;
+}) => {
     if (data.global === 'runtime') {
         // 先检查是否是订阅的事件
         if (runtimeEventListeners.has(data.type)) {
             const callbacks = runtimeEventListeners.get(data.type);
-            callbacks.forEach(callback => callback(...data.args));
+            if (Array.isArray(callbacks)) {
+                Promise.all(callbacks.map(callback => {
+                    const args = data.args || [];
+                    return callback && callback(...args);
+                })).catch(error => {
+                    console.error('[WebView] 处理订阅事件回调时出错:', error);
+                });
+            }
             return;
         }
-        else {
+        else if (data.type in window.runtime) {
             // 不是订阅的。调用 runtime 方法
             const runtimeProp = window.runtime[data.type];
             if (typeof runtimeProp === 'function') {
@@ -116,7 +143,11 @@ window.__alemondesk_webview.on(async (data) => {
 });
 
 // 处理初始化消息，动态加载 HTML 内容
-window.__alemondesk_webview.on((data) => {
+window.__alemondesk_webview.on((data: {
+    type: string;
+    src: string;
+    rules?: { protocol: string; work: string }[];
+}) => {
     try {
         if (data.type === 'initialize') {
             let htmlString = data.src;

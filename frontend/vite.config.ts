@@ -1,15 +1,15 @@
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'url'
 import react from '@vitejs/plugin-react-swc'
-import viteCompression from 'vite-plugin-compression'
+// import viteCompression from 'vite-plugin-compression'
 
 // https://vite.dev/config/
 const NODE_ENV = process.env.NODE_ENV === 'development'
 export default defineConfig({
   plugins: [
     react(),
-    viteCompression({ algorithm: 'gzip', ext: '.gz' }),
-    viteCompression({ algorithm: 'brotliCompress', ext: '.br' })
+    // viteCompression({ algorithm: 'gzip', ext: '.gz' }),
+    // viteCompression({ algorithm: 'brotliCompress', ext: '.br' })
   ],
   resolve: {
     alias: [
@@ -44,6 +44,10 @@ export default defineConfig({
         }
     },
     rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        webview: fileURLToPath(new URL('./index.webview.html', import.meta.url))
+      },
       output: {
         entryFileNames: 'js/[name]-[hash].js',
         chunkFileNames: 'js/[name]-[hash].js',
