@@ -7,19 +7,20 @@ import { PrimaryDiv } from '@alemonjs/react-ui'
 import { SecondaryDiv } from '@alemonjs/react-ui'
 import { Tooltip } from '@alemonjs/react-ui'
 import classNames from 'classnames'
-import { useState, useRef, useEffect, Fragment } from 'react'
+import { useState, useRef, useEffect, Fragment, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppstoreOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons'
 import { AntdIcon } from '@/common/AntdIcon'
 import { setCommand } from '@/store/command'
 import { ExpansionsClose, ExpansionsRun } from '@wailsjs/go/windowexpansions/App'
 import { YarnCommands } from '@wailsjs/go/windowyarn/App'
-import { RESOURCE_PROTOCOL_PREFIX } from '@/api/config'
+import ExpansionIcon from '@/common/ExpansionIcon'
 interface Sidebar {
   expansions_name: string
   name: string
   icon: string
   command: string
+  commond?: string
 }
 
 export default function WordBox() {
@@ -29,18 +30,28 @@ export default function WordBox() {
   const modules = useSelector((state: RootState) => state.modules)
   const expansions = useSelector((state: RootState) => state.expansions)
   const app = useSelector((state: RootState) => state.app)
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
-  const [conmond, setcommand] = useState<Sidebar[]>([])
   const dropdownRef = useRef<HTMLDivElement | null>(null)
+
+  const commandViewList = useMemo(()=>{
+    return expansions.package?.flatMap(item => {
+      const commond = item.alemonjs?.desktop?.commond || []
+      const command = item.alemonjs?.desktop?.command || []
+      return (
+        [...commond, ...command].map((sidebar: Sidebar) => ({
+          ...sidebar,
+          command: sidebar.command ?? sidebar.commond ?? '',
+          expansions_name: item.name
+        })) || []
+      )
+    })
+  },[expansions.package])
 
   // 公共样式常量
   const onClose = () => {
     setIsDropdownOpen(false)
-  }
-
-  const createIconURL = (viewItem: Sidebar) => {
-    return `${RESOURCE_PROTOCOL_PREFIX}${app.userDataTemplatePath}/node_modules/${viewItem.expansions_name}/${viewItem.icon}`
   }
 
   // 点击外部关闭下拉菜单
@@ -59,34 +70,7 @@ export default function WordBox() {
     }
   }, [])
 
-  useEffect(() => {
-    const commandItem =
-      expansions.package?.flatMap((item: any) => {
-        return (
-          item.alemonjs?.desktop?.command?.map((sidebar: any) => ({
-            ...sidebar,
-            expansions_name: item.name
-          })) || []
-        )
-      }) || []
-    setcommand(commandItem)
-  }, [expansions.package])
-
-  const createIcon = (viewItem: Sidebar) => {
-    if (!viewItem.icon) return <AppstoreOutlined />
-    if (viewItem.icon.startsWith('antd.')) {
-      // 是antd的图标
-      const icon = viewItem.icon.split('.')[1]
-      return <AntdIcon className="text-xl" defaultIcon={<AppstoreOutlined />} icon={icon} />
-    }
-    return (
-      <img
-        className="size-4 rounded-md flex justify-center items-center"
-        src={createIconURL(viewItem)}
-      ></img>
-    )
-  }
-
+ 
   return (
     <div className="flex-[6] flex gap-2 justify-between items-center">
       {isDropdownOpen ? (
@@ -117,7 +101,7 @@ export default function WordBox() {
               aria-label="Command Input"
             />
             <div className="py-2 flex flex-col gap-2 scrollbar overflow-auto  max-h-[calc(100vh/5*2)]">
-              {conmond.map((item, index) => (
+              {commandViewList.map((item, index) => (
                 <PrimaryDiv
                   hover={true}
                   key={index}
@@ -135,7 +119,9 @@ export default function WordBox() {
                   )}
                 >
                   <div className="flex gap-2">
-                    <div className="flex items-center justify-center ">{createIcon(item)}</div>
+                    <div className="flex items-center justify-center ">
+                      <ExpansionIcon name={item.name} icon={item.icon} expansions_name={item.expansions_name} />
+                    </div>
                     <div className="flex items-center justify-center ">{item.name}</div>
                   </div>
                   <div className="text-secondary-text">{item.command}</div>
@@ -205,7 +191,7 @@ export default function WordBox() {
             }
             <div className="flex flex-1">
               <div className="steps-1 flex gap-2 justify-center items-center">
-                  <Tooltip text="运行扩展器">
+                <Tooltip text="运行扩展器">
                   {expansions.runStatus ? (
                     <div
                       className=" "

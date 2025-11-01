@@ -10,6 +10,8 @@ type HeaderProps = PropsWithChildren<{
   RightSlot?: ReactNode
 }>
 
+const WINDOWS = 'windows'
+
 /**
  * 卡槽
  * win系统渲染 left
@@ -36,7 +38,7 @@ export default memo(function Header({ children }: HeaderProps) {
     <HeaderDiv className={classNames('h-[1.6rem] flex justify-between  border-b-2 z-50')}>
       <div className="drag-area flex-1"></div>
       {children ?? <div className="flex-[2]"></div>}
-      {versions.platform == 'win32' ? (
+      {versions.platform == WINDOWS ? (
         <div className="flex-1 flex ">
           <div className="flex-1 drag-area "></div>
           <div className="flex px-2   gap-2 justify-center items-center">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import classNames from 'classnames'
 import { RootState } from '@/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -7,20 +7,16 @@ import { useLocation } from 'react-router-dom'
 import { SecondaryDiv } from '@alemonjs/react-ui'
 import { SidebarDiv } from '@alemonjs/react-ui'
 import { TagDiv } from '@alemonjs/react-ui'
-import { AntdIcon } from '@/common/AntdIcon'
 import WebView from '@/common/WebView'
 import { RESOURCE_PROTOCOL_PREFIX } from '@/api/config'
+import ExpansionIcon from '@/common/ExpansionIcon'
 
 interface Sidebar {
   expansions_name: string
   name: string
   icon: string
-  commond: string
-}
-
-const createTextHtmlURL = (html: string) => {
-  return html
-  // return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+  commond?: string
+  command: string
 }
 
 export default function Webviews() {
@@ -28,18 +24,30 @@ export default function Webviews() {
   const dispatch = useDispatch()
   const expansions = useSelector((state: RootState) => state.expansions)
   const command = useSelector((state: RootState) => state.command)
-  const app = useSelector((state: RootState) => state.app)
-  const [viewSidebars, setViewSidebars] = useState<Sidebar[]>([])
   const [view, setView] = useState('')
+
+  const viewSidebars = useMemo(() => {
+    return (
+      expansions.package?.flatMap(item => {
+        return (
+          item.alemonjs?.desktop?.sidebars?.map((sidebar: Sidebar) => ({
+            ...sidebar,
+            command: sidebar.command ?? sidebar.commond ?? '',
+            expansions_name: item.name
+          })) || []
+        )
+      }) || []
+    )
+  }, [expansions.package])
 
   // 点击侧边栏
   const handleSidebarClick = (viewItem: Sidebar) => {
     console.log('点击侧边栏', viewItem)
-    if (viewItem.commond === command.name) {
+    if (viewItem.command === command.name) {
       return
     }
     // 记录当前的命令
-    dispatch(setCommand(viewItem.commond))
+    dispatch(setCommand(viewItem.command))
   }
 
   useEffect(() => {
@@ -47,40 +55,7 @@ export default function Webviews() {
       setView(location.state.view)
     }
   }, [location.state])
-
-  useEffect(() => {
-    const sidebarsItem =
-      expansions.package?.flatMap(item => {
-        return (
-          item.alemonjs?.desktop?.sidebars?.map((sidebar: { name: string; command: string }) => ({
-            ...sidebar,
-            expansions_name: item.name
-          })) || []
-        )
-      }) || []
-    setViewSidebars(sidebarsItem)
-  }, [expansions.package])
-
-  // 创建图标地址
-  const createIconURL = (viewItem: Sidebar) => {
-    return `${RESOURCE_PROTOCOL_PREFIX}${app.userDataTemplatePath}/node_modules/${viewItem.expansions_name}/${viewItem.icon}`
-  }
-
-  const createIcon = (viewItem: Sidebar) => {
-    if (!viewItem.icon) return viewItem.name
-    if (viewItem.icon.startsWith('antd.')) {
-      // 是antd的图标
-      const icon = viewItem.icon.split('.')[1]
-      return <AntdIcon className="text-4xl" defaultIcon={viewItem.name} icon={icon} />
-    }
-    return (
-      <img
-        className="size-12 flex justify-center items-center rounded-md"
-        src={createIconURL(viewItem)}
-      ></img>
-    )
-  }
-
+ 
   return (
     <section className=" flex flex-col flex-1 shadow-md">
       <div className="flex flex-1">
@@ -119,10 +94,10 @@ export default function Webviews() {
                   onClick={() => handleSidebarClick(viewItem)}
                   className={classNames(
                     'p-1 size-[3.28rem] rounded-md border text-sm relative flex cursor-pointer justify-center items-center duration-700 transition-all  ',
-                    { 'bg-secondary-bg': viewItem.commond === command.name }
+                    { 'bg-secondary-bg': viewItem.command === command.name }
                   )}
                 >
-                  {createIcon(viewItem)}
+                  <ExpansionIcon name={viewItem.name} icon={viewItem.icon} expansions_name={viewItem.expansions_name} />
                 </TagDiv>
               ))}
           </div>

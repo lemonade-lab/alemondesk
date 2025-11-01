@@ -260,14 +260,14 @@ export default function Expansions() {
                     label: 'README',
                     key: 'readme'
                   },
-                  {
-                    label: '分支列表',
-                    key: 'branches'
-                  },
-                  {
-                    label: '提交记录',
-                    key: 'commits'
-                  },
+                  // {
+                  //   label: '分支列表',
+                  //   key: 'branches'
+                  // },
+                  // {
+                  //   label: '提交记录',
+                  //   key: 'commits'
+                  // },
                   {
                     label: '包配置',
                     key: 'package'

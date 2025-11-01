@@ -1,6 +1,6 @@
 # 阿柠檬桌面
 
-一款安装即用的，可启动单例ALemon机器人的桌面应用。
+一款安装即用的，可启动单例ALemon机器人的桌面应用。 [点击下载](https://github.com/lemonade-lab/alemondesk/releases)
 
 这是全新重构版，相比于旧版本(基于electron)：
 
