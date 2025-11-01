@@ -12,7 +12,7 @@ import {
   AppExists,
   GetAppLogsFilePath
 } from '@wailsjs/go/windowapp/App'
-import { BotResetBot, BotResetTemplate, BotResetTemplateAndBot } from '@wailsjs/go/windowbot/App'
+import { BotResetBot} from '@wailsjs/go/windowbot/App'
 
 const Common = () => {
   const app = useSelector((state: RootState) => state.app)
@@ -81,8 +81,8 @@ const Common = () => {
                 )
               },
               {
-                title: '重置模板与机器人',
-                description: '以当前版本为准',
+                title: '重置机器人',
+                description: '模板以当前版本为准',
                 children: (
                   <Button
                     className="px-2 rounded-md border"
@@ -124,25 +124,7 @@ const Common = () => {
               setOpen(false)
             }}
           >
-            仅重置机器人
-          </Button>
-          <Button
-            className="px-2 rounded-md border"
-            onClick={async () => {
-              BotResetTemplate()
-              setOpen(false)
-            }}
-          >
-            仅重置模板
-          </Button>
-          <Button
-            className="px-2 rounded-md border"
-            onClick={async () => {
-              BotResetTemplateAndBot()
-              setOpen(false)
-            }}
-          >
-            重置模板与机器人
+            重置机器人
           </Button>
         </div>
         <div className="flex flex-col gap-4"></div>

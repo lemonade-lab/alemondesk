@@ -2,7 +2,6 @@ package windowbot
 
 import (
 	"alemonapp/src/config"
-	"alemonapp/src/files"
 	"alemonapp/src/logger"
 	logicbot "alemonapp/src/logic/bot"
 	"alemonapp/src/paths"
@@ -38,6 +37,7 @@ func (a *App) BotRun(p1 []string) {
 		})
 		return
 	}
+	logger.Info("启动机器人:", config.BotName, "参数:", p1)
 	// 运行机器人
 	_, err := logicbot.Run(config.BotName, p1)
 	if err != nil {
@@ -70,50 +70,6 @@ func (a *App) BotClose() {
 	runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
 		"value": 0,
 	})
-}
-
-// 重置机器人模板
-func (a *App) BotResetTemplateAndBot() {
-	botPath := paths.CreateBotPath(config.BotName)
-	templatePath := paths.GetBotTemplate()
-
-	// 删除模板目录
-	if err := os.RemoveAll(templatePath); err != nil {
-		logger.Error("删除模板目录失败:", err)
-		return
-	}
-
-	files.ReCreate()
-
-	// 删除现有机器人目录
-	if err := os.RemoveAll(botPath); err != nil {
-		logger.Error("删除机器人目录失败:", err)
-		return
-	}
-
-	// 不存在的时候创建机器人目录
-	if _, err := os.Stat(botPath); os.IsNotExist(err) {
-		utils.CopyDir(paths.GetBotTemplate(), paths.CreateBotPath(config.BotName))
-	}
-
-	// 重载APP
-	runtime.WindowReloadApp(a.ctx)
-}
-
-// 重置机器人模板
-func (a *App) BotResetTemplate() {
-	templatePath := paths.GetBotTemplate()
-
-	// 删除模板目录
-	if err := os.RemoveAll(templatePath); err != nil {
-		logger.Error("删除模板目录失败:", err)
-		return
-	}
-
-	files.ReCreate()
-
-	// 重载APP
-	runtime.WindowReloadApp(a.ctx)
 }
 
 // 重置机器人

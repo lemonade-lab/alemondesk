@@ -18,15 +18,15 @@ import (
 
 // node 进程信息
 type NodeProcessConfig struct {
-	Name                 string
-	Dir                  string
-	Node                 string
-	ScriptJS             string
-	LogPath              string
-	PidFile              string
-	EnvFilePath          string
-	Env                  map[string]string
-	Port                 int
+	Name        string
+	Dir         string
+	Node        string
+	ScriptJS    string
+	LogPath     string
+	PidFile     string
+	EnvFilePath string
+	Env         map[string]string
+	// Port                 int
 	Args                 []string
 	CommunicationEnabled bool
 }
@@ -101,14 +101,14 @@ func (pm *ProcessManager) RemoveProcess(name string) {
 
 // 添加进程
 func (pm *ProcessManager) AddProcess(cfg NodeProcessConfig) {
-	runConfig := ReadBotConfig(cfg.Name)
+	// runConfig := ReadBotConfig(cfg.Name)
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
-	if _, exists := pm.Processes[cfg.Name]; exists {
-		pm.Processes[cfg.Name].Config.Port = runConfig.Port // 更新端口
-		return
-	}
-	cfg.Port = runConfig.Port // 使用配置的端口
+	// if _, exists := pm.Processes[cfg.Name]; exists {
+	// 	pm.Processes[cfg.Name].Config.Port = runConfig.Port // 更新端口
+	// 	return
+	// }
+	// cfg.Port = runConfig.Port // 使用配置的端口
 	mp := NewManagedProcess(cfg)
 	pm.Processes[cfg.Name] = mp
 }
@@ -238,7 +238,7 @@ func (mp *ManagedProcess) monitor() {
 	defer mp.mu.Unlock()
 	if mp.Status != StatusRunning {
 		if mp.Status == StatusStopped {
-			mp.Config.Port = 0
+			// mp.Config.Port = 0
 		}
 		return
 	}
@@ -256,7 +256,7 @@ func (mp *ManagedProcess) monitor() {
 		}()
 	} else {
 		mp.Status = StatusStopped
-		mp.Config.Port = 0
+		// mp.Config.Port = 0
 		logger.Info("[%s] too many restarts, giving up!\n", mp.Config.Name)
 	}
 	// 持久化状态

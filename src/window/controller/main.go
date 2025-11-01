@@ -56,6 +56,7 @@ func (a *App) GetVersions() Versions {
 	if err == nil {
 		nodeVersion = executeCommand(nodeExe, "--version")
 	}
+	// info, _ := runtime.EnvironmentInfo(a.ctx)
 	return Versions{
 		Version:  "1.0.0",
 		Node:     nodeVersion,

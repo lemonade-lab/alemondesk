@@ -19,9 +19,12 @@ func SetThemeMode(mode string) {
 
 // 读取主题配置文件并发送给前端
 func GetThemeVariables() string {
-	filePath := paths.GetStorageThemeFilePath()
+	targetPath := paths.GetStoragePersonalThemeFilePath()
+	if _, err := os.Stat(targetPath); os.IsNotExist(err) {
+		targetPath = paths.GetStorageThemeFilePath()
+	}
 	// 读取配置文件
-	themeVars, err := LoadThemeVariables(filePath)
+	themeVars, err := LoadThemeVariables(targetPath)
 	if err != nil {
 		logger.Error("读取主题配置失败: %v", err)
 	}
@@ -45,10 +48,13 @@ func LoadThemeVariables(filePath string) (string, error) {
 	return string(data), nil
 }
 
-func SetThemeVariables(variables string) error {
-	filePath := paths.GetStorageThemeFilePath()
+func SetThemeVariables(variables string, isForce bool) error {
+	targetPath := paths.GetStoragePersonalThemeFilePath()
+	if _, err := os.Stat(targetPath); !isForce && os.IsNotExist(err) {
+		targetPath = paths.GetStorageThemeFilePath()
+	}
 	// 写入配置文件
-	err := os.WriteFile(filePath, []byte(variables), 0644)
+	err := os.WriteFile(targetPath, []byte(variables), 0644)
 	if err != nil {
 		return fmt.Errorf("写入主题配置失败: %v", err)
 	}

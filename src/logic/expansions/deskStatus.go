@@ -18,7 +18,7 @@ func IsRunning(name string) bool {
 }
 
 // 运行
-func Run(name string) (string, error) {
+func Run(name string, args []string) (string, error) {
 	manager := files.GetNodeJSManager()
 	nodeExe, err := manager.GetNodeExePath()
 	// 检查系统是否安装了 Node.js
@@ -65,6 +65,7 @@ func Run(name string) (string, error) {
 		// LogPath:     logPath,
 		PidFile:              pidFile,
 		EnvFilePath:          paths.GetBotEnvFilePath(name),
+		Args:                 args,
 		CommunicationEnabled: true, // 开启通讯
 		// HandleMessage:        HandleMessage,
 		// 支持直接加环境变量
@@ -142,10 +143,10 @@ func Info(name string) (models.BotInfoResponse, error) {
 			Code: 0,
 			Msg:  "进程未注册",
 			Data: models.BotInfo{
-				Name:        expansionsName,
-				Status:      0,
-				Pid:         0,
-				Port:        0,
+				Name:   expansionsName,
+				Status: 0,
+				Pid:    0,
+				// Port:        0,
 				NodeModules: nodeModules,
 				CreateAt:    createAt,
 			},
@@ -158,10 +159,10 @@ func Info(name string) (models.BotInfoResponse, error) {
 			Code: 1,
 			Msg:  "获取进程信息成功",
 			Data: models.BotInfo{
-				Name:        expansionsName,
-				Status:      1,
-				Pid:         pid,
-				Port:        proc.Config.Port,
+				Name:   expansionsName,
+				Status: 1,
+				Pid:    pid,
+				// Port:        proc.Config.Port,
 				NodeModules: nodeModules,
 				CreateAt:    createAt,
 			},
@@ -171,10 +172,10 @@ func Info(name string) (models.BotInfoResponse, error) {
 		Code: 0,
 		Msg:  "进程未运行",
 		Data: models.BotInfo{
-			Name:        expansionsName,
-			Status:      0,
-			Pid:         0,
-			Port:        0,
+			Name:   expansionsName,
+			Status: 0,
+			Pid:    0,
+			// Port:        0,
 			NodeModules: nodeModules,
 			CreateAt:    createAt,
 		},

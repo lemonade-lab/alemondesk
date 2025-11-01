@@ -13,7 +13,8 @@ const data = [
       '优化了日志系统',
       '优化了机器人快速启动流程',
       '优化了文件编辑功能',
-      '删除了无用的快捷键'
+      '删除了无用的快捷键',
+      '支持主题导入导出'
     ]
   }
 ]
@@ -29,7 +30,7 @@ const UpdateLog = () => {
            dark:border-dark-secondary-border
           "
           >
-            <div>更新记录</div>
+            <div>更新日志</div>
           </div>
           <div className="flex flex-col gap-4 h-[calc(100vh-11rem)] overflow-auto scrollba">
             <div className="flex  flex-col flex-1 overflow-auto h-[calc(100vh-2.4rem)] scrollbar gap-6 py-4 rounded-lg  ">

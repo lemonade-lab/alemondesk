@@ -1,10 +1,17 @@
-import { updateTheme } from '@/core/theme'
+import { updateThemeMode } from '@/core/theme'
 import { Button } from '@alemonjs/react-ui'
 import { Input } from '@alemonjs/react-ui'
 import { PrimaryDiv } from '@alemonjs/react-ui'
 import { Switch } from '@alemonjs/react-ui'
-import { ThemeLoadVariables, ThemeMode, ThemeResetTheme,ThemeSave } from '@wailsjs/go/windowtheme/App'
+import {
+  ThemeDownloadFiles,
+  ThemeLoadVariables,
+  ThemeMode,
+  ThemeResetTheme,
+  ThemeSave
+} from '@wailsjs/go/windowtheme/App'
 import { EventsOn } from '@wailsjs/runtime/runtime'
+import Upload from 'antd/es/upload/Upload'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 const Theme = () => {
@@ -16,9 +23,8 @@ const Theme = () => {
   >([])
   const [update, setUpdate] = useState(false)
   const [isDark, setIsDark] = useState(false)
+
   const saveColor = () => {
-    // 转为 object 存储起来。
-    // data
     const _data: {
       [key: string]: string
     } = {}
@@ -62,7 +68,7 @@ const Theme = () => {
           color: vars[key]
         }))
         setData(arr)
-      }catch (e) {
+      } catch (e) {
         console.error(e)
       }
     })
@@ -76,13 +82,43 @@ const Theme = () => {
     })
   }, [])
 
+  const customRequest = (options: any) => {
+    const { file, onSuccess, onError } = options
+    const reader = new FileReader()
+    reader.onload = e => {
+      const content = e.target?.result
+      if (typeof content === 'string') {
+        try {
+          const vars = JSON.parse(content)
+          const arr = Object.keys(vars).map(key => ({
+            name: key.replace(/^alemonjs-/g, ''),
+            color: vars[key]
+          }))
+          setData(arr)
+          setUpdate(true)
+          Promise.all(
+            arr.map(item => {
+              setColor(item.name, item.color)
+            })
+          )
+          onSuccess && onSuccess('ok')
+        } catch (e) {
+          onError && onError(new Error('文件内容格式错误'))
+        }
+      } else {
+        onError && onError(new Error('文件读取失败'))
+      }
+    }
+    reader.readAsText(file as Blob)
+  }
+
   /**
    *
    * @param status
    */
   const onChangeDesktop = (status: boolean) => {
     setIsDark(status)
-    updateTheme(status)
+    updateThemeMode(status)
   }
   return (
     <div className="animate__animated animate__fadeIn flex-1 flex-col flex">
@@ -96,19 +132,37 @@ const Theme = () => {
           >
             <div className="flex gap-2 items-center">
               <div>主题</div>
-              <div
-                className="text-xs  cursor-pointer  text-secondary-text"
+              <Button
                 onClick={() => {
-                  // window.theme.initVariables()
-                  ThemeResetTheme()
+                  ThemeResetTheme().then(t => {
+                    t && ThemeLoadVariables()
+                  })
                 }}
+                className="text-xs px-1 rounded-lg"
               >
-                <div>恢复默认</div>
-              </div>
+                恢复默认
+              </Button>
+              <Button
+                onClick={() => {
+                  ThemeDownloadFiles()
+                }}
+                className="text-xs px-1 rounded-lg"
+              >
+                导出
+              </Button>
+              <Upload
+                // 只能是json文件
+                accept=".json"
+                showUploadList={false}
+                customRequest={customRequest}
+              >
+                <Button className="text-xs px-1 rounded-lg">导入</Button>
+              </Upload>
             </div>
             <div className="flex gap-2 items-center">
               {update && (
                 <Button
+                  className="text-base px-2 rounded-lg"
                   onClick={() => {
                     saveColor()
                     setUpdate(false)
@@ -132,8 +186,8 @@ const Theme = () => {
                         <Input
                           type="text"
                           autoCapitalize="off"
-  autoCorrect="off"
-  spellCheck="false"
+                          autoCorrect="off"
+                          spellCheck="false"
                           value={item.color}
                           className="rounded px-1"
                           onChange={value => {
@@ -148,8 +202,8 @@ const Theme = () => {
                         <Input
                           type="color"
                           autoCapitalize="off"
-  autoCorrect="off"
-  spellCheck="false"
+                          autoCorrect="off"
+                          spellCheck="false"
                           value={item.color}
                           onChange={value => {
                             const color = value.target.value
@@ -171,8 +225,8 @@ const Theme = () => {
                           type="text"
                           value={item.color}
                           autoCapitalize="off"
-  autoCorrect="off"
-  spellCheck="false"
+                          autoCorrect="off"
+                          spellCheck="false"
                           className="rounded px-1"
                           onChange={value => {
                             const color = value.target.value
@@ -186,8 +240,8 @@ const Theme = () => {
                         <Input
                           type="color"
                           autoCapitalize="off"
-  autoCorrect="off"
-  spellCheck="false"
+                          autoCorrect="off"
+                          spellCheck="false"
                           value={item.color}
                           onChange={value => {
                             const color = value.target.value

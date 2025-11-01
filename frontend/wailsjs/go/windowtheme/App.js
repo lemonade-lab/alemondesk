@@ -6,6 +6,10 @@ export function Startup(arg1) {
   return window['go']['windowtheme']['App']['Startup'](arg1);
 }
 
+export function ThemeDownloadFiles() {
+  return window['go']['windowtheme']['App']['ThemeDownloadFiles']();
+}
+
 export function ThemeLoadVariables() {
   return window['go']['windowtheme']['App']['ThemeLoadVariables']();
 }

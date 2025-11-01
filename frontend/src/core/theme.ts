@@ -5,7 +5,7 @@ import { ThemeSetMode } from "@wailsjs/go/windowtheme/App"
  * @param select
  * @returns
  */
-export const updateTheme = (select: boolean) => {
+export const updateThemeMode = (select: boolean) => {
   if (select === true) {
     document.documentElement.classList.add('dark')
   ThemeSetMode('dark')

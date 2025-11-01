@@ -10,14 +10,6 @@ export function BotResetBot() {
   return window['go']['windowbot']['App']['BotResetBot']();
 }
 
-export function BotResetTemplate() {
-  return window['go']['windowbot']['App']['BotResetTemplate']();
-}
-
-export function BotResetTemplateAndBot() {
-  return window['go']['windowbot']['App']['BotResetTemplateAndBot']();
-}
-
 export function BotRun(arg1) {
   return window['go']['windowbot']['App']['BotRun'](arg1);
 }

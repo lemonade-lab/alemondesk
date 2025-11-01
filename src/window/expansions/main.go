@@ -101,7 +101,7 @@ func (a *App) ExpansionsRun(p1 []string) {
 		})
 	})
 
-	_, err := logicexpansions.Run(expansionsName)
+	_, err := logicexpansions.Run(expansionsName, p1)
 	if err != nil {
 		// 通知前端扩展器状态变化
 		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{

@@ -6,10 +6,6 @@ export function BotClose():Promise<void>;
 
 export function BotResetBot():Promise<void>;
 
-export function BotResetTemplate():Promise<void>;
-
-export function BotResetTemplateAndBot():Promise<void>;
-
 export function BotRun(arg1:Array<string>):Promise<void>;
 
 export function BotStatus():Promise<boolean>;

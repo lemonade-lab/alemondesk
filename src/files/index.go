@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 )
 
@@ -69,8 +70,175 @@ func Create(ResourcesFiles fs.FS) {
 	}
 }
 
-func ReCreate() {
-	Create(resourcesFiles)
+// Reset 恢复指定路径下的文件
+func Reset(curTargetPath string) error {
+	workPAth := paths.GetWorkPath()
+	// 解压资源
+	err := fs.WalkDir(resourcesFiles, ".", func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			logger.Error("资源初始化失败: %v", err)
+			return err
+		}
+		// 计算目标路径
+		targetPath := filepath.Join(workPAth, p)
+
+		// 检查当前资源路径是否以目标路径开头
+		if !strings.HasPrefix(targetPath, curTargetPath) {
+			logger.Debug("跳过资源路径: %s", targetPath, curTargetPath)
+			return nil
+		}
+
+		// 如果是目录
+		if d.IsDir() {
+			// 创建目录
+			if err := os.MkdirAll(targetPath, os.ModePerm); err != nil {
+				logger.Error("资源初始化失败: %v", err)
+				return err
+			}
+		} else {
+			// 打开文件
+			curFile, err := resourcesFiles.Open(p)
+			if err != nil {
+				logger.Error("资源初始化失败: %v", err)
+				return err
+			}
+			// 关闭文件
+			defer curFile.Close()
+
+			// 打开文件
+			file, err := os.Create(targetPath)
+			if err != nil {
+				logger.Error("资源初始化失败: %v", err)
+				return err
+			}
+			// 关闭文件
+			defer file.Close()
+
+			// 复制文件
+			if _, err := io.Copy(file, curFile); err != nil {
+				logger.Error("资源初始化失败: %v", err)
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		logger.Error("资源初始化失败:", err)
+		return err
+	}
+	return nil
+}
+
+// ResetSingleFile 恢复单个文件
+func ResetSingleFile(targetPath string) error {
+	if resourcesFiles == nil {
+		return fmt.Errorf("资源文件系统未初始化")
+	}
+
+	logger.Debug("开始恢复单个文件: %s", targetPath)
+
+	// 直接尝试打开资源文件（使用相对路径）
+	curFile, err := resourcesFiles.Open(targetPath)
+	if err != nil {
+		return fmt.Errorf("打开资源文件失败: %w", err)
+	}
+	defer curFile.Close()
+
+	// 检查是否为目录
+	fileInfo, err := curFile.Stat()
+	if err != nil {
+		return fmt.Errorf("获取文件信息失败: %w", err)
+	}
+
+	if fileInfo.IsDir() {
+		return fmt.Errorf("指定路径是目录，不是文件: %s", targetPath)
+	}
+
+	workPath := paths.GetWorkPath()
+	fullTargetPath := filepath.Join(workPath, targetPath)
+
+	// 确保目标目录存在
+	targetDir := filepath.Dir(fullTargetPath)
+	if err := os.MkdirAll(targetDir, os.ModePerm); err != nil {
+		return fmt.Errorf("创建目标目录失败: %w", err)
+	}
+
+	// 创建目标文件
+	file, err := os.Create(fullTargetPath)
+	if err != nil {
+		return fmt.Errorf("创建目标文件失败: %w", err)
+	}
+	defer file.Close()
+
+	// 复制文件内容
+	if _, err := io.Copy(file, curFile); err != nil {
+		return fmt.Errorf("复制文件内容失败: %w", err)
+	}
+
+	logger.Info("文件恢复成功: %s", targetPath)
+	return nil
+}
+
+// restoreSingleFile 恢复单个文件
+func restoreSingleFile(sourcePath, targetPath string) error {
+	// 打开源文件
+	curFile, err := resourcesFiles.Open(sourcePath)
+	if err != nil {
+		return fmt.Errorf("打开源文件失败: %w", err)
+	}
+	defer curFile.Close()
+
+	// 确保目标目录存在
+	targetDir := filepath.Dir(targetPath)
+	if err := os.MkdirAll(targetDir, os.ModePerm); err != nil {
+		return fmt.Errorf("创建目标目录失败: %w", err)
+	}
+
+	// 创建目标文件
+	file, err := os.Create(targetPath)
+	if err != nil {
+		return fmt.Errorf("创建目标文件失败: %w", err)
+	}
+	defer file.Close()
+
+	// 复制文件内容
+	if _, err := io.Copy(file, curFile); err != nil {
+		return fmt.Errorf("复制文件内容失败: %w", err)
+	}
+
+	return nil
+}
+
+// ResetWithFilter 恢复指定路径下的文件，可自定义过滤条件
+func ResetWithFilter(targetPath string, filter func(path string, d fs.DirEntry) bool) error {
+	if resourcesFiles == nil {
+		return fmt.Errorf("资源文件系统未初始化")
+	}
+
+	workPath := paths.GetWorkPath()
+
+	return fs.WalkDir(resourcesFiles, ".", func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// 检查路径匹配和过滤条件
+		if !strings.HasPrefix(p, targetPath) {
+			return nil
+		}
+
+		if filter != nil && !filter(p, d) {
+			return nil
+		}
+
+		actualTargetPath := filepath.Join(workPath, p)
+
+		if d.IsDir() {
+			return os.MkdirAll(actualTargetPath, os.ModePerm)
+		} else {
+			return restoreSingleFile(p, actualTargetPath)
+		}
+	})
 }
 
 func getNodejsResourcePath() string {

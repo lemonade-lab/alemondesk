@@ -1,15 +1,18 @@
 // import { Button } from '@alemonjs/react-ui'
 import { PrimaryDiv } from '@alemonjs/react-ui'
 import { GetVersions } from '@wailsjs/go/windowcontroller/App'
+import logoURL from '@/assets/logo.jpg'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 const About = () => {
   const [versions, setVersions] = useState<{
     node: string
     platform: string
+    arch?: string
   }>({
     node: '',
-    platform: ''
+    platform: '',
+    arch: ''
   })
 
   // const [progress, setProgress] = useState(0)
@@ -30,12 +33,13 @@ const About = () => {
   return (
     <div className="animate__animated animate__fadeIn flex-1 flex-col flex justify-center items-center">
       <div className="flex-col gap-2 flex justify-center py-6 items-center">
-        <PrimaryDiv className="flex flex-col items-center  justify-center flex-1  p-6 rounded-lg ">
-          <h2 className="text-2xl lg:text-4xl  xl:text-6xl font-semibold mb-4">AlemonDesk</h2>
-          <ul className="list-disc pl-5 text-md lg:text-xl  xl:text-2xl">
-            <li>Node 版本: {versions.node}</li>
-            <li>平台: {versions.platform}</li>
-          </ul>
+        <div className="flex flex-col items-center  justify-center flex-1 px-6  py-1 rounded-3xl ">
+          <img src={logoURL} alt="logo" className="w-72 h-28" />
+          <div className="list-disc pl-5 text-md lg:text-xl flex flex-col justify-center items-center  xl:text-2xl">
+            <div>{versions.platform}-{versions.arch}-{versions.node}</div>
+            <div>Copyright © 2024-present Lemonade-Lab</div>
+            <div className='select-text'>https://alemonjs.com</div>
+          </div>
           {/* <Button
             onClick={onClickUpdate}
             className="mt-4 px-6 py-1 rounded-lg  duration-700 transition-all text-md lg:text-xl  xl:text-2xl  "
@@ -52,7 +56,7 @@ const About = () => {
               </div>
             )}
           </div> */}
-        </PrimaryDiv>
+        </div>
       </div>
     </div>
   )

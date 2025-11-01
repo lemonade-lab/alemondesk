@@ -4,11 +4,13 @@ import {context} from '../models';
 
 export function Startup(arg1:context.Context):Promise<void>;
 
+export function ThemeDownloadFiles():Promise<void>;
+
 export function ThemeLoadVariables():Promise<void>;
 
 export function ThemeMode():Promise<string>;
 
-export function ThemeResetTheme():Promise<void>;
+export function ThemeResetTheme():Promise<boolean>;
 
 export function ThemeSave(arg1:string):Promise<void>;
 
