@@ -1,4 +1,5 @@
 @import 'animate.css';
+@import url('./inter.scss');
 @import url('./assets/css/scrollbar.scss');
 // root
 @import './assets/css/root.css';
@@ -42,18 +43,4 @@ img {
 
 .animate__animated.animate__fadeInRight.duration-500 {
   --animate-duration: 0.5s;
-}
-
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 400;
-  src: local(""),
-    url("@/assets/fonts/Inter-Medium.ttf") format("truetype");
-}
-
-body {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
 }

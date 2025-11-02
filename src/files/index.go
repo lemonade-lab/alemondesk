@@ -357,15 +357,23 @@ func (m *NodeJSManager) GetNodeJSPath() (string, error) {
 
 	// 找到第一个目录作为版本目录
 	for _, entry := range entries {
+		// 是目录
 		if entry.IsDir() {
 			versionPath := filepath.Join(nodejsBasePath, entry.Name())
 
-			// 检查 bin 目录是否存在
-			binPath := filepath.Join(versionPath, "bin")
-			if _, err := os.Stat(binPath); err == nil {
-				logger.Debug("找到 bin 目录: %s", binPath)
-			} else {
-				logger.Debug("bin 目录不存在: %s", binPath)
+			nodeName := "node"
+			if runtime.GOOS == "windows" {
+				nodeName = "node.exe"
+			}
+
+			exePath := filepath.Join(versionPath, "bin", nodeName)
+			if _, err := os.Stat(exePath); os.IsNotExist(err) {
+				// 尝试无 bin
+				exePath = filepath.Join(versionPath, nodeName)
+				if _, err := os.Stat(exePath); os.IsNotExist(err) {
+					// 不存在
+					continue
+				}
 			}
 
 			m.mu.Lock()
@@ -409,19 +417,24 @@ func (m *NodeJSManager) GetNodeExePath() (string, error) {
 	}
 
 	// 尝试从管理的 Node.js 中获取
-	dir, err := m.GetNodeJSPath()
+	versionPath, err := m.GetNodeJSPath()
 	if err != nil {
 		return "", fmt.Errorf("获取 Node.js 路径失败: %w", err)
 	}
 
-	// 确定可执行文件名
-	exeName := "node"
+	nodeName := "node"
 	if runtime.GOOS == "windows" {
-		exeName = "node.exe"
+		nodeName = "node.exe"
 	}
 
-	// 拼接可执行文件路径
-	exePath := filepath.Join(dir, "bin", exeName)
+	exePath := filepath.Join(versionPath, "bin", nodeName)
+	if _, err := os.Stat(exePath); os.IsNotExist(err) {
+		// 尝试无 bin
+		exePath = filepath.Join(versionPath, nodeName)
+		if _, err := os.Stat(exePath); os.IsNotExist(err) {
+			return "", fmt.Errorf("node.js 可执行文件不存在: %s", exePath)
+		}
+	}
 
 	// 检查文件是否存在
 	if _, err := os.Stat(exePath); os.IsNotExist(err) {

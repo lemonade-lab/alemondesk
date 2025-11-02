@@ -39,7 +39,7 @@ func Add(name string, args []string) (bool, error) {
 
 	// 构建命令参数
 	curArgs := append([]string{cliDir, "add", "-W"}, args...)
-	
+
 	// 在 Windows 上添加额外的参数
 	if runtime.GOOS == "windows" {
 		curArgs = append(curArgs, "--mutex", "file")
@@ -136,7 +136,7 @@ func Remove(name string, names []string) (bool, error) {
 
 	// 构建命令参数
 	args := append([]string{cliDir, "remove", "-W"}, names...)
-	
+
 	// 在 Windows 上添加额外的参数
 	if runtime.GOOS == "windows" {
 		args = append(args, "--mutex", "file")
@@ -185,7 +185,7 @@ func Cmd(name string, args []string) (bool, error) {
 
 	// 构建命令参数
 	cmdArgs := append([]string{cliDir}, args...)
-	
+
 	// 在 Windows 上添加额外的参数（如果还没有 mutex 参数）
 	hasMutex := false
 	for _, arg := range args {

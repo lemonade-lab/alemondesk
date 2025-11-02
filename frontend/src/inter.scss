@@ -1,0 +1,35 @@
+/*!
+ * Inter Font Family
+ * 
+ * Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter)
+ * 
+ * This Font Software is licensed under the SIL Open Font License, Version 1.1.
+ * This license is available with a FAQ at: http://scripts.sil.org/OFL
+ * 
+ */
+@font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/Inter-4.1/web/InterVariable.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/Inter-4.1/web/InterVariable-Italic.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* 基础样式 */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background: #f5f5f5;
+}
