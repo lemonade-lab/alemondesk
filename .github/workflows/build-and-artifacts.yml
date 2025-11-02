@@ -1,10 +1,8 @@
 name: 发布测试
 
 on:
-  push:
-    tags:
-      - '*'
-
+  workflow_dispatch:
+  
 env:
   NODE_VERSION: "22.21.0"
   GO_VERSION: "1.24.0"
