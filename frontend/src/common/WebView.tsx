@@ -16,13 +16,14 @@ interface WebViewMessage {
 
 interface WebViewProps {
   src: string
+  name: string
   rules?: {
     protocol: string
     work: string
   }[]
 }
 
-const WebView = ({ src, rules }: WebViewProps) => {
+const WebView = ({ src, name, rules }: WebViewProps) => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const lastSrcRef = useRef<string>('') // 记录上次发送的内容
@@ -76,8 +77,11 @@ const WebView = ({ src, rules }: WebViewProps) => {
           {
             global: 'message',
             type: 'initialize',
-            src: src,
-            rules: rules,
+            data: {
+              name: name,
+              src: src,
+              rules: rules,
+            },
             timestamp: timestamp
           },
           '*'

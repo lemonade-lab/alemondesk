@@ -15,12 +15,12 @@ import (
 
 func CreateAssetServer(assets *embed.FS) application.AssetOptions {
 	return application.AssetOptions{
-		Handler: application.AssetFileServerFS(assets),
-		// DisableLogging: false,
+		Handler:        application.AssetFileServerFS(assets),
+		DisableLogging: false,
 		Middleware: func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				resourcePrefix := "/webview://-/resource/"
-				logger.Debug("请求路径: %s", r.URL.Path)
+				// logger.Debug("请求路径: %s", r.URL.Path)
 				if strings.HasPrefix(r.URL.Path, resourcePrefix) {
 					requestPath := r.URL.Path[len(resourcePrefix):]
 

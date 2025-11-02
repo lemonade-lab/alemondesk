@@ -1,4 +1,4 @@
-export {};
+export { };
 
 class __Desk_WebView {
     callbackId: number;
@@ -38,23 +38,26 @@ class __Desk_WebView {
     }
 }
 
-const observeKeys: {
-    [key: string | symbol]: boolean
-} = {
-    EventsOnMultiple: true
-};
-
-
 // 声明 window.runtime 类型
 declare global {
     interface Window {
         runtime: any;
         __alemondesk_webview: __Desk_WebView;
+        __alemondesk_webview_runtime_event_listeners: Map<string, Function[]>;
+        __alemondesk_webview_observe_keys: {
+            [key: string | symbol]: boolean
+        }
+        __expansions_name: string;
     }
 }
 
+// 允许订阅的订阅的 key 列表
+window.__alemondesk_webview_observe_keys = {
+    EventsOnMultiple: true
+}
+
 // 收集订阅
-const runtimeEventListeners = new Map();
+window.__alemondesk_webview_runtime_event_listeners = new Map();
 
 // 初始化
 window.__alemondesk_webview = new __Desk_WebView();
@@ -64,13 +67,13 @@ window.runtime = new Proxy({}, {
     get(target, prop) {
         return (...args: any[]) => {
             // 处理特殊的订阅机制
-            if (observeKeys[prop]) {
+            if (window.__alemondesk_webview_observe_keys[prop]) {
                 const eventName = args[0];
                 const callback = args[1];
-                if (!runtimeEventListeners.has(eventName)) {
-                    runtimeEventListeners.set(eventName, []);
+                if (!window.__alemondesk_webview_runtime_event_listeners.has(eventName)) {
+                    window.__alemondesk_webview_runtime_event_listeners.set(eventName, []);
                 }
-                runtimeEventListeners.get(eventName).push(callback);
+                window.__alemondesk_webview_runtime_event_listeners.get(eventName)?.push(callback);
                 return new Promise((resolve, reject) => {
                     const callbackId = window.__alemondesk_webview.callbackId++;
                     window.__alemondesk_webview.callbacks.set(callbackId, { resolve, reject });
@@ -113,8 +116,8 @@ window.__alemondesk_webview.on(async (data: {
 }) => {
     if (data.global === 'runtime') {
         // 先检查是否是订阅的事件
-        if (runtimeEventListeners.has(data.type)) {
-            const callbacks = runtimeEventListeners.get(data.type);
+        if (window.__alemondesk_webview_runtime_event_listeners.has(data.type)) {
+            const callbacks = window.__alemondesk_webview_runtime_event_listeners.get(data.type);
             if (Array.isArray(callbacks)) {
                 Promise.all(callbacks.map(callback => {
                     const args = data.args || [];
@@ -125,34 +128,25 @@ window.__alemondesk_webview.on(async (data: {
             }
             return;
         }
-        // else if (data.type in window.runtime) {
-        //     // 不是订阅的。调用 runtime 方法
-        //     const runtimeProp = window.runtime[data.type];
-        //     if (typeof runtimeProp === 'function') {
-        //         const args = data.args || [];
-        //         const result = await runtimeProp(...args);
-        //         // 发送回调结果
-        //         window.__alemondesk_webview.send({
-        //             callbackId: data.callbackId,
-        //             result: result
-        //         });
-        //         return;
-        //     }
-        // }
     }
 });
 
 // 处理初始化消息，动态加载 HTML 内容
-window.__alemondesk_webview.on((data: {
+window.__alemondesk_webview.on((e: {
+    global: string;
     type: string;
-    src: string;
-    rules?: { protocol: string; work: string }[];
+    data: {
+        name: string;
+        src: string;
+        rules: { protocol: string; work: string }[];
+    }
 }) => {
     try {
-        if (data.type === 'initialize') {
-            let htmlString = data.src;
+        if (e.type === 'initialize') {
+            window.__expansions_name = e.data.name || '';
+            let htmlString = e.data.src;
             // 规则。用来先把字符串里的资源路径替换掉
-            const rules = data.rules || [];
+            const rules = e.data.rules || [];
             rules.forEach(rule => {
                 const protocol = rule.protocol;
                 const work = rule.work;
@@ -234,4 +228,5 @@ window.__alemondesk_webview.on((data: {
     } catch (error) {
         console.error('[WebView] 处理初始化消息时出错:', error);
     }
+    // TODO 单独开一个主题同步事件
 });

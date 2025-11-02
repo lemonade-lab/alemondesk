@@ -4,7 +4,6 @@ import { delMessate } from '@/store/log'
 import { Button, PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
 import Box from './layout/Box'
 import ParseLogMessage from './BotTerminalText'
-import { useEffect } from 'react'
 
 function BotLogList({
   headerRight,
@@ -22,9 +21,6 @@ function BotLogList({
       dispatch(delMessate(count))
     }
   }
-  useEffect(()=>{
-    console.log('log.message',log.message)
-  },[log.message])
   return (
     <div className="flex-1 flex flex-col shadow-md w-[calc(100vw-6rem)]">
       <PrimaryDiv className="border-b ">

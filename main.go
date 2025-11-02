@@ -15,8 +15,11 @@ import (
 	windowtheme "alemonapp/src/window/theme"
 	windowyarn "alemonapp/src/window/yarn"
 	"embed"
+	"fmt"
 	"log"
 	"os"
+	"path"
+	"runtime"
 
 	"github.com/joho/godotenv"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -27,6 +30,24 @@ var assets embed.FS
 
 //go:embed resources/**/* resources/*
 var ResourcesFiles embed.FS
+
+type SysImg struct{}
+
+//go:embed images/*
+var ImgFs embed.FS
+
+func NewImgVendor() *SysImg {
+	return &SysImg{}
+}
+
+func (s *SysImg) GetImg(fileName string) ([]byte, error) {
+	trayIcon, err := ImgFs.ReadFile(path.Join("images", fileName))
+	if err != nil {
+		fmt.Println("找不到图片文件：", err.Error())
+		return nil, err
+	}
+	return trayIcon, nil
+}
 
 func main() {
 	// 加载.env
@@ -105,8 +126,13 @@ func main() {
 		},
 	})
 
-	// 创建主窗口
-	app.Window.NewWithOptions(application.WebviewWindowOptions{
+	// 设置窗口关闭行为
+	// mainWindow.On(events.Common.WindowClosing, func(e *application.WindowEvent) {
+	// // 可以在这里添加关闭前的清理逻辑
+	// logger.Info("应用程序正在关闭")
+	// })
+
+	windowOptions := application.WebviewWindowOptions{
 		Title:            "ALemonDesk",
 		Width:            960,
 		Height:           600,
@@ -116,18 +142,42 @@ func main() {
 		MaxHeight:        900,
 		BackgroundColour: application.NewRGB(27, 38, 54),
 		URL:              "/",
+		Frameless:        runtime.GOOS != "darwin",
 		Mac: application.MacWindow{
 			Backdrop: application.MacBackdropTranslucent,
-			TitleBar: application.MacTitleBarHiddenInset,
+			TitleBar: application.MacTitleBarHidden,
 			// InvisibleTitleBarHeight: 28,
 		},
-	})
+	}
 
-	// 设置窗口关闭行为
-	// mainWindow.On(events.Common.WindowClosing, func(e *application.WindowEvent) {
-	// 	// 可以在这里添加关闭前的清理逻辑
-	// 	logger.Info("应用程序正在关闭")
-	// })
+	// 创建主窗口
+	// app.Window.NewWithOptions(windowOptions)
+	window := app.Window.NewWithOptions(windowOptions)
+
+	if runtime.GOOS == "windows" {
+		sysImg := NewImgVendor()
+		icon, _ := sysImg.GetImg("appicon.png")
+		systray := app.SystemTray.New()
+		systray.SetIcon(icon)
+		systray.SetTooltip("ALemonDesk")
+		menu := application.NewMenu()
+
+		menu.Add("显示").OnClick(func(ctx *application.Context) {
+			window.Show()
+		})
+
+		if config.IsDev() {
+			menu.Add("工具").OnClick(func(ctx *application.Context) {
+				window.OpenDevTools()
+			})
+		}
+
+		menu.Add("退出").OnClick(func(ctx *application.Context) {
+			app.Quit()
+		})
+
+		systray.SetMenu(menu)
+	}
 
 	// 启动服务
 	ctx := app.Context()
@@ -153,5 +203,6 @@ func main() {
 	// 运行应用
 	if err := app.Run(); err != nil {
 		logger.Error("应用程序运行错误: %v", err)
+		return
 	}
 }

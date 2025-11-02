@@ -5,7 +5,7 @@ const EventsOff = window.runtime.EventsOff;
 const eventName = 'webview-hide-message';
 const obEventName = 'webview-on-hide-message';
 
-class appDesktopHideAPI {
+export class appDesktopHideAPI {
     name: string
 
     constructor(name: string) {
@@ -59,7 +59,7 @@ class appDesktopHideAPI {
     }
 }
 
-class appDesktopAPI extends appDesktopHideAPI {
+export class appDesktopAPI extends appDesktopHideAPI {
     static create(name: string) {
         return new appDesktopAPI(name)
     }
@@ -108,10 +108,11 @@ declare global {
     interface Window {
         appDesktopHideAPI: typeof appDesktopHideAPI;
         appDesktopAPI: typeof appDesktopAPI;
+        createDesktopAPI: () => appDesktopAPI;
     }
 }
 
 window.appDesktopHideAPI = appDesktopHideAPI
 window.appDesktopAPI = appDesktopAPI
 
-export {};
+window.createDesktopAPI = () => window.appDesktopAPI.create(window.__expansions_name);

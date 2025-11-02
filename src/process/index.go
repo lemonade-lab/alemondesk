@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"sync"
 	"syscall"
@@ -26,7 +27,7 @@ type NodeProcessConfig struct {
 	PidFile     string
 	EnvFilePath string
 	Env         map[string]string
-	// Port                 int
+	// Port         int
 	Args                 []string
 	CommunicationEnabled bool
 }
@@ -105,8 +106,8 @@ func (pm *ProcessManager) AddProcess(cfg NodeProcessConfig) {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 	// if _, exists := pm.Processes[cfg.Name]; exists {
-	// 	pm.Processes[cfg.Name].Config.Port = runConfig.Port // 更新端口
-	// 	return
+	// pm.Processes[cfg.Name].Config.Port = runConfig.Port // 更新端口
+	// return
 	// }
 	// cfg.Port = runConfig.Port // 使用配置的端口
 	mp := NewManagedProcess(cfg)
@@ -194,7 +195,7 @@ func (mp *ManagedProcess) Start() error {
 		handleMessagesMu.RLock()
 		messageHandler := handleMessages[mp.Config.Name]
 		handleMessagesMu.RUnlock()
-		
+
 		// 创建多路复用writer
 		multiStdout := &multiplexWriter{
 			writers: []io.Writer{
@@ -230,8 +231,15 @@ func (mp *ManagedProcess) Start() error {
 		}
 		// 启动健康检查
 		go mp.monitor()
-		// 启动健康检查循环
-		go mp.healthCheckLoop()
+		// 启动健康检查循环（防止重复启动）
+		// 注意：healthTicker 会在 healthCheckLoop 开始时设置
+		if mp.healthTicker == nil {
+			if runtime.GOOS != "windows" {
+				go mp.healthCheckLoop()
+			}
+		} else {
+			logger.Debug("[%s] health check already running, skip start", mp.Config.Name)
+		}
 	}
 	// 状态持久化
 	SaveProcess(mp.Config.Name, mp.Config, mp.Status)
@@ -249,7 +257,7 @@ func (mp *ManagedProcess) cleanupPIDFile() {
 func (mp *ManagedProcess) monitor() {
 	_ = mp.Cmd.Wait()
 	mp.cleanupPIDFile()
-	
+
 	mp.mu.Lock()
 	// 关闭 stdin 管道
 	if mp.stdinPipe != nil {
@@ -261,29 +269,29 @@ func (mp *ManagedProcess) monitor() {
 		mp.mu.Unlock()
 		return
 	}
-	
+
 	// 计算运行时长和是否需要重启
 	alive := time.Since(mp.LastStartTime)
 	shouldRestart := false
-	
+
 	if alive > 30*time.Second {
 		mp.RestartCount = 0
 	} else {
 		mp.RestartCount++
 	}
-	
+
 	if mp.RestartCount <= mp.MaxRestarts {
 		shouldRestart = true
 		logger.Info("[%s] exited, restarting in %v (count: %d/%d)\n", mp.Config.Name, mp.RestartWait, mp.RestartCount, mp.MaxRestarts)
 	} else {
 		logger.Info("[%s] too many restarts, giving up!\n", mp.Config.Name)
 	}
-	
+
 	// 更新状态
 	mp.Status = StatusStopped
 	SaveProcess(mp.Config.Name, mp.Config, mp.Status)
 	mp.mu.Unlock()
-	
+
 	// 在锁外处理重启，避免死锁
 	if shouldRestart {
 		time.Sleep(mp.RestartWait)
@@ -334,7 +342,7 @@ func (pm *ProcessManager) StartAll() {
 		processes = append(processes, p)
 	}
 	pm.mu.Unlock()
-	
+
 	// 使用 WaitGroup 追踪所有启动的 goroutine
 	var wg sync.WaitGroup
 	for _, p := range processes {
@@ -367,7 +375,7 @@ func (mp *ManagedProcess) healthCheckLoop() {
 		mp.healthTicker.Stop()
 		mp.healthTicker = nil
 	}()
-	
+
 	for {
 		select {
 		case <-mp.healthTicker.C:

@@ -57,12 +57,12 @@ const SettingsMenu = () => {
       <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1">
         <Outlet />
       </SecondaryDiv>
-      <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col w-16 border-l h-full">
+      <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col min-w-16 border-l h-full">
         {buttons.map(item => (
           <div
             key={item.children}
             onClick={item.onClick}
-            className="px-4 py-2 cursor-pointer border-b border-gray-200"
+            className="px-4 py-2 cursor-pointer border-b border-gray-200 text-sm"
           >
             {item.children}
           </div>

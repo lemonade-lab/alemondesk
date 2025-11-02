@@ -183,7 +183,7 @@ export default function GitExpansions() {
     ])
 
     // 并行读取文件内容
-    let readmeContent = '未找到 README.md 文件'
+    let readmeContent = '未找到 README.md 文件(若刚克隆请稍等片刻再回来)...'
     let packageContent = null
     let packageString = ''
 

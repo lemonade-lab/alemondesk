@@ -48,6 +48,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       
+      - name: Install NSIS (Windows only)
+        if: matrix.build.platform == 'windows'
+        run: |
+          choco install nsis -y
+
       - name: Install Wails CLI
         run: |
           go install -v -x github.com/wailsapp/wails/v3/cmd/wails3@latest

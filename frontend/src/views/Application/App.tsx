@@ -63,6 +63,7 @@ export default function Webviews() {
           {view && (
             <WebView
               src={view}
+              name={command.name}
               rules={[
                 {
                   protocol: 'resource://-/',

@@ -111,8 +111,7 @@ jobs:
       
       - name: Build with Wails v3
         run: |
-          wails task build -set OS=${{ matrix.build.platform }}
-          wails task package -set OS=${{ matrix.build.platform }}
+          wails3 task package
       
       - name: List build outputs
         run: |
