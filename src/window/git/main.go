@@ -166,8 +166,8 @@ func (a *App) GitClone(params GitCloneOptions) {
 
 	// 构建 CloneOptions
 	cloneOpts := &git.CloneOptions{
-		URL:          repoUrl,
-		Progress:     os.Stdout,
+		URL: repoUrl,
+		// Progress:     os.Stdout,
 		Depth:        depth,
 		SingleBranch: true, // 只克隆单个分支以节省时间和空间
 	}
@@ -254,7 +254,7 @@ func GitPull(space string, name string) {
 	// 拉取最新更改
 	err = worktree.Pull(&git.PullOptions{
 		RemoteName: "origin",
-		Progress:   os.Stdout,
+		// Progress:   os.Stdout,
 	})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
 		logger.Error("拉取错误:", err)
@@ -287,7 +287,7 @@ func (a *App) GitFetch(space string, repoUrl string) {
 
 	// 拉取最新更改
 	err = remote.Fetch(&git.FetchOptions{
-		Progress: os.Stdout,
+		// Progress: os.Stdout,
 	})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
 		logger.Error("拉取错误:", err)

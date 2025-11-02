@@ -48,6 +48,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       
+      - name: Install NSIS (Windows only)
+        if: runner.os != 'Windows'
+        run: |
+          choco install nsis -y
+      
       - name: Install Wails CLI
         run: |
           # 使用预编译版本避免依赖问题
