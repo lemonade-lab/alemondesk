@@ -5,6 +5,7 @@ on:
     tags:
       - '*'
 
+
 env:
   NODE_VERSION: "22.21.0"
   GO_VERSION: "1.24.0"
@@ -15,17 +16,17 @@ jobs:
       fail-fast: false
       matrix:
         build:
-          # - name: 'ALemonDesk-linux'
+          # - name: 'ALemonDesk'
           #   platform: 'linux'
           #   arch: 'amd64'
           #   node_arch: 'linux-x64'
           #   os: 'ubuntu-latest'
-          - name: 'ALemonDesk-windows'
+          - name: 'ALemonDesk.exe'
             platform: 'windows'
             arch: 'amd64'
             node_arch: 'win-x64'
             os: 'windows-latest'
-          - name: 'ALemonDesk-darwin'
+          - name: 'ALemonDesk-macOS'
             platform: 'darwin'
             arch: 'universal'
             node_arch: 'darwin-arm64'
@@ -47,14 +48,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: Install Wails CLI
         run: |
-          # 使用预编译版本避免依赖问题
-          curl -LO https://github.com/wailsapp/wails/releases/download/v3.0.0-alpha.36/wails_3.0.0-alpha.36_${{ runner.os }}_${{ runner.arch }}.tar.gz
-          tar -xzf wails_3.0.0-alpha.36_${{ runner.os }}_${{ runner.arch }}.tar.gz
-          sudo mv wails /usr/local/bin/
-          wails version
+          go install -v -x github.com/wailsapp/wails/v3/cmd/wails3@latest
       
       - name: Cache frontend dependencies
         uses: actions/cache@v4
@@ -120,7 +117,6 @@ jobs:
           $env:PATH = "C:\Program Files (x86)\NSIS;" + $env:PATH
           makensis -VERSION
           wails3 task package
-      
       - name: List build outputs
         run: |
           echo "=== Build artifacts for ${{ matrix.build.name }} ==="
