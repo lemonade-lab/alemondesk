@@ -50,7 +50,7 @@ jobs:
       
       - name: Install Wails CLI
         run: |
-          go install github.com/wailsapp/wails/v3/cmd/wails@latest
+          go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
       
       - name: Cache frontend dependencies
         uses: actions/cache@v4
@@ -107,7 +107,6 @@ jobs:
       
       - name: Build with Wails v3
         run: |
-          go install github.com/wailsapp/wails/v3/cmd/wails@latest
           wails3 task package
       
       - name: Upload build artifacts

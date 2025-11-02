@@ -3,6 +3,7 @@
 ```sh
 npm i yarn -g
 go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/evilmartians/lefthook@latest
 go mod tidy
 ```
 
@@ -10,6 +11,7 @@ go mod tidy
 
 ```sh
 chmod +x app-*.sh 
+# 需安装 make
 make dev
 ```
 
