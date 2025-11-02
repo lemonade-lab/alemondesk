@@ -42,10 +42,9 @@ jobs:
         with:
           path: frontend/node_modules
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/yarn.lock') }}
-      - name: install frontend dependencies and build
+      - name: install frontend dependencies
         run: |
             yarn --cwd frontend install
-            yarn --cwd frontend build
       - name: install template dependencies
         run: |
             yarn --cwd resources/template install

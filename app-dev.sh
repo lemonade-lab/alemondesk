@@ -5,9 +5,6 @@ echo "Building the app..."
 # 前端构建
 yarn --cwd frontend install
 
-# 如果不存在dist目录。则进行一次build
-[ ! -f "frontend/dist/index.html" ] && yarn --cwd frontend build:dev
-
 # 不存在压缩包
 if [ ! -f "resources/node_modules.tar.gz" ]; then
    # 处理后端依赖

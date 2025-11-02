@@ -4,7 +4,6 @@ set -e
 set -u
 
 yarn --cwd frontend install
-yarn --cwd frontend build
 
 yarn --cwd resources/template install
 find resources/template/node_modules -type l -exec rm {} + # 得删除软链接
