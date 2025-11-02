@@ -48,13 +48,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       
-      - name: Install NSIS (Windows only)
-        if: runner.os == 'Windows'
-        run: |
-          choco install nsis -y
-          $env:PATH = "C:\Program Files (x86)\NSIS;" + $env:PATH
-          makensis -VERSION
-      
       - name: Install Wails CLI
         run: |
           # 使用预编译版本避免依赖问题
@@ -117,7 +110,15 @@ jobs:
           wget https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-${{ matrix.build.node_arch }}.tar.xz -O resources/node.tar.xz
       
       - name: Build with Wails v3
+        if: runner.os != 'Windows'
         run: |
+          wails3 task package
+      - name: Build with Wails v3 (Windows only)
+        if: runner.os == 'Windows'
+        run: |
+          choco install nsis -y
+          $env:PATH = "C:\Program Files (x86)\NSIS;" + $env:PATH
+          makensis -VERSION
           wails3 task package
       
       - name: List build outputs
