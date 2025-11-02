@@ -13,12 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         build:
-          # - name: 'ALemonDesk'
-          #   platform: 'linux'
-          #   arch: 'amd64'
-          #   node_arch: 'linux-x64'
-          #   os: 'ubuntu-latest'
-          - name: 'ALemonDesk.exe'
+          - name: 'ALemonDesk-Win'
             platform: 'windows'
             arch: 'amd64'
             node_arch: 'win-x64'
