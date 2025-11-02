@@ -47,7 +47,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       
       - name: Install NSIS (Windows only)
-        if: runner.os != 'Windows'
+        if: runner.os == 'Windows'
         run: |
           choco install nsis -y
 

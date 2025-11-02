@@ -15,11 +15,11 @@ jobs:
       fail-fast: false
       matrix:
         build:
-          - name: 'ALemonDesk-linux'
-            platform: 'linux'
-            arch: 'amd64'
-            node_arch: 'linux-x64'
-            os: 'ubuntu-latest'
+          # - name: 'ALemonDesk-linux'
+          #   platform: 'linux'
+          #   arch: 'amd64'
+          #   node_arch: 'linux-x64'
+          #   os: 'ubuntu-latest'
           - name: 'ALemonDesk-windows'
             platform: 'windows'
             arch: 'amd64'
@@ -49,7 +49,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       
       - name: Install NSIS (Windows only)
-        if: runner.os != 'Windows'
+        if: runner.os == 'Windows'
         run: |
           choco install nsis -y
       
