@@ -7,6 +7,7 @@ on:
 
 env:
   NODE_VERSION: "22.21.0"
+  GO_VERSION: "1.24.0"
 
 jobs:
   build:
@@ -14,16 +15,19 @@ jobs:
       fail-fast: false
       matrix:
         build:
-          - name: 'ALemonDesk-linux-amd64'
-            platform:  'linux/amd64'
+          - name: 'ALemonDesk'
+            platform: 'linux'
+            arch: 'amd64'
             node_arch: 'linux-x64'
             os: 'ubuntu-latest'
-          - name: 'ALemonDesk-win-amd64.exe'
-            platform:  'windows/amd64'
+          - name: 'ALemonDesk.exe'
+            platform: 'windows'
+            arch: 'amd64'
             node_arch: 'win-x64'
             os: 'windows-latest'
           - name: 'ALemonDesk'
-            platform:  'darwin/universal'
+            platform: 'darwin'
+            arch: 'universal'
             node_arch: 'darwin-arm64'
             os: 'macos-latest'
 
@@ -33,63 +37,82 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+      
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Wails CLI
+        run: |
+          go install github.com/wailsapp/wails/v3/cmd/wails@latest
+      
       - name: Cache frontend dependencies
         uses: actions/cache@v4
         with:
           path: frontend/node_modules
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/yarn.lock') }}
-      - name: install frontend dependencies
+      
+      - name: Install frontend dependencies
         run: |
-            yarn --cwd frontend install
-      - name: install template dependencies
+          yarn --cwd frontend install
+      
+      - name: Install template dependencies
         run: |
-            yarn --cwd resources/template install
-      - name: delete link (Linux/macOS)
+          yarn --cwd resources/template install
+      
+      - name: Delete symlinks (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
           find resources/template/node_modules -type l -exec rm {} +
-      - name: delete link (Windows)
+      
+      - name: Delete symlinks (Windows)
         if: runner.os == 'Windows'
         run: |
           Get-ChildItem -Path resources/template/node_modules -Recurse | Where-Object { $_.LinkType -ne $null } | Remove-Item -Force
-      - name: compress
+      
+      - name: Compress node_modules
         run: |
-            tar -czf resources/node_modules.tar.gz -C resources/template node_modules
-      - name: delete node_modules (Linux/macOS)
+          tar -czf resources/node_modules.tar.gz -C resources/template node_modules
+      
+      - name: Delete node_modules (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
           rm -rf resources/template/node_modules
-      - name: delete node_modules (Windows)
+      
+      - name: Delete node_modules (Windows)
         if: runner.os == 'Windows'
         run: |
           Remove-Item resources/template/node_modules -Recurse -Force
-      - name: download Nodejs (Linux)
+      
+      - name: Download Node.js (Linux)
         if: runner.os == 'Linux'
         run: |
           wget https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-${{ matrix.build.node_arch }}.tar.xz -O resources/node.tar.xz
-      - name: download Nodejs (Windows)
+      
+      - name: Download Node.js (Windows)
         if: runner.os == 'Windows'
         run: |
           Invoke-WebRequest -Uri "https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-${{ matrix.build.node_arch }}.zip" -OutFile "resources/node.zip"
-      - name: download Nodejs (macOS)
+      
+      - name: Download Node.js (macOS)
         if: runner.os == 'macOS'
         run: |
           wget https://nodejs.org/dist/v${{ env.NODE_VERSION }}/node-v${{ env.NODE_VERSION }}-${{ matrix.build.node_arch }}.tar.xz -O resources/node.tar.xz
-      - name: Build wails3
-        uses: dAppServer/wails-build-action@main
-        id: build
+      
+      - name: Build with Wails v3
+        run: |
+          go install github.com/wailsapp/wails/v3/cmd/wails@latest
+          wails3 task package
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
         with:
-          build-name: ${{ matrix.build.name }}
-          build-platform: ${{ matrix.build.platform }}
-          go-version: "1.25"
-          node-version: "22.x"
-          wails-version: "v3" 
-          build-obfuscate: true
-          build: true
-          package: true
-          sign: false
-          nsis: ${{ matrix.build.platform == 'windows/amd64' }}
+          name: ${{ matrix.build.name }}
+          path: bin/${{ matrix.build.name }}
+          retention-days: 7

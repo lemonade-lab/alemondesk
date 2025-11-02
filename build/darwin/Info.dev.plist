@@ -6,9 +6,9 @@
         <key>CFBundleName</key>
             <string>My Product</string>
         <key>CFBundleExecutable</key>
-            <string>myproject</string>
+            <string>ALemonDesk</string>
         <key>CFBundleIdentifier</key>
-            <string>com.wails.myproject</string>
+            <string>com.wails.ALemonDesk</string>
         <key>CFBundleVersion</key>
             <string>0.1.0</string>
         <key>CFBundleGetInfoString</key>

@@ -1,32 +1,6 @@
 {
     "cSpell.words": [
-        "alemon",
-        "alemonapp",
-        "alemonb",
-        "alemondesk",
-        "alemonjs",
-        "assetserver",
-        "bytenode",
-        "Colour",
-        "godotenv",
-        "joho",
-        "jsxp",
-        "lvyjs",
-        "Maximise",
-        "Minimise",
-        "ningmengchongshui",
-        "onebot",
-        "outputfilename",
-        "puppeteerrc",
         "Taskfile",
-        "VITE",
-        "wailsapp",
-        "wailsio",
-        "wailsjs",
-        "windowapp",
-        "windowexpansions",
-        "windowgit",
-        "windowtheme",
-        "windowyarn"
+        "VITE"
     ]
 }

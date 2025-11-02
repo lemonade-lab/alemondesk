@@ -3,7 +3,7 @@
 #
 # The lines below are called `modelines`. See `:help modeline`
 
-name: "myproject"
+name: "ALemonDesk"
 arch: ${GOARCH}
 platform: "linux"
 version: "0.1.0"
@@ -17,12 +17,12 @@ license: "MIT"
 release: "1"
 
 contents:
-  - src: "./bin/myproject"
-    dst: "/usr/local/bin/myproject"
+  - src: "./bin/ALemonDesk"
+    dst: "/usr/local/bin/ALemonDesk"
   - src: "./build/appicon.png"
-    dst: "/usr/share/icons/hicolor/128x128/apps/myproject.png"
-  - src: "./build/linux/myproject.desktop"
-    dst: "/usr/share/applications/myproject.desktop"
+    dst: "/usr/share/icons/hicolor/128x128/apps/ALemonDesk.png"
+  - src: "./build/linux/ALemonDesk.desktop"
+    dst: "/usr/share/applications/ALemonDesk.desktop"
 
 # Default dependencies for Debian 12/Ubuntu 22.04+ with WebKit 4.1
 depends:
