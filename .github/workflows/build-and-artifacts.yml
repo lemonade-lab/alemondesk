@@ -1,4 +1,4 @@
-name: 发布版本
+name: 发布测试
 
 on:
   push:
@@ -15,17 +15,17 @@ jobs:
       fail-fast: false
       matrix:
         build:
-          - name: 'ALemonDesk-linux'
-            platform: 'linux'
-            arch: 'amd64'
-            node_arch: 'linux-x64'
-            os: 'ubuntu-latest'
-          - name: 'ALemonDesk-windows'
-            platform: 'windows'
-            arch: 'amd64'
-            node_arch: 'win-x64'
-            os: 'windows-latest'
-          - name: 'ALemonDesk-darwin'
+          # - name: 'ALemonDesk'
+          #   platform: 'linux'
+          #   arch: 'amd64'
+          #   node_arch: 'linux-x64'
+          #   os: 'ubuntu-latest'
+          # - name: 'ALemonDesk.exe'
+          #   platform: 'windows'
+          #   arch: 'amd64'
+          #   node_arch: 'win-x64'
+          #   os: 'windows-latest'
+          - name: 'ALemonDesk-macOS'
             platform: 'darwin'
             arch: 'universal'
             node_arch: 'darwin-arm64'
@@ -50,11 +50,7 @@ jobs:
       
       - name: Install Wails CLI
         run: |
-          # 使用预编译版本避免依赖问题
-          curl -LO https://github.com/wailsapp/wails/releases/download/v3.0.0-alpha.36/wails_3.0.0-alpha.36_${{ runner.os }}_${{ runner.arch }}.tar.gz
-          tar -xzf wails_3.0.0-alpha.36_${{ runner.os }}_${{ runner.arch }}.tar.gz
-          sudo mv wails /usr/local/bin/
-          wails version
+          go install -v -x github.com/wailsapp/wails/v3/cmd/wails3@latest
       
       - name: Cache frontend dependencies
         uses: actions/cache@v4
@@ -111,13 +107,7 @@ jobs:
       
       - name: Build with Wails v3
         run: |
-          wails task build -set OS=${{ matrix.build.platform }}
-          wails task package -set OS=${{ matrix.build.platform }}
-      
-      - name: List build outputs
-        run: |
-          echo "=== Build artifacts for ${{ matrix.build.name }} ==="
-          ls -la bin/
+          wails3 task package
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -125,30 +115,3 @@ jobs:
           name: ${{ matrix.build.name }}
           path: bin/**
           retention-days: 7
-
-  create-release:
-    needs: build  # 等待所有构建任务完成
-    runs-on: ubuntu-latest  # 使用更轻量的系统
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-      
-      - name: List downloaded artifacts
-        run: |
-          echo "=== Downloaded artifacts ==="
-          find ./artifacts -type f | tree
-      
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            artifacts/ALemonDesk-linux/**
-            artifacts/ALemonDesk-windows/**
-            artifacts/ALemonDesk-darwin/**
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          body: |
-            ## ALemonDesk ${{ github.ref_name }}
-          draft: false
