@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNotification } from '@/context/Notification'
 import { Button } from '@alemonjs/react-ui'
-import { AppExists, AppReadFiles, AppWriteFiles } from '@wailsjs/go/windowapp/App'
+import { AppExists, AppReadFiles, AppWriteFiles } from '@wailsjs/window/app/app'
 import FileEdit from '@/common/FileEdit'
 
 type EditFileProps = {

@@ -34,4 +34,4 @@ if [ ! -f "resources/node.tar.xz" ]; then
    curl -L "https://nodejs.org/dist/v$NODE_VERSION/$NODE_FILE" -o resources/node.tar.xz
 fi
 
-wails build --clean --platform=$PLATFORM
+wails3 build

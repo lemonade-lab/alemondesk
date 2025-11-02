@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@alemonjs/db@^0.0.11":
-  version "0.0.11"
-  resolved "https://registry.npmmirror.com/@alemonjs/db/-/db-0.0.11.tgz#f3d9aeb6b2aa9534100f88e6f0afdd8ac82b284f"
-  integrity sha512-odOFW4AfNZZKrPLFTgeqwyI529y0KuLggJ3fZuD+ripuXHDnMiA7x7Wx3zMJuwHL/bP+c8jKniCp9haQJxNDpw==
+"@alemonjs/db@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.npmmirror.com/@alemonjs/db/-/db-0.0.12.tgz#b1b1bc226cda4ba07d62070fbe6ab28567520b93"
+  integrity sha512-rNT4qmENohRQXCsQXcpg3zB0suPcFSbDmSKOawCamDSaNlbmsPubF+7DkwYgG1RjTF0lbDJoL02GcCuegFu2QA==
   dependencies:
     dayjs "^1.11.13"
     ioredis "^5.4.1"

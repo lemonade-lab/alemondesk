@@ -12,11 +12,12 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type App struct {
-	ctx context.Context
+	ctx         context.Context
+	application *application.EventManager
 	// 存储活跃的 webview 实例
 	webviews map[string]bool
 }
@@ -29,6 +30,10 @@ func NewApp() *App {
 
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+}
+
+func (a *App) SetApplication(app *application.EventManager) {
+	a.application = app
 	// 注册事件监听器
 	a.registerEventHandlers()
 }
@@ -42,7 +47,7 @@ func (a *App) ExpansionsRun(p1 []string) {
 	if !utils.ExistsPath([]string{botPath}) {
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+			a.application.Emit(expansionsStatus, map[string]interface{}{
 				"value": 0,
 			})
 		}
@@ -53,7 +58,7 @@ func (a *App) ExpansionsRun(p1 []string) {
 	if logicexpansions.IsRunning(expansionsName) {
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+			a.application.Emit(expansionsStatus, map[string]interface{}{
 				"value": 1,
 			})
 		}
@@ -96,7 +101,7 @@ func (a *App) ExpansionsRun(p1 []string) {
 				}
 				// context有效性
 				if a.ctx != nil {
-					runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
+					a.application.Emit(webviewOnHideMessage, string(jsonData))
 				}
 			} else {
 				logger.Error("webview 数据格式错误:", webData)
@@ -105,7 +110,7 @@ func (a *App) ExpansionsRun(p1 []string) {
 		}
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, "expansions", map[string]interface{}{
+			a.application.Emit("expansions", map[string]interface{}{
 				"type": msgType,
 				"data": message["data"],
 			})
@@ -116,7 +121,7 @@ func (a *App) ExpansionsRun(p1 []string) {
 	if err != nil {
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+			a.application.Emit(expansionsStatus, map[string]interface{}{
 				"value": 0,
 			})
 		}
@@ -124,7 +129,7 @@ func (a *App) ExpansionsRun(p1 []string) {
 	}
 	// context有效性
 	if a.ctx != nil {
-		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+		a.application.Emit(expansionsStatus, map[string]interface{}{
 			"value": 1,
 		})
 	}
@@ -135,7 +140,7 @@ func (a *App) ExpansionsClose() {
 	if !utils.ExistsPath([]string{botPath}) {
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+			a.application.Emit(expansionsStatus, map[string]interface{}{
 				"value": 0,
 			})
 		}
@@ -145,7 +150,7 @@ func (a *App) ExpansionsClose() {
 	_, err := logicexpansions.Stop(expansionsName)
 	// context有效性
 	if a.ctx != nil {
-		runtime.EventsEmit(a.ctx, expansionsStatus, map[string]interface{}{
+		a.application.Emit(expansionsStatus, map[string]interface{}{
 			"value": 0,
 		})
 	}
@@ -190,91 +195,95 @@ func (a *App) ExpansionsPostMessage(params ExpansionsPostMessageParams) {
 
 func (a *App) registerEventHandlers() {
 	// 隐藏消息窗口
-	runtime.EventsOn(a.ctx, webviewHideMessage, func(data ...interface{}) {
-		logger.Debug("webview-hide-message: %v", data)
-		if len(data) > 0 {
-			if params, ok := data[0].(map[string]interface{}); ok {
-				name, _ := params["_name"].(string)
-				if paramsType, exists := params["type"].(string); exists {
-					logger.Debug(name, paramsType)
-					switch paramsType {
-					case "css-variables":
-						{
-							themeVars := logictheme.GetThemeVariables()
-							// 解析json
-							parsedVars := make(map[string]interface{})
-							if err := json.Unmarshal([]byte(themeVars), &parsedVars); err != nil {
-								logger.Error("解析css变量失败:", err)
-								return
-							}
-							d := map[string]interface{}{
-								"_name": name,
-								"type":  paramsType,
-								"data":  parsedVars,
-							}
-							// 转为json
-							jsonData, err := json.Marshal(d)
-							if err != nil {
-								logger.Error("转换css变量为json失败:", err)
-								return
-							}
-							// context有效性
-							if a.ctx != nil {
-								runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
-							}
+	a.application.On(webviewHideMessage, func(event *application.CustomEvent) {
+		logger.Debug("webview-hide-message: %v", event)
+
+		// 安全地转换为 map
+		params, ok := event.Data.(map[string]interface{})
+		if !ok {
+			logger.Warn("事件数据不是 map 类型: %T", event.Data)
+			return
+		}
+
+		name, _ := params["_name"].(string)
+		if paramsType, exists := params["type"].(string); exists {
+			logger.Debug(name, paramsType)
+			switch paramsType {
+			case "css-variables":
+				{
+					themeVars := logictheme.GetThemeVariables()
+					// 解析json
+					parsedVars := make(map[string]interface{})
+					if err := json.Unmarshal([]byte(themeVars), &parsedVars); err != nil {
+						logger.Error("解析css变量失败:", err)
+						return
+					}
+					d := map[string]interface{}{
+						"_name": name,
+						"type":  paramsType,
+						"data":  parsedVars,
+					}
+					// 转为json
+					jsonData, err := json.Marshal(d)
+					if err != nil {
+						logger.Error("转换css变量为json失败:", err)
+						return
+					}
+					// context有效性
+					if a.ctx != nil {
+						a.application.Emit(webviewOnHideMessage, string(jsonData))
+					}
+				}
+			case "theme-mode":
+				{
+					mode := logictheme.GetThemeMode()
+					logger.Debug("主题模式:", mode)
+					d := map[string]interface{}{
+						"_name": name,
+						"type":  paramsType,
+						"data":  mode,
+					}
+					// 转为json
+					jsonData, err := json.Marshal(d)
+					if err != nil {
+						logger.Error("转换主题模式为json失败:", err)
+						return
+					}
+					// context有效性
+					if a.ctx != nil {
+						a.application.Emit(webviewOnHideMessage, string(jsonData))
+					}
+				}
+			case "post-message":
+				{
+					// webview 向扩展器发送消息
+					if messageData, exists := params["data"].(map[string]interface{}); exists {
+						logger.Debug("webview to expansions:", messageData)
+						jsonBytes, err := json.Marshal(messageData)
+						if err != nil {
+							logger.Error("转为JSON失败:", err)
+							return
 						}
-					case "theme-mode":
-						{
-							mode := logictheme.GetThemeMode()
-							logger.Debug("主题模式:", mode)
-							d := map[string]interface{}{
-								"_name": name,
-								"type":  paramsType,
-								"data":  mode,
-							}
-							// 转为json
-							jsonData, err := json.Marshal(d)
-							if err != nil {
-								logger.Error("转换主题模式为json失败:", err)
-								return
-							}
-							// context有效性
-							if a.ctx != nil {
-								runtime.EventsEmit(a.ctx, webviewOnHideMessage, string(jsonData))
-							}
+						a.ExpansionsPostMessage(ExpansionsPostMessageParams{
+							Type: "webview-post-message",
+							Data: string(jsonBytes),
+						})
+					}
+				}
+			case "get-expansions":
+				{
+					// webview 向扩展器发送消息
+					if messageData, exists := params["data"].(map[string]interface{}); exists {
+						logger.Debug("触发 webview-post-message消息:", messageData)
+						jsonBytes, err := json.Marshal(messageData)
+						if err != nil {
+							logger.Error("转为JSON失败:", err)
+							return
 						}
-					case "post-message":
-						{
-							// webview 向扩展器发送消息
-							if messageData, exists := params["data"].(map[string]interface{}); exists {
-								logger.Debug("webview to expansions:", messageData)
-								jsonBytes, err := json.Marshal(messageData)
-								if err != nil {
-									logger.Error("转为JSON失败:", err)
-									return
-								}
-								a.ExpansionsPostMessage(ExpansionsPostMessageParams{
-									Type: "webview-post-message",
-									Data: string(jsonBytes),
-								})
-							}
-						}
-					case "get-expansions":
-						{
-							// webview 向扩展器发送消息
-							if messageData, exists := params["data"].(map[string]interface{}); exists {
-								logger.Debug("触发 webview-post-message消息:", messageData)
-								jsonBytes, err := json.Marshal(messageData)
-								if err != nil {
-									logger.Error("转为JSON失败:", err)
-									return
-								}
-								a.ExpansionsPostMessage(ExpansionsPostMessageParams{
-									Type: "webview-get-expansions",
-									Data: string(jsonBytes),
-								})
-							}
-						}
+						a.ExpansionsPostMessage(ExpansionsPostMessageParams{
+							Type: "webview-get-expansions",
+							Data: string(jsonBytes),
+						})
 					}
 				}
 			}

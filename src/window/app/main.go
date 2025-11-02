@@ -8,20 +8,25 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-// App struct
 type App struct {
-	ctx context.Context
+	ctx         context.Context
+	application *application.EventManager
 }
 
-// NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
 }
 
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+}
+
+func (a *App) SetApplication(app *application.EventManager) {
+	a.application = app
 }
 
 type PathsState struct {
@@ -90,5 +95,5 @@ func (a *App) GetAppLogsFilePath() (string, error) {
 // DownloadFiles 下载文件
 func (a *App) AppDownloadFiles(localURL string) error {
 	// 写入文件
-	return utils.DownloadFiles(a.ctx, localURL)
+	return utils.DownloadFiles(localURL)
 }

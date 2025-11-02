@@ -6,11 +6,13 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeRaw from 'rehype-raw'
 import rehypeAttr from 'rehype-attr'
 import { useEffect } from 'react'
-import { ThemeMode } from '@wailsjs/go/windowtheme/App'
+import { ThemeMode } from '@wailsjs/window/theme/app'
 import classNames from 'classnames'
 import LinkText from './LinkText'
-import { BrowserOpenURL, ClipboardSetText } from '@wailsjs/runtime/runtime'
 import { useNotification } from '@/context/Notification'
+import { Browser, Clipboard } from '@wailsio/runtime'
+const BrowserOpenURL = Browser.OpenURL
+const ClipboardSetText = Clipboard.SetText
 
 const useTheme = () => {
   // theme

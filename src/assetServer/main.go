@@ -10,15 +10,17 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	application "github.com/wailsapp/wails/v3/pkg/application"
 )
 
-func CreateAssetServer(assets *embed.FS) *assetserver.Options {
-	return &assetserver.Options{
-		Assets: assets,
+func CreateAssetServer(assets *embed.FS) application.AssetOptions {
+	return application.AssetOptions{
+		Handler: application.AssetFileServerFS(assets),
+		// DisableLogging: false,
 		Middleware: func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				resourcePrefix := "/resource://-/"
+				resourcePrefix := "/webview://-/resource/"
+				logger.Debug("请求路径: %s", r.URL.Path)
 				if strings.HasPrefix(r.URL.Path, resourcePrefix) {
 					requestPath := r.URL.Path[len(resourcePrefix):]
 
@@ -29,6 +31,8 @@ func CreateAssetServer(assets *embed.FS) *assetserver.Options {
 					if requestPath == "" || requestPath == "." || strings.Contains(requestPath, "..") {
 						logger.Warn("安全警告：非法路径访问尝试: %s", r.URL.Path)
 						http.Error(w, "Invalid file path", http.StatusBadRequest)
+						// 其他请求继续正常处理
+						next.ServeHTTP(w, r)
 						return
 					}
 
@@ -43,6 +47,8 @@ func CreateAssetServer(assets *embed.FS) *assetserver.Options {
 						if err != nil {
 							logger.Error("获取工作目录失败: %v", err)
 							http.Error(w, "Internal server error", http.StatusInternalServerError)
+							// 其他请求继续正常处理
+							next.ServeHTTP(w, r)
 							return
 						}
 
@@ -51,6 +57,8 @@ func CreateAssetServer(assets *embed.FS) *assetserver.Options {
 						if err != nil {
 							logger.Error("路径规范化失败: %v", err)
 							http.Error(w, "Internal server error", http.StatusInternalServerError)
+							// 其他请求继续正常处理
+							next.ServeHTTP(w, r)
 							return
 						}
 
@@ -59,6 +67,8 @@ func CreateAssetServer(assets *embed.FS) *assetserver.Options {
 							absRequestPath != absWorkPath {
 							logger.Warn("安全警告：绝对路径不在工作目录内: %s", requestPath)
 							http.Error(w, "Access denied: path outside workspace", http.StatusForbidden)
+							// 其他请求继续正常处理
+							next.ServeHTTP(w, r)
 							return
 						}
 
@@ -75,6 +85,8 @@ func CreateAssetServer(assets *embed.FS) *assetserver.Options {
 						if err != nil {
 							logger.Error("路径解析失败: %v", err)
 							http.Error(w, "Internal server error", http.StatusInternalServerError)
+							// 其他请求继续正常处理
+							next.ServeHTTP(w, r)
 							return
 						}
 
@@ -82,6 +94,8 @@ func CreateAssetServer(assets *embed.FS) *assetserver.Options {
 						if err != nil {
 							logger.Error("工作目录解析失败: %v", err)
 							http.Error(w, "Internal server error", http.StatusInternalServerError)
+							// 其他请求继续正常处理
+							next.ServeHTTP(w, r)
 							return
 						}
 
@@ -90,6 +104,8 @@ func CreateAssetServer(assets *embed.FS) *assetserver.Options {
 							absFullPath != absWorkPath {
 							logger.Warn("安全警告：相对路径解析后超出工作目录: %s", requestPath)
 							http.Error(w, "Access denied", http.StatusForbidden)
+							// 其他请求继续正常处理
+							next.ServeHTTP(w, r)
 							return
 						}
 
@@ -110,6 +126,8 @@ func CreateAssetServer(assets *embed.FS) *assetserver.Options {
 						if err != nil {
 							logger.Debug("文件未找到: %s", fullPath)
 							http.Error(w, "File not found", http.StatusNotFound)
+							// 其他请求继续正常处理
+							next.ServeHTTP(w, r)
 							return
 						}
 						logger.Debug("从磁盘读取资源: %s", fullPath)

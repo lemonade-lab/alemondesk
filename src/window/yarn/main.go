@@ -12,21 +12,24 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-// App struct
 type App struct {
-	ctx context.Context
+	ctx         context.Context
+	application *application.EventManager
 }
 
-// NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
 }
 
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+}
+
+func (a *App) SetApplication(app *application.EventManager) {
+	a.application = app
 }
 
 type YarnCommandsParams struct {
@@ -40,7 +43,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 		logger.Error("Yarn命令类型为空")
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+			a.application.Emit("yarn", map[string]interface{}{
 				"type":  "error",
 				"data":  0,
 				"error": "命令类型不能为空",
@@ -70,7 +73,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 		}
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+			a.application.Emit("yarn", map[string]interface{}{
 				"type":  "install",
 				"data":  data,
 				"error": error,
@@ -82,7 +85,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 			logger.Error("移除依赖参数为空")
 			// context有效性
 			if a.ctx != nil {
-				runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+				a.application.Emit("yarn", map[string]interface{}{
 					"type":  "remove",
 					"data":  0,
 					"error": "请指定要移除的依赖包名称",
@@ -98,7 +101,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 		}
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+			a.application.Emit("yarn", map[string]interface{}{
 				"type":  "remove",
 				"data":  data,
 				"error": error,
@@ -110,7 +113,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 			logger.Error("添加依赖参数为空")
 			// context有效性
 			if a.ctx != nil {
-				runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+				a.application.Emit("yarn", map[string]interface{}{
 					"type":  "add",
 					"data":  0,
 					"error": "请指定要添加的依赖包名称",
@@ -126,7 +129,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 		}
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+			a.application.Emit("yarn", map[string]interface{}{
 				"type":  "add",
 				"data":  data,
 				"error": error,
@@ -138,7 +141,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 			logger.Error("执行命令参数为空")
 			// context有效性
 			if a.ctx != nil {
-				runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+				a.application.Emit("yarn", map[string]interface{}{
 					"type":  "cmd",
 					"data":  0,
 					"error": "请指定要执行的命令",
@@ -154,7 +157,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 		}
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+			a.application.Emit("yarn", map[string]interface{}{
 				"type":  "cmd",
 				"data":  data,
 				"error": error,
@@ -165,7 +168,7 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 		logger.Error("未知的Yarn命令类型: %s", p1.Type)
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, "yarn", map[string]interface{}{
+			a.application.Emit("yarn", map[string]interface{}{
 				"type":  "error",
 				"data":  0,
 				"error": fmt.Sprintf("未知的命令类型: %s", p1.Type),

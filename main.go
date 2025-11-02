@@ -14,17 +14,12 @@ import (
 	windowgit "alemonapp/src/window/git"
 	windowtheme "alemonapp/src/window/theme"
 	windowyarn "alemonapp/src/window/yarn"
-	"context"
 	"embed"
 	"log"
 	"os"
-	"runtime"
 
 	"github.com/joho/godotenv"
-	"github.com/wailsapp/wails/v2"
-
-	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/mac"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 //go:embed all:frontend/dist
@@ -51,6 +46,7 @@ func main() {
 
 	// 判断系统是否有 Node.js
 	_, err := files.GetSystemExePath()
+
 	// 不存在的话解压 Node.js
 	if err != nil {
 		logger.Info("系统未找到 Node.js，开始解压内置 Node.js")
@@ -82,73 +78,80 @@ func main() {
 	}
 
 	// Create an instance of the app structure
-	wbot := windowbot.NewApp()
-	wapp := windowapp.NewApp()
-	wtheme := windowtheme.NewApp()
-	wcontroller := windowcontroller.NewApp()
-	wexpansions := windowexpansions.NewApp()
-	wyarn := windowyarn.NewApp()
-	wgit := windowgit.NewApp()
+	wBot := windowbot.NewApp()
+	wApp := windowapp.NewApp()
+	wTheme := windowtheme.NewApp()
+	wController := windowcontroller.NewApp()
+	wExpansions := windowexpansions.NewApp()
+	wYarn := windowyarn.NewApp()
+	wGit := windowgit.NewApp()
 
-	// 创建应用选项
-	appOptions := &options.App{
-		Title:             "ALemonDesk",
-		MaxWidth:          1400,
-		MaxHeight:         900,
-		Width:             960,
-		Height:            600,
-		MinWidth:          960,
-		MinHeight:         600,
-		HideWindowOnClose: false, // 关闭窗口时隐藏应用
-		Debug: options.Debug{
-			OpenInspectorOnStartup: false,
+	// 创建应用
+	app := application.New(application.Options{
+		Name:        "ALemonDesk",
+		Description: "ALemon Desktop Application",
+		Services: []application.Service{
+			application.NewService(wBot),
+			application.NewService(wApp),
+			application.NewService(wTheme),
+			application.NewService(wController),
+			application.NewService(wExpansions),
+			application.NewService(wYarn),
+			application.NewService(wGit),
 		},
-		AssetServer: assetServer.CreateAssetServer(&assets),
-		// Macos 禁止无边框窗口
-		Frameless: runtime.GOOS != "darwin",
-		OnStartup: func(ctx context.Context) {
-			wgit.Startup(ctx)
-			wbot.Startup(ctx)
-			wapp.Startup(ctx)
-			wtheme.Startup(ctx)
-			wcontroller.Startup(ctx)
-			wexpansions.Startup(ctx)
-			wyarn.Startup(ctx)
-			logger.Startup(ctx)
+		Assets: assetServer.CreateAssetServer(&assets),
+		Mac: application.MacOptions{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
-		Bind: []interface{}{
-			wbot,
-			wapp,
-			wtheme,
-			wcontroller,
-			wexpansions,
-			wyarn,
-			wgit,
+	})
+
+	// 创建主窗口
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
+		Title:            "ALemonDesk",
+		Width:            960,
+		Height:           600,
+		MinWidth:         960,
+		MinHeight:        600,
+		MaxWidth:         1400,
+		MaxHeight:        900,
+		BackgroundColour: application.NewRGB(27, 38, 54),
+		URL:              "/",
+		Mac: application.MacWindow{
+			Backdrop: application.MacBackdropTranslucent,
+			TitleBar: application.MacTitleBarHiddenInset,
+			// InvisibleTitleBarHeight: 28,
 		},
-		// Windows: options.Windows{
-		// 	wexpansions.CreateHideWebview()
-		// },
-	}
+	})
 
-	// macOS 特定配置 - 启用交通灯按钮
-	if runtime.GOOS == "darwin" {
-		appOptions.Mac = &mac.Options{
-			TitleBar: &mac.TitleBar{
-				TitlebarAppearsTransparent: true,  // 标题栏透明
-				HideTitle:                  true,  // 隐藏标题
-				HideTitleBar:               false, // 显示标题栏
-				FullSizeContent:            false, // 不使用全尺寸内容
-				UseToolbar:                 false, // 不使用工具栏
-				HideToolbarSeparator:       true,  // 隐藏工具栏分隔符
-			},
-			Appearance:           mac.DefaultAppearance, // 系统外观
-			WebviewIsTransparent: false,
-			WindowIsTranslucent:  false,
-		}
-	}
+	// 设置窗口关闭行为
+	// mainWindow.On(events.Common.WindowClosing, func(e *application.WindowEvent) {
+	// 	// 可以在这里添加关闭前的清理逻辑
+	// 	logger.Info("应用程序正在关闭")
+	// })
 
-	if err := wails.Run(appOptions); err != nil {
-		logger.Error("Error:", err.Error())
-	}
+	// 启动服务
+	ctx := app.Context()
 
+	wGit.Startup(ctx)
+	wGit.SetApplication(app.Event)
+	wBot.Startup(ctx)
+	wBot.SetApplication(app.Event)
+	wApp.Startup(ctx)
+	wApp.SetApplication(app.Event)
+	wTheme.Startup(ctx)
+	wTheme.SetApplication(app.Event)
+	wController.Startup(ctx)
+	wController.SetApplication(app.Event)
+	wExpansions.Startup(ctx)
+	wExpansions.SetApplication(app.Event)
+	wYarn.Startup(ctx)
+	wYarn.SetApplication(app.Event)
+
+	// set logger application
+	logger.SetApplication(app.Event)
+
+	// 运行应用
+	if err := app.Run(); err != nil {
+		logger.Error("应用程序运行错误: %v", err)
+	}
 }

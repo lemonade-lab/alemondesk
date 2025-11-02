@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import useGoNavigate from '@/hook/useGoNavigate'
@@ -16,12 +16,17 @@ import Menu from '@/views/Menu'
 import WordBox from '@/views/WordBox'
 import GuideMain from '@/views/Guide/Main'
 import Header from '@/views/Header'
-import { ExpansionsPostMessage, ExpansionsRun, ExpansionsStatus } from '@wailsjs/go/windowexpansions/App'
-import { AppGetPathsState } from '@wailsjs/go/windowapp/App'
-import { ThemeLoadVariables, ThemeMode } from '@wailsjs/go/windowtheme/App'
-import { EventsOn } from '@wailsjs/runtime/runtime'
-import { YarnCommands } from '@wailsjs/go/windowyarn/App'
-import { BotStatus } from '@wailsjs/go/windowbot/App'
+import {
+  ExpansionsPostMessage,
+  ExpansionsRun,
+  ExpansionsStatus
+} from '@wailsjs/window/expansions/app'
+import { AppGetPathsState } from '@wailsjs/window/app/app'
+import { ThemeLoadVariables, ThemeMode } from '@wailsjs/window/theme/app'
+import { Events } from '@wailsio/runtime'
+import { BotStatus } from '@wailsjs/window/bot/app'
+import { YarnCommands } from '@wailsjs/window/yarn/app'
+const EventsOn = Events.On
 
 export default (function App() {
   const navigate = useGoNavigate()
@@ -56,9 +61,11 @@ export default (function App() {
     })
 
     // 监听 css 变量
-    EventsOn('theme', cssVariables => {
+    EventsOn('theme', e => {
+      const args = e.data ?? []
+      const data = args[0] ?? null
       try {
-        const vars = JSON.parse(cssVariables)
+        const vars = JSON.parse(data)
         Object.keys(vars).forEach(key => {
           document.documentElement.style.setProperty(`--${key}`, vars[key])
         })
@@ -67,7 +74,10 @@ export default (function App() {
       }
     })
     // 监听依赖安装状态 0 失败 1 成功
-    EventsOn('yarn', data => {
+    EventsOn('yarn', e => {
+      
+      const args = e.data ?? []
+      const data = args[0] ?? null
       const value = data.value
       // 每一次安装依赖的后，都更新依赖状态
       if (data.type == 'install') {
@@ -84,7 +94,10 @@ export default (function App() {
       // 其他的通知
     })
     // 监听 bot 状态
-    EventsOn('bot', data => {
+    EventsOn('bot', e => {
+      
+      const args = e.data ?? []
+      const data = args[0] ?? null
       const value = data.value
       dispatch(
         setBotStatus({
@@ -93,13 +106,19 @@ export default (function App() {
       )
     })
     // 监听 通知消息
-    EventsOn('notification', data => {
+    EventsOn('notification', e => {
+      
+      const args = e.data ?? []
+      const data = args[0] ?? null
       const value = data.value
       const type = data.type
       notification(value, type || 'info')
     })
     // 监听 expansions状态
-    EventsOn('expansions-status', data => {
+    EventsOn('expansions-status', e => {
+      
+      const args = e.data ?? []
+      const data = args[0] ?? null
       console.log('expansions-status', data)
       const value = data.value
       dispatch(
@@ -109,7 +128,10 @@ export default (function App() {
       )
     })
     // 监听 expansions消息
-    EventsOn('expansions', data => {
+    EventsOn('expansions', e => {
+      
+      const args = e.data ?? []
+      const data = args[0] ?? null
       // console.log('expansions message', data)
       try {
         if (/^action:/.test(data.type)) {
@@ -139,11 +161,15 @@ export default (function App() {
       }
     })
     // 监听 terminal 消息
-    EventsOn('terminal', (data: string) => {
+    EventsOn('terminal', e => {
+      const args = e.data ?? []
+      const data = args[0] ?? null
       dispatch(postMessage(data))
     })
     // 监听  modal 弹窗机制
-    EventsOn('controller', data => {
+    EventsOn('controller', e => {
+      const args = e.data ?? []
+      const data = args[0] ?? null
       if (data.open) {
         setPopValue({
           open: true,
@@ -179,8 +205,7 @@ export default (function App() {
             runStatus: T ? true : false
           })
         )
-      }
-      catch (error) {
+      } catch (error) {
         console.error('获取 Expansions 状态失败', error)
       }
     }

@@ -1,10 +1,13 @@
-import { EventsEmit, EventsOn, EventsOff } from '@wailsjs/runtime/runtime';
+const EventsEmit = window.runtime.EventsEmit;
+const EventsOn = window.runtime.EventsOnMultiple;
+const EventsOff = window.runtime.EventsOff;
 
 const eventName = 'webview-hide-message';
 const obEventName = 'webview-on-hide-message';
 
 class appDesktopHideAPI {
     name: string
+
     constructor(name: string) {
         this.name = name
     }
@@ -108,6 +111,7 @@ declare global {
     }
 }
 
-
 window.appDesktopHideAPI = appDesktopHideAPI
 window.appDesktopAPI = appDesktopAPI
+
+export {};

@@ -1,37 +1,44 @@
 package utils
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	application "github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // DownloadFiles 下载文件
-func DownloadFiles(ctx context.Context, localURL string) error {
+func DownloadFiles(localURL string) error {
 	content, err := os.ReadFile(localURL)
 	if err != nil {
 		return err
 	}
-
 	DisplayName := filepath.Base(localURL)
-	Pattern := "*." + filepath.Ext(localURL)[1:]
+	Pattern := "*" + filepath.Ext(localURL)
 
-	// 弹出保存文件对话框
-	savePath, err := runtime.SaveFileDialog(ctx, runtime.SaveDialogOptions{
-		Title: "保存文件",
-		Filters: []runtime.FileFilter{
+	// 使用应用级别的保存文件对话框
+	dialog := application.SaveFileDialog()
+
+	options := &application.SaveFileDialogOptions{
+		Filename: DisplayName,
+		Title:    "保存文件",
+		Filters: []application.FileFilter{
 			{
 				DisplayName: DisplayName,
 				Pattern:     Pattern,
 			},
 		},
-	})
-	if err != nil || savePath == "" {
+	}
+	dialog.SetOptions(options)
+
+	savePath, err := dialog.PromptForSingleSelection()
+
+	if err != nil {
 		return err
 	}
-
+	if savePath == "" {
+		return nil // 用户取消保存
+	}
 	// 写入文件
-	return os.WriteFile(savePath, []byte(content), 0644)
+	return os.WriteFile(savePath, content, 0644)
 }

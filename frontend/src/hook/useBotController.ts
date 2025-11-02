@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/index'
 import _ from 'lodash'
-import { BotClose, BotRun } from '@wailsjs/go/windowbot/App'
+import { BotClose, BotRun } from '@wailsjs/window/bot/app'
 
 export const useBotController = () => {
   const bot = useSelector((state: RootState) => state.bot)

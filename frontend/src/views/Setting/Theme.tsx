@@ -9,11 +9,14 @@ import {
   ThemeMode,
   ThemeResetTheme,
   ThemeSave
-} from '@wailsjs/go/windowtheme/App'
-import { EventsOn } from '@wailsjs/runtime/runtime'
+} from '@wailsjs/window/theme/app'
 import Upload from 'antd/es/upload/Upload'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
+
+import { Events } from '@wailsio/runtime'
+const EventsOn = Events.On
+
 const Theme = () => {
   const [data, setData] = useState<
     {
@@ -60,9 +63,11 @@ const Theme = () => {
     ThemeLoadVariables()
 
     // 监听 css 变量
-    EventsOn('theme', cssVariables => {
+    EventsOn('theme', e => {
       try {
-        const vars = JSON.parse(cssVariables)
+      const args = e.data ?? []
+      const data = args[0] ?? null
+        const vars = JSON.parse(data)
         const arr = Object.keys(vars).map(key => ({
           name: key.replace(/^alemonjs-/g, ''),
           color: vars[key]

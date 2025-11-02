@@ -1,7 +1,7 @@
 import { Button } from '@alemonjs/react-ui'
 import { Modal } from '@alemonjs/react-ui'
 import { createContext, useState, ReactNode, useContext, PropsWithChildren, Fragment } from 'react'
-import { ControllerOnClick } from '@wailsjs/go/windowcontroller/App'
+import { ControllerOnClick } from '@wailsjs/window/controller/app'
 import classNames from 'classnames'
 
 type ModalProps = PropsWithChildren & {

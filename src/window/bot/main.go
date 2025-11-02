@@ -9,12 +9,12 @@ import (
 	"context"
 	"os"
 
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-// App struct
 type App struct {
-	ctx context.Context
+	ctx         context.Context
+	application *application.EventManager
 }
 
 func NewApp() *App {
@@ -23,6 +23,10 @@ func NewApp() *App {
 
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+}
+
+func (a *App) SetApplication(app *application.EventManager) {
+	a.application = app
 }
 
 func (a *App) BotStatus() bool {
@@ -34,7 +38,7 @@ func (a *App) BotRun(p1 []string) {
 	if !utils.ExistsPath([]string{botPath}) {
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+			a.application.Emit("bot", map[string]interface{}{
 				"value": 0,
 			})
 		}
@@ -45,7 +49,7 @@ func (a *App) BotRun(p1 []string) {
 	if err != nil {
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+			a.application.Emit("bot", map[string]interface{}{
 				"value": 0,
 			})
 		}
@@ -53,7 +57,7 @@ func (a *App) BotRun(p1 []string) {
 	}
 	// context有效性
 	if a.ctx != nil {
-		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+		a.application.Emit("bot", map[string]interface{}{
 			"value": 1,
 		})
 	}
@@ -64,7 +68,7 @@ func (a *App) BotClose() {
 	if !utils.ExistsPath([]string{botPath}) {
 		// context有效性
 		if a.ctx != nil {
-			runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+			a.application.Emit("bot", map[string]interface{}{
 				"value": 0,
 			})
 		}
@@ -80,7 +84,7 @@ func (a *App) BotClose() {
 	}
 	// context有效性
 	if a.ctx != nil {
-		runtime.EventsEmit(a.ctx, "bot", map[string]interface{}{
+		a.application.Emit("bot", map[string]interface{}{
 			"value": 0,
 		})
 	}
@@ -104,6 +108,6 @@ func (a *App) BotResetBot() {
 		}
 	}
 
-	// 重载APP
-	runtime.WindowReloadApp(a.ctx)
+	// TODO 重载APP
+	// a.application.WindowReloadApp(a.ctx)
 }

@@ -1,6 +1,4 @@
-// import { Button } from '@alemonjs/react-ui'
-import { PrimaryDiv } from '@alemonjs/react-ui'
-import { GetVersions } from '@wailsjs/go/windowcontroller/App'
+import { GetVersions } from '@wailsjs/window/controller/app'
 import logoURL from '@/assets/logo.jpg'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
@@ -15,20 +13,11 @@ const About = () => {
     arch: ''
   })
 
-  // const [progress, setProgress] = useState(0)
-
   useEffect(() => {
-    // window.controller.onDownloadProgress((value: number) => {
-    //   setProgress(value)
-    // })
     GetVersions().then(res => {
       setVersions(res)
     })
   }, [])
-
-  // const onClickUpdate = _.throttle(() => {
-  //   // window.controller.updateVersion()
-  // }, 500)
 
   return (
     <div className="animate__animated animate__fadeIn flex-1 flex-col flex justify-center items-center">

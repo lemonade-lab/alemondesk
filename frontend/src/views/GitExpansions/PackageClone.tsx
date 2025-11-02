@@ -60,7 +60,7 @@ const PackageClone = ({ space, show, onSubmit }: PackageCloneProps) => {
       }
 
       // 根据 url 解析成仓库地址
-      const { username, repository, platform } = extractRepoInfo(value)
+      const { repository } = extractRepoInfo(value)
 
       onSubmit(
         {
@@ -87,7 +87,13 @@ const PackageClone = ({ space, show, onSubmit }: PackageCloneProps) => {
   return (
     <SecondaryDiv className={classNames('p-4', !show && 'hidden')}>
       <Spin spinning={sub} tip="操作中...">
-        <form className="px-4 py-2 flex flex-col gap-4" onSubmit={onAdd}>
+        <form
+          className="px-4 py-2 flex flex-col gap-4"
+          onSubmit={e => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+        >
           <div className="flex gap-2 justify-center items-center">
             <div className="w-28">仓库地址:</div>
             <Input
@@ -140,7 +146,7 @@ const PackageClone = ({ space, show, onSubmit }: PackageCloneProps) => {
               onChange={checked => setValues({ ...values, force: checked })}
             />
           </div>
-          <Button className="px-2 rounded-md" type="submit">
+          <Button className="px-2 rounded-md" onClick={onAdd}>
             Clone
           </Button>
         </form>

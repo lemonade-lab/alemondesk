@@ -1,4 +1,4 @@
-import { ThemeSetMode } from "@wailsjs/go/windowtheme/App"
+import { ThemeSetMode } from "@wailsjs/window/theme/app"
 
 /**
  *

@@ -1,5 +1,8 @@
-import { EventsOff, EventsOn } from '@wailsjs/runtime/runtime'
 import { useEffect, useRef } from 'react'
+import { Events } from '@wailsio/runtime'
+const EventsOff = Events.Off
+const EventsOn = Events.On
+const EventsEmit = Events.Emit
 
 // 定义消息类型
 interface WebViewMessage {
@@ -113,9 +116,19 @@ const WebView = ({ src, rules }: WebViewProps) => {
     // 处理 Runtime 方法调用
     const handleRuntimeCall = async (data: WebViewMessage) => {
       try {
-        const runtimeProp = (window as any).runtime?.[data.type]
-        if (typeof runtimeProp === 'function') {
-          const args = data?.args ?? []
+        // 映射 v2 的接口。
+        const eventMap = {
+          EventsEmit: EventsEmit,
+          EventsOff: EventsOff,
+          EventsOnMultiple: EventsOn,
+          // 其他 runtime 方法可以继续添加这里
+        }
+        if (!eventMap[data.type]) {
+          // 拒绝其他调用
+          throw new Error(`runtime.${data.type} is not allowed`)
+        }
+        const args = data?.args ?? []
+        if (data.type === 'EventsOnMultiple') {
           console.log(`[iframe] 调用 runtime.${data.type} 方法`, args)
           // 拦截订阅
           if (observeKeys[data.type]) {
@@ -127,7 +140,9 @@ const WebView = ({ src, rules }: WebViewProps) => {
             // 记录订阅类型，方便取消
             observeType[eventName] = data.type
             // 订阅事件
-            EventsOn(eventName, (...args) => {
+            EventsOn(eventName, e => {
+              const args = e.data ?? []
+              console.log(`[iframe] runtime.${data.type} 触发事件: ${eventName}`, args)
               iframeRef.current?.contentWindow?.postMessage(
                 {
                   global: 'runtime',
@@ -145,16 +160,15 @@ const WebView = ({ src, rules }: WebViewProps) => {
             })
             return
           }
-          const result = await runtimeProp(...args)
-          postMessage({
-            global: 'callback',
-            type: 'callback',
-            callbackId: data.callbackId!,
-            result: result
-          })
-        } else {
-          throw new Error(`runtime.${data.type} is not a function`)
+          return
         }
+        const result = await eventMap[data.type](...args)
+        postMessage({
+          global: 'callback',
+          type: 'callback',
+          callbackId: data.callbackId!,
+          result: result
+        })
       } catch (error) {
         postMessage({
           global: 'callback',

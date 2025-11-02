@@ -1,6 +1,8 @@
-import { useNotification } from "@/context/Notification"
-import LinkText from "./LinkText"
-import { BrowserOpenURL, ClipboardSetText } from "@wailsjs/runtime/runtime"
+import { useNotification } from '@/context/Notification'
+import LinkText from './LinkText'
+import { Browser, Clipboard } from '@wailsio/runtime'
+const BrowserOpenURL = Browser.OpenURL
+const ClipboardSetText = Clipboard.SetText
 
 const ParseLogMessage = ({ message }: { message: string }) => {
   const notification = useNotification()
@@ -39,6 +41,7 @@ const ParseLogMessage = ({ message }: { message: string }) => {
       trailingChars: ''
     }
   }
+  if (!message || !message.match) return null
 
   // 如果消息包含链接
   const urlMatch = message.match(urlRegex)
@@ -67,13 +70,7 @@ const ParseLogMessage = ({ message }: { message: string }) => {
       // 只有清理后的URL看起来像真正的URL才渲染为链接
       if (isValidUrl(cleanedUrl)) {
         // 添加链接组件
-        parts.push(
-          <LinkText 
-            key={`link-${index}`} 
-            url={cleanedUrl} 
-            onAction={handleLinkClick} 
-          />
-        )
+        parts.push(<LinkText key={`link-${index}`} url={cleanedUrl} onAction={handleLinkClick} />)
         // 添加尾随字符
         if (trailingChars) {
           parts.push(trailingChars)

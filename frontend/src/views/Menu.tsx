@@ -3,16 +3,11 @@ import { NavDiv } from '@alemonjs/react-ui'
 import classNames from 'classnames'
 import {
   AppstoreAddOutlined,
-  AppstoreFilled,
   AppstoreOutlined,
-  ContainerFilled,
   ContainerOutlined,
   HomeFilled,
-  ProductFilled,
-  RobotFilled,
   RobotOutlined,
   SettingFilled,
-  ShoppingFilled
 } from '@ant-design/icons'
 import { setCommand } from '@/store/command'
 import { useDispatch, useSelector } from 'react-redux'

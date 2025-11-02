@@ -2,7 +2,7 @@
 
 ```sh
 npm i yarn -g
-go install github.com/wailsapp/wails/v2/cmd/wails@latest
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
 go mod tidy
 ```
 

@@ -2,8 +2,13 @@ import { memo, PropsWithChildren, ReactNode, useEffect, useState } from 'react'
 import classNames from 'classnames'
 import { HeaderDiv } from '@alemonjs/react-ui'
 import { Close, Maximize, Minimize } from '@/common/Icons'
-import { WindowHide, WindowMaximise, WindowMinimise } from '@wailsjs/runtime/runtime'
-import { GetVersions } from '@wailsjs/go/windowcontroller/App'
+// import { WindowHide, WindowMaximise, WindowMinimise } from '@wailsjs/runtime/runtime'
+import { GetVersions } from '@wailsjs/window/controller/app'
+
+import { Window } from '@wailsio/runtime'
+const WindowHide = Window.Hide
+const WindowMaximise = Window.Maximise
+const WindowMinimise = Window.Minimise
 
 type HeaderProps = PropsWithChildren<{
   LeftSlot?: ReactNode

@@ -5,18 +5,19 @@ import { SidebarDiv } from '@alemonjs/react-ui'
 import { useNotification } from '@/context/Notification'
 import Markdown from '@/common/Markdown'
 import { Select } from '@alemonjs/react-ui'
-import { GitClone, GitDelete, GitReposList } from '@wailsjs/go/windowgit/App'
-import { windowgit } from '@wailsjs/go/models'
+import { GitClone, GitDelete, GitReposList } from '@wailsjs/window/git/app'
+import { GitRepoInfo } from '@wailsjs/window/git/models'
 import PackageList from './PackageList'
 import PackageClone, { PackageCloneProps } from './PackageClone'
 import Tabs from '@/common/ui/Tabs'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
-import { AppExists, AppReadFiles, AppWriteFiles } from '@wailsjs/go/windowapp/App'
+import { AppExists, AppReadFiles, AppWriteFiles } from '@wailsjs/window/app/app'
 import classNames from 'classnames'
 import MonacoEditor from '@/common/MonacoEditor'
 import YAML from 'js-yaml'
-import { EventsOn } from '@wailsjs/runtime/runtime'
+import { Events } from '@wailsio/runtime'
+const EventsOn = Events.On
 
 const initialSpace = 'packages'
 const spaceOptions = [initialSpace, 'plugins']
@@ -26,9 +27,9 @@ const spaceMap: { [key: string]: string } = {
   plugins: '插件'
 }
 
-export default function Expansions() {
+export default function GitExpansions() {
   const notification = useNotification()
-  const [data, setData] = useState<windowgit.GitRepoInfo[]>([])
+  const [data, setData] = useState<GitRepoInfo[]>([])
   const [sub, setSub] = useState(false)
   const [space, setSpace] = useState(initialSpace)
   const [tabValue, setTabValue] = useState('1')
@@ -37,7 +38,7 @@ export default function Expansions() {
 
   // 当前选择的仓库
   const [currentRepo, setCurrentRepo] = useState({
-    item: null as windowgit.GitRepoInfo | null,
+    item: null as GitRepoInfo | null,
     show: false,
     package: null as null | {
       name: string
@@ -166,7 +167,7 @@ export default function Expansions() {
     }
   }
 
-  const loadRepositoryInfo = async (item: windowgit.GitRepoInfo) => {
+  const loadRepositoryInfo = async (item: GitRepoInfo) => {
     // 构建文件路径
     const basePath = `${app.userDataTemplatePath}/${space}/${item.Name}`
     const readmePath = `${basePath}/README.md`
@@ -235,11 +236,13 @@ export default function Expansions() {
     updateConfig()
     // 监听 git 执行完毕事件
     EventsOn('git', e => {
-      const type = e?.type
+      const args = e.data ?? []
+      const data = args[0] ?? null
+      const type = data?.type
       if (type === 'clone' || type === 'delete') {
         // 释放loading
         setSub(false)
-        const value = e?.value
+        const value = data?.value
         if (!value) {
           // 发通知
           notification(type + '操作失败', 'error')

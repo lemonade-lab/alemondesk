@@ -9,11 +9,10 @@ import { Tooltip } from '@alemonjs/react-ui'
 import classNames from 'classnames'
 import { useState, useRef, useEffect, Fragment, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { AppstoreOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons'
-import { AntdIcon } from '@/common/AntdIcon'
+import { CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons'
 import { setCommand } from '@/store/command'
-import { ExpansionsClose, ExpansionsRun } from '@wailsjs/go/windowexpansions/App'
-import { YarnCommands } from '@wailsjs/go/windowyarn/App'
+import { ExpansionsClose, ExpansionsRun } from '@wailsjs/window/expansions/app'
+import { YarnCommands } from '@wailsjs/window/yarn/app'
 import ExpansionIcon from '@/common/ExpansionIcon'
 interface Sidebar {
   expansions_name: string
@@ -29,7 +28,6 @@ export default function WordBox() {
 
   const modules = useSelector((state: RootState) => state.modules)
   const expansions = useSelector((state: RootState) => state.expansions)
-  const app = useSelector((state: RootState) => state.app)
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')

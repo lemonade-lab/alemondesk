@@ -2,7 +2,7 @@ import { Button, PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
 import { DeleteFilled } from '@ant-design/icons'
 import { useNotification } from '@/context/Notification'
 import classNames from 'classnames'
-import { windowgit } from '@wailsjs/go/models'
+import { GitRepoInfo } from '@wailsjs/window/git'
 
 export default function PackageList({
   data,
@@ -10,9 +10,9 @@ export default function PackageList({
   onDelete,
   onSelect
 }: {
-  data: windowgit.GitRepoInfo[]
+  data: GitRepoInfo[]
   show: boolean
-  onSelect: (item: windowgit.GitRepoInfo) => void
+  onSelect: (item: GitRepoInfo) => void
   onDelete: (name: string) => void
 }) {
   const notification = useNotification()

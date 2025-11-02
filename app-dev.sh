@@ -6,7 +6,7 @@ echo "Building the app..."
 yarn --cwd frontend install
 
 # 如果不存在dist目录。则进行一次build
-[ ! -f "frontend/dist/index.html" ] && yarn --cwd frontend build
+[ ! -f "frontend/dist/index.html" ] && yarn --cwd frontend build:dev
 
 # 不存在压缩包
 if [ ! -f "resources/node_modules.tar.gz" ]; then
@@ -43,4 +43,4 @@ if [ ! -f "resources/node.tar.xz" ]; then
 fi
 
 # 开始启动开发模式
-wails dev
+wails3 dev

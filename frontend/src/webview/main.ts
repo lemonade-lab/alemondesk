@@ -125,20 +125,20 @@ window.__alemondesk_webview.on(async (data: {
             }
             return;
         }
-        else if (data.type in window.runtime) {
-            // 不是订阅的。调用 runtime 方法
-            const runtimeProp = window.runtime[data.type];
-            if (typeof runtimeProp === 'function') {
-                const args = data.args || [];
-                const result = await runtimeProp(...args);
-                // 发送回调结果
-                window.__alemondesk_webview.send({
-                    callbackId: data.callbackId,
-                    result: result
-                });
-                return;
-            }
-        }
+        // else if (data.type in window.runtime) {
+        //     // 不是订阅的。调用 runtime 方法
+        //     const runtimeProp = window.runtime[data.type];
+        //     if (typeof runtimeProp === 'function') {
+        //         const args = data.args || [];
+        //         const result = await runtimeProp(...args);
+        //         // 发送回调结果
+        //         window.__alemondesk_webview.send({
+        //             callbackId: data.callbackId,
+        //             result: result
+        //         });
+        //         return;
+        //     }
+        // }
     }
 });
 
@@ -173,19 +173,21 @@ window.__alemondesk_webview.on((data: {
 
             // 处理 head 内容（包括样式和脚本）
             const headElements = Array.from(doc.head.children);
-            headElements.forEach(element => {
+            headElements.forEach((element: any) => {
                 if (element.tagName === 'LINK' && element.rel === 'stylesheet' && element.href) {
                     // 强制刷新CSS：移除已有同href的link，再加时间戳参数
                     const existedLinks = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]'));
-                    existedLinks.forEach(link => {
+                    existedLinks.forEach((link: any) => {
                         // 比较去掉参数后的地址，防止多次刷新叠加
                         if (link.href.split('?')[0] === element.href.split('?')[0]) {
-                            link.parentNode.removeChild(link);
+                            if (link.parentNode) {
+                                link.parentNode.removeChild(link);
+                            }
                         }
                     });
                     // 新建link并加随机参数
                     const newLink = document.createElement('link');
-                    Array.from(element.attributes).forEach(attr => {
+                    Array.from(element.attributes as Element['attributes']).forEach((attr) => {
                         newLink.setAttribute(attr.name, attr.value);
                     });
                     // 加参数强制刷新
@@ -194,7 +196,7 @@ window.__alemondesk_webview.on((data: {
                 } else if (element.tagName === 'SCRIPT') {
                     // head里的script重新创建
                     const newScript = document.createElement('script');
-                    Array.from(element.attributes).forEach(attr => {
+                    Array.from(element.attributes as Element['attributes']).forEach(attr => {
                         newScript.setAttribute(attr.name, attr.value);
                     });
                     if (element.src) {
@@ -211,11 +213,11 @@ window.__alemondesk_webview.on((data: {
 
             // 处理 body 内容
             const bodyElements = Array.from(doc.body.children);
-            bodyElements.forEach(element => {
+            bodyElements.forEach((element: any) => {
                 if (element.tagName === 'SCRIPT') {
                     // body中的script也重新创建
                     const newScript = document.createElement('script');
-                    Array.from(element.attributes).forEach(attr => {
+                    Array.from(element.attributes as Element['attributes']).forEach(attr => {
                         newScript.setAttribute(attr.name, attr.value);
                     });
                     if (element.src) {

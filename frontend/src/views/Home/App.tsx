@@ -4,7 +4,7 @@ import { RootState } from '@/store'
 // import { Button } from '@alemonjs/react-ui'
 import { useSelector } from 'react-redux'
 import { useEffect, useState } from 'react'
-// import { YarnCommands } from '@wailsjs/go/windowyarn/App'
+// import { YarnCommands } from '@wailsjs/window/yarn/app'
 const MainView = () => {
   const modules = useSelector((state: RootState) => state.modules)
   // const onInstall = () => {

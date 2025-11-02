@@ -7,14 +7,15 @@ import (
 	"context"
 	"runtime"
 	"strings"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-// App struct
 type App struct {
-	ctx context.Context
+	ctx         context.Context
+	application *application.EventManager
 }
 
-// NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
 }
@@ -23,6 +24,9 @@ func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
+func (a *App) SetApplication(app *application.EventManager) {
+	a.application = app
+}
 func (a *App) ControllerOnClick(p1 int, p2 string) bool {
 	return false
 }

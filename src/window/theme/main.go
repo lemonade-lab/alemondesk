@@ -8,15 +8,14 @@ import (
 	"context"
 	"os"
 
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-// App struct
 type App struct {
-	ctx context.Context
+	ctx         context.Context
+	application *application.EventManager
 }
 
-// NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
 }
@@ -25,6 +24,9 @@ func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
+func (a *App) SetApplication(app *application.EventManager) {
+	a.application = app
+}
 func (a *App) ThemeMode() string {
 	return logictheme.GetThemeMode()
 }
@@ -38,7 +40,7 @@ func (a *App) ThemeLoadVariables() {
 	themeVars := logictheme.GetThemeVariables()
 	// context有效性
 	if a.ctx != nil {
-		runtime.EventsEmit(a.ctx, "theme", themeVars)
+		a.application.Emit("theme", themeVars)
 	}
 }
 
@@ -69,5 +71,5 @@ func (a *App) ThemeDownloadFiles() error {
 		targetPath = paths.GetStorageThemeFilePath()
 	}
 	// 写入文件
-	return utils.DownloadFiles(a.ctx, targetPath)
+	return utils.DownloadFiles(targetPath)
 }

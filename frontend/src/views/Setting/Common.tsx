@@ -11,8 +11,8 @@ import {
   AppDownloadFiles,
   AppExists,
   GetAppLogsFilePath
-} from '@wailsjs/go/windowapp/App'
-import { BotResetBot} from '@wailsjs/go/windowbot/App'
+} from '@wailsjs/window/app/app'
+import { BotResetBot} from '@wailsjs/window/bot/app'
 
 const Common = () => {
   const app = useSelector((state: RootState) => state.app)

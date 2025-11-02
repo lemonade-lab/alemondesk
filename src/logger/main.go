@@ -4,7 +4,6 @@ package logger
 import (
 	"alemonapp/src/config"
 	"alemonapp/src/paths"
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -12,18 +11,16 @@ import (
 	"runtime"
 	"sync"
 
-	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	application "github.com/wailsapp/wails/v3/pkg/application"
 )
 
-var (
-	curCtx context.Context
-	ctxMu  sync.RWMutex
-)
+var ctxMu sync.RWMutex
+var curApplication *application.EventManager
 
-func Startup(ctx context.Context) {
+func SetApplication(app *application.EventManager) {
 	ctxMu.Lock()
 	defer ctxMu.Unlock()
-	curCtx = ctx
+	curApplication = app
 }
 
 var (
@@ -45,14 +42,14 @@ func GetLogsFilePath() (string, error) {
 func Init() error {
 	loggerMu.Lock()
 	defer loggerMu.Unlock()
-	
+
 	// 关闭旧的日志文件，防止资源泄漏
 	if logFile != nil {
 		_ = logFile.Close()
 		logFile = nil
 		logger = nil
 	}
-	
+
 	logPath, err := GetLogsFilePath()
 	if err != nil {
 		return err
@@ -73,7 +70,7 @@ func Init() error {
 func GetLogFilePath() string {
 	loggerMu.RLock()
 	defer loggerMu.RUnlock()
-	
+
 	if logFile != nil {
 		return logFile.Name()
 	}
@@ -102,7 +99,7 @@ func output(name string, format string, v ...interface{}) {
 		return
 	}
 	msg := fmt.Sprintf("["+name+"] "+format, v...)
-	
+
 	// 获取调用者信息
 	_, file, line, _ := runtime.Caller(2)
 	file = filepath.Base(file)
@@ -123,19 +120,24 @@ func output(name string, format string, v ...interface{}) {
 	}
 
 	// 如果有前端上下文，发送到前端
+	// ctxMu.RLock()
+	// ctx := curCtx
+	// ctxMu.RUnlock()
+
 	ctxMu.RLock()
-	ctx := curCtx
+	application := curApplication
 	ctxMu.RUnlock()
-	
-	if ctx != nil {
-		wailsRuntime.EventsEmit(ctx, "terminal", fmt.Sprintf("%s\n", msg))
+
+	if application != nil {
+		application.Emit("terminal", fmt.Sprintf("%s\n", msg))
 	}
+
 }
 
 func Close() error {
 	loggerMu.Lock()
 	defer loggerMu.Unlock()
-	
+
 	if logFile != nil {
 		err := logFile.Close()
 		logFile = nil

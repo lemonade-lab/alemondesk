@@ -19,7 +19,7 @@ export default defineConfig({
       },
       {
         find: '@wailsjs',
-        replacement: fileURLToPath(new URL('./wailsjs', import.meta.url))
+        replacement: fileURLToPath(new URL('./bindings/alemonapp/src', import.meta.url))
       }
     ],
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']

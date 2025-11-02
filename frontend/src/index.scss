@@ -10,7 +10,8 @@
   outline: none;
 }
 
-html, body {
+html,
+body {
   // 禁用窗体的滚动条
   overflow: hidden;
 }
@@ -18,7 +19,7 @@ html, body {
 // 可拖拽区域
 .drag-area {
   // -webkit-app-region: drag;
-  --wails-draggable:drag;
+  --wails-draggable: drag;
 }
 
 // 阴影
@@ -41,4 +42,18 @@ img {
 
 .animate__animated.animate__fadeInRight.duration-500 {
   --animate-duration: 0.5s;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  src: local(""),
+    url("@/assets/fonts/Inter-Medium.ttf") format("truetype");
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
 }

@@ -3,7 +3,7 @@ import App from '@/views/App'
 import Main from '@/views/Home/App'
 import Application from '@/views/Application/App'
 import BotLog from '@/views/BotLog/App'
-import Expansions from '@/views/Expansions/App'
+import NpmExpansions from '@/views/NPMExpansions/App'
 import GitExpansions from '@/views/GitExpansions/App'
 import Menu from '@/views/Setting/Menu'
 import Common from '@/views/Setting/Common'
@@ -35,7 +35,7 @@ const router = createHashRouter([
       },
       {
         path: 'expansions',
-        element: <Expansions />
+        element: <NpmExpansions />
       },
       {
         path: 'settings',

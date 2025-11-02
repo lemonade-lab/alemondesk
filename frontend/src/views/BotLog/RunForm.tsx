@@ -47,7 +47,10 @@ const RunForm = ({
     onChange(value)
   }
   return (
-    <form className="flex flex-col gap-4" onSubmit={e => e.preventDefault()}>
+    <form className="flex flex-col gap-4" onSubmit={e => {
+            e.preventDefault()
+            e.stopPropagation()
+    }}>
       <div className="flex items-center gap-2">
         <div className=" w-24">登录名</div>
         <Input

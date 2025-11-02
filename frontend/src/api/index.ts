@@ -51,7 +51,7 @@ export const fetchPackageInfo = async (packageName: string) => {
     path: 'package.json'
   })
   const pkg = await axios.get(pkgURL).then(res => res.data)
-  let __logo_url = null
+  let __logo_url: string | null = null
   let __icon = null
   if (pkg?.alemonjs?.desktop?.logo) {
     if (pkg.alemonjs.desktop.logo.startsWith('antd.')) {
