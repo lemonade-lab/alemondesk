@@ -1,45 +1,37 @@
 import { createHashRouter, Navigate } from 'react-router-dom'
 import App from '@/views/App'
-import Main from '@/views/Home/App'
-import Application from '@/views/Application/App'
-import BotLog from '@/views/BotLog/App'
-import NpmExpansions from '@/views/NPMExpansions/App'
-import GitExpansions from '@/views/GitExpansions/App'
-import Settings from '@/views/Setting/App'
-import Common from '@/views/Setting/Common'
-import Theme from '@/views/Setting/Theme'
-import UpdateLog from '@/views/Setting/UpdateLog'
-import About from '@/views/Setting/About'
-import Template from './views/Template/App'
+import Main from '@/views/Home/Main'
+import GitExpList from './views/Splitter/GitExpList/Main'
+import NpmExpList from './views/Splitter/NpmExpList/Main'
+import PkgAppList from './views/Splitter/PkgAppList/Main'
+import SettingsList from './views/Splitter/SettingsList/Main'
+import Common from './views/Splitter/SettingsList/Setting/Common'
+import Notice from './views/Splitter/SettingsList/Setting/Notice'
+import Theme from './views/Splitter/SettingsList/Setting/Theme'
+import Files from './views/Splitter/SettingsList/Setting/Files/App'
+import About from './views/Splitter/SettingsList/Setting/About'
 
 const router = createHashRouter([
   {
     path: '/',
     element: <App />,
     children: [
+      { path: '', element: <Main /> },
       {
-        path: '',
-        element: <Main />
+        path: 'git-exp-list',
+        element: <GitExpList />
       },
       {
-        path: 'git-expansions',
-        element: <GitExpansions />
+        path: 'pkg-app-list',
+        element: <PkgAppList />
       },
       {
-        path: 'application',
-        element: <Application />
-      },
-      {
-        path: 'bot-log',
-        element: <BotLog />
-      },
-      {
-        path: 'expansions',
-        element: <NpmExpansions />
+        path: 'npm-exp-list',
+        element: <NpmExpList />
       },
       {
         path: 'settings',
-        element: <Settings />,
+        element: <SettingsList />,
         children: [
           {
             index: true,
@@ -50,16 +42,16 @@ const router = createHashRouter([
             element: <Common />
           },
           {
+            path: 'files',
+            element: <Files />
+          },
+          {
+            path: 'notice',
+            element: <Notice />
+          },
+          {
             path: 'theme',
             element: <Theme />
-          },
-          {
-            path: 'log',
-            element: <UpdateLog />
-          },
-          {
-            path: 'template',
-            element: <Template />
           },
           {
             path: 'about',
@@ -71,4 +63,5 @@ const router = createHashRouter([
     ]
   }
 ])
+
 export default router

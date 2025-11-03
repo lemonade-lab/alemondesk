@@ -55,7 +55,7 @@ const Markdown = ({ source, className }: { source: string; className?: string })
   useTheme()
   return (
     <MarkdownPreview
-      className={classNames(className, 'animate__animated animate__fadeIn select-text')}
+      className={classNames(className, ' animate__animated animate__fadeIn select-text')}
       style={{
         padding: '0.5rem',
         backgroundColor: '#FFFFFF00'

@@ -1,3 +1,4 @@
+import { SecondaryDiv } from '@alemonjs/react-ui'
 import classNames from 'classnames'
 import { PropsWithChildren } from 'react'
 
@@ -17,24 +18,19 @@ const Box = ({
   rootClassName?: string
 }>) => {
   return (
-    <div
+    <SecondaryDiv
       ref={boxRef}
       className={classNames(
         rootClassName,
-        'flex-1 p-4 h-full w-full flex overflow-auto transition-colors min-w-0 max-w-full'
+        'flex flex-1 size-full min-w-0 max-w-full scrollbar overflow-auto transition-colors '
       )}
     >
-      <div className="flex-1 flex w-full min-w-0 max-w-full">
-        <div
-          className={classNames(
-            className,
-            'flex-1 flex flex-col min-w-0 max-w-full'
-          )}
-        >
+      <div className="flex flex-1 size-full min-w-0 max-w-full">
+        <div className={classNames(className, 'flex flex-col flex-1 size-full min-w-0 max-w-full')}>
           {children}
         </div>
       </div>
-    </div>
+    </SecondaryDiv>
   )
 }
 

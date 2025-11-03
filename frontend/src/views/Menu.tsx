@@ -6,8 +6,7 @@ import {
   AppstoreOutlined,
   ContainerOutlined,
   HomeFilled,
-  RobotOutlined,
-  SettingFilled,
+  SettingFilled
 } from '@ant-design/icons'
 import { setCommand } from '@/store/command'
 import { useDispatch, useSelector } from 'react-redux'
@@ -23,17 +22,18 @@ const MenuButton = () => {
     className: string
     onClick: (path: string) => void
   }[] = [
-    {
-      Icon: <RobotOutlined size={20} />,
-      path: '/bot-log',
-      className: 'steps-5',
-      onClick: path => {
-        dispatch(setCommand(`view.${path}`))
-      }
-    },
+    // TODO 应该展示config文件
+    // {
+    //   Icon: <RobotOutlined size={20} />,
+    //   path: '/bot-log',
+    //   className: 'steps-5',
+    //   onClick: path => {
+    //     dispatch(setCommand(`view.${path}`))
+    //   }
+    // },
     {
       Icon: <ContainerOutlined size={20} />,
-      path: '/git-expansions',
+      path: '/git-exp-list',
       className: 'steps-5-1',
       onClick: path => {
         dispatch(setCommand(`view.${path}`))
@@ -41,7 +41,7 @@ const MenuButton = () => {
     },
     {
       Icon: <AppstoreAddOutlined size={20} />,
-      path: '/expansions',
+      path: '/npm-exp-list',
       className: 'steps-6',
       onClick: path => {
         dispatch(setCommand(`view.${path}`))
@@ -49,7 +49,7 @@ const MenuButton = () => {
     },
     {
       Icon: <AppstoreOutlined size={20} />,
-      path: '/application',
+      path: '/pkg-app-list',
       className: classNames('steps-7', {
         'opacity-50': !expansions.runStatus
       }),
@@ -79,6 +79,9 @@ const MenuButton = () => {
         </BarDiv>
       </NavDiv>
       <NavDiv className="px-1 py-4 flex-col  rounded-full flex gap-4">
+        {
+          // TODO 若 nav 支持扩展。这里需要开启允许上下滚动 / 增加展开更多的按钮
+        }
         {navList.map((item, index) => (
           <BarDiv
             key={item.path}
@@ -98,7 +101,10 @@ const MenuButton = () => {
             'steps-8',
             'size-8 rounded-full  flex items-center justify-center cursor-pointer transition-all duration-700'
           )}
-          onClick={() => dispatch(setCommand(`view./settings`))}
+          onClick={() => {
+            const path = './settings'
+            dispatch(setCommand(`view.${path}`))
+          }}
         >
           <SettingFilled width={20} height={20} />
         </BarDiv>

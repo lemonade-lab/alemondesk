@@ -6,20 +6,21 @@ import { PrimaryDiv } from '@alemonjs/react-ui'
 import _ from 'lodash'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
-import GuideCommon from '../Guide/Common'
+import GuideCommon from '@/views/Guide/Common'
 import {
   AppDownloadFiles,
   AppExists,
   GetAppLogsFilePath
 } from '@wailsjs/window/app/app'
 import { BotResetBot} from '@wailsjs/window/bot/app'
+import Box from '@/common/layout/Box'
 
 const Common = () => {
   const app = useSelector((state: RootState) => state.app)
   const notification = useNotification()
   const [open, setOpen] = useState(false)
   return (
-    <div className="animate__animated animate__fadeIn flex-1 flex-col flex">
+    <Box className="animate__animated animate__fadeIn flex-1 flex-col flex">
       <div className="flex-col gap-2 flex-1 flex p-6 ">
         <PrimaryDiv className="flex flex-col flex-1  p-6 rounded-lg shadow-inner  max-w-full">
           <div className="text-2xl font-semibold mb-4 border-b border-secondary-border dark:border-dark-secondary-border">
@@ -27,15 +28,6 @@ const Common = () => {
           </div>
           <div className="flex flex-col gap-4">
             {[
-              // {
-              //   title: '开机自启',
-              //   children: (
-              //     <Switch
-              //       value={desktopCheckeds.autoLaunch}
-              //       onChange={checked => onChangeDesktop('AUTO_LAUNCH', checked)}
-              //     />
-              //   )
-              // },
               {
                 title: '依赖锁文件',
                 description: 'yarn.lock',
@@ -129,7 +121,7 @@ const Common = () => {
         </div>
         <div className="flex flex-col gap-4"></div>
       </FeatModal>
-    </div>
+    </Box>
   )
 }
 export default Common

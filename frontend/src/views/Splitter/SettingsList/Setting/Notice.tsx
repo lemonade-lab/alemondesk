@@ -1,4 +1,4 @@
-import { PrimaryDiv } from '@alemonjs/react-ui'
+import Box from '@/common/layout/Box'
 
 const data = [
   {
@@ -19,11 +19,11 @@ const data = [
   }
 ]
 
-const UpdateLog = () => {
+const Notice = () => {
   return (
-    <div className="animate__animated animate__fadeIn flex-1 flex-col flex">
-      <div className="flex-col gap-2 flex-1 flex p-6 ">
-        <PrimaryDiv className="flex flex-col flex-1  p-6 rounded-lg shadow-inner  max-w-full">
+    <div className="animate__animated animate__fadeIn flex-1 flex-col flex size-full">
+      <div className="flex-col gap-2 flex-1 flex p-4 size-full">
+        <div className="flex flex-col flex-1 p-2 rounded-lg shadow-inner size-full">
           <div
             className="text-2xl flex items-center justify-between font-semibold mb-4 border-b
             border-secondary-border
@@ -32,7 +32,7 @@ const UpdateLog = () => {
           >
             <div>更新日志</div>
           </div>
-          <div className="flex flex-col gap-4 h-[calc(100vh-11rem)] overflow-auto scrollba">
+          <Box className="flex flex-col gap-4 h-[calc(100vh-11rem)] overflow-auto scrollba">
             <div className="flex  flex-col flex-1 overflow-auto h-[calc(100vh-2.4rem)] scrollbar gap-6 py-4 rounded-lg  ">
               {data.map((item, index) => (
                 <div key={index}>
@@ -47,11 +47,11 @@ const UpdateLog = () => {
                 </div>
               ))}
             </div>
-          </div>
-        </PrimaryDiv>
+          </Box>
+        </div>
       </div>
     </div>
   )
 }
 
-export default UpdateLog
+export default Notice

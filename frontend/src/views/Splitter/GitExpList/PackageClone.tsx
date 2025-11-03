@@ -1,30 +1,21 @@
 import { extractRepoInfo, isGitRepositoryFormat } from '@/api'
 import { useNotification } from '@/context/Notification'
+import { RootState } from '@/store'
 import { Button, Input, SecondaryDiv, Switch } from '@alemonjs/react-ui'
 import { Spin } from 'antd'
 import classNames from 'classnames'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
+import { GitClone } from '@wailsjs/window/git/app'
 
 export type PackageCloneProps = {
   space: string
   show: boolean
-  onSubmit: (
-    params: {
-      url: string
-      branch: string
-      depth: number
-      space: string
-      force: boolean
-      repository: string
-    },
-    options: {
-      finished: () => void
-    }
-  ) => Promise<void>
 }
 
-const PackageClone = ({ space, show, onSubmit }: PackageCloneProps) => {
+const PackageClone = ({ space, show }: PackageCloneProps) => {
   const notification = useNotification()
+  const gitExp = useSelector((state: RootState) => state.gitExp)
   const [sub, setSub] = useState(false)
   const [values, setValues] = useState({
     // 仓库地址
@@ -36,8 +27,8 @@ const PackageClone = ({ space, show, onSubmit }: PackageCloneProps) => {
     // 是否强制覆盖
     force: true
   })
+
   /**
-   *
    * @returns
    */
   const onAdd = async () => {
@@ -47,36 +38,39 @@ const PackageClone = ({ space, show, onSubmit }: PackageCloneProps) => {
       return
     }
     if (sub) {
-      // 正在提交
       return
     }
+    setSub(true)
     try {
-      setSub(true)
-
       if (!isGitRepositoryFormat(value)) {
         notification('格式错误', 'warning')
         setSub(false)
         return
       }
-
       // 根据 url 解析成仓库地址
       const { repository } = extractRepoInfo(value)
-
-      onSubmit(
-        {
-          url: value,
-          branch: values.branch,
-          depth: values.depth,
-          space: space,
-          force: values.force,
-          repository
-        },
-        {
-          finished: () => {
-            setSub(false)
-          }
-        }
-      )
+      const params = {
+        url: value,
+        branch: values.branch,
+        depth: values.depth,
+        space: space,
+        force: values.force,
+        repository
+      }
+      if (gitExp.data.find(item => item.Name === params.repository)) {
+        notification('该仓库已存在', 'warning')
+        return
+      }
+      notification('正在添加仓库..')
+      // 开始克隆
+      await GitClone({
+        repo_url: params.url?.trim() || '',
+        branch: params.branch?.trim() || '',
+        depth: params.depth,
+        space: gitExp.space?.trim() || '',
+        force: params.force
+      })
+      notification('仓库添加成功')
     } catch (error: any) {
       notification('操作失败:' + error.message, 'error')
     } finally {

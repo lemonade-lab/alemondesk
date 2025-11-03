@@ -13,10 +13,9 @@ $scrollbar-color: #b5b7ba6b $scrollbar-track-color; // For Firefox
 .scrollbar {
   // Firefox scrollbar styling
   scrollbar-color: $scrollbar-color;
-
   overflow-x: overlay;
 
-  scrollbar-gutter: stable;
+  // scrollbar-gutter: stable;
   /* 保证滚动条出现时不会改变布局 */
 
   &::-webkit-scrollbar-track {

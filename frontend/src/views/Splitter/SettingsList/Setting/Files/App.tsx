@@ -5,7 +5,7 @@ import Init from './Init'
 import EditFile from './EditFile'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
-export default function Template() {
+export default function Files() {
   const [select, setSelect] = useState('')
   const app = useSelector((state: RootState) => state.app)
 
@@ -57,7 +57,7 @@ export default function Template() {
   const item = pages.find(item => item.value === select)
 
   return (
-    <section className="flex flex-row flex-1 h-full shadow-md">
+    <section className="flex flex-row flex-1 h-full shadow-md size-full">
       <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1">
         {item ? (
           <EditFile key={item.title} title={item.title} mode={item?.mode ?? ''} dir={item.dir} />
@@ -65,7 +65,7 @@ export default function Template() {
           <Init />
         )}
       </SecondaryDiv>
-      <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col border-l overflow-auto h-[calc(100vh-2rem)]">
+      <SidebarDiv className="flex flex-col border-l overflow-y-auto">
         {pages.map((item, index) => (
           <div
             key={index}

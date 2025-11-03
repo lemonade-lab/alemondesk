@@ -18,12 +18,12 @@ const logsSlice = createSlice({
       state.rolu = 'post'
       state.message.push(action.payload)
     },
-    delMessate(state, action: PayloadAction<number>) {
+    delMessage(state, action: PayloadAction<number>) {
       state.rolu = 'del'
       state.message.splice(0, action.payload)  // 从开头删除
     }
   }
 })
 
-export const { postMessage, delMessate } = logsSlice.actions
+export const { postMessage, delMessage } = logsSlice.actions
 export default logsSlice.reducer

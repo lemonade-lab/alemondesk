@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import useGoNavigate from '@/hook/useGoNavigate'
 import { setBotStatus } from '@/store/bot'
-import { setCommand } from '@/store/command'
+import { setCommand, setWebview } from '@/store/command'
 import { setModulesStatus } from '@/store/modules'
 import { initPackage, setExpansionsStatus } from '@/store/expansions'
 import { RootState } from '@/store'
@@ -11,9 +11,9 @@ import { setPath } from '@/store/app'
 import { postMessage } from '@/store/log'
 import { usePop } from '@/context/Pop'
 import { useNotification } from '@/context/Notification'
-import { PrimaryDiv } from '@alemonjs/react-ui'
+import { HeaderDiv, PrimaryDiv } from '@alemonjs/react-ui'
 import Menu from '@/views/Menu'
-import WordBox from '@/views/WordBox'
+import WordBox from '@/views/CommandInput'
 import GuideMain from '@/views/Guide/Main'
 import Header from '@/views/Header'
 import {
@@ -26,6 +26,7 @@ import { ThemeLoadVariables, ThemeMode } from '@wailsjs/window/theme/app'
 import { Events } from '@wailsio/runtime'
 import { BotStatus } from '@wailsjs/window/bot/app'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
+import { setViews } from '@/store/views'
 const EventsOn = Events.On
 
 export default (function App() {
@@ -75,7 +76,6 @@ export default (function App() {
     })
     // 监听依赖安装状态 0 失败 1 成功
     EventsOn('yarn', e => {
-      
       const args = e.data ?? []
       const data = args[0] ?? null
       const value = data.value
@@ -95,7 +95,6 @@ export default (function App() {
     })
     // 监听 bot 状态
     EventsOn('bot', e => {
-      
       const args = e.data ?? []
       const data = args[0] ?? null
       const value = data.value
@@ -107,7 +106,6 @@ export default (function App() {
     })
     // 监听 通知消息
     EventsOn('notification', e => {
-      
       const args = e.data ?? []
       const data = args[0] ?? null
       const value = data.value
@@ -116,7 +114,6 @@ export default (function App() {
     })
     // 监听 expansions状态
     EventsOn('expansions-status', e => {
-      
       const args = e.data ?? []
       const data = args[0] ?? null
       console.log('expansions-status', data)
@@ -129,7 +126,6 @@ export default (function App() {
     })
     // 监听 expansions消息
     EventsOn('expansions', e => {
-      
       const args = e.data ?? []
       const data = args[0] ?? null
       // console.log('expansions message', data)
@@ -138,11 +134,9 @@ export default (function App() {
           const actions = data.type.split(':')
           const db = data.data
           if (actions[1] === 'application' && actions[2] === 'sidebar' && actions[3] === 'load') {
-            navigate('/application', {
-              state: {
-                view: db
-              }
-            })
+            dispatch(setWebview(db))
+            dispatch(setViews({ key: 'application' }))
+            navigate('/pkg-app-list')
           }
         } else if (data.type === 'notification') {
           const db = data.data
@@ -254,6 +248,8 @@ export default (function App() {
     if (command.name) {
       // view
       if (/^view./.test(command.name)) {
+        // TODO 需要优化。应该内部的路由可能变化。
+        // TODO 需要进行固定化
         // 前往页面
         navigate(command.name.replace('view.', ''))
       } else {
@@ -264,13 +260,14 @@ export default (function App() {
 
   return (
     <Fragment>
-      <div className=" flex flex-col flex-1 h-screen relative ">
+      <div className="flex flex-col flex-1 h-screen relative ">
         <Header>
           <WordBox />
         </Header>
-        <PrimaryDiv className="steps-0 flex flex-1 z-40">
+        <HeaderDiv className="border-b w-full" />
+        <PrimaryDiv className="steps-0 flex flex-1 z-40 size-full">
           <Menu />
-          <div className="flex flex-1">
+          <div className="flex flex-1 size-full">
             <Outlet />
           </div>
         </PrimaryDiv>

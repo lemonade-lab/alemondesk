@@ -37,13 +37,30 @@ export default memo(function Header({ children }: HeaderProps) {
     }
   }, [])
   return (
-    <HeaderDiv className={classNames('h-[1.6rem] flex justify-between  border-b-2 z-50')}>
-      <div className="drag-area flex-1"></div>
-      {children ?? <div className="flex-[2]"></div>}
+    <HeaderDiv className={classNames('h-[1.8rem] flex justify-center items-center z-50')}>
+      {
+        // left
+      }
+      <div className="drag-area flex-1" >
+        &nbsp;
+      </div>
+      {
+        // center
+      }
+      {children ?? <div className="flex-[2]" />}
+      {
+        // right
+      }
       {about.platform == WINDOWS ? (
-        <div className="flex-1 flex ">
-          <div className="flex-1 drag-area "></div>
-          <div className="flex px-2   gap-2 justify-center items-center">
+        <div className="flex-1 flex justify-end items-center">
+          {
+            // windows left
+          }
+          <div className="flex-1 drag-area " />
+          {
+            // windows right
+          }
+          <div className="flex px-2  gap-2 justify-center items-center">
             <span
               className={classNames(
                 'cursor-pointer hover:bg-slate-300  rounded-sm px-1  hover:text-gray-900 transition-all duration-300'
@@ -71,7 +88,7 @@ export default memo(function Header({ children }: HeaderProps) {
           </div>
         </div>
       ) : (
-        <div className="drag-area flex-1"></div>
+        <div className="drag-area flex-1" >&nbsp;</div>
       )}
     </HeaderDiv>
   )

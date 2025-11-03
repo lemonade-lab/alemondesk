@@ -6,6 +6,10 @@ import commandReducer from '@/store/command'
 import modulesReducer from '@/store/modules'
 import appReducer from '@/store/app'
 import aboutReducer from '@/store/about'
+import viewsReducer from '@/store/views'
+import gitExpSliceReducer from '@/store/gitExp'
+import settingsSlice from '@/store/settings'
+import npmExpansionsReducer from '@/store/NPMExpansions'
 const store = configureStore({
   reducer: {
     about: aboutReducer,
@@ -14,7 +18,11 @@ const store = configureStore({
     expansions: expansionsReducer,
     command: commandReducer,
     modules: modulesReducer,
-    app: appReducer
+    app: appReducer,
+    views: viewsReducer,
+    gitExp: gitExpSliceReducer,
+    settings: settingsSlice,
+    npmExpansions: npmExpansionsReducer
   }
 })
 export type RootState = ReturnType<typeof store.getState>

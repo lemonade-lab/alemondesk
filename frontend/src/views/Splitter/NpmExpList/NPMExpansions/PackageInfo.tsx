@@ -1,41 +1,21 @@
 import { Fragment, MouseEventHandler, useEffect, useState } from 'react'
-import Markdown from '../../common/Markdown'
 import logoURL from '@/assets/logo.jpg'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useNotification } from '@/context/Notification'
-import { fetchPackageInfo } from '../../api'
 import { addPackage, putPackage } from '@/store/expansions'
 import { Select } from '@alemonjs/react-ui'
 import { DownloadOutlined, SyncOutlined, UploadOutlined } from '@ant-design/icons'
 import { AntdIcon } from '@/common/AntdIcon'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
-// import { EventsOn } from '@wailsjs/runtime/runtime'
 import { ExpansionsPostMessage } from '@wailsjs/window/expansions/app'
 import { RESOURCE_PROTOCOL_PREFIX } from '@/api/config'
-
 import { Events } from '@wailsio/runtime'
+import { fetchPackageInfo } from '@/api'
+import Markdown from '@/common/Markdown'
+import { PackageInfoType } from '@/views/types'
+import Box from '@/common/layout/Box'
 const EventsOn = Events.On
-
-export type PackageInfoType = {
-  [key: string]: any
-  'name': string
-  'description': string
-  'author':
-    | string
-    | {
-        name: string
-        email: string
-        url: string
-      }
-    | null
-  'dist-tags': { latest: string }
-  'version': string
-  'readme': string
-  '__logo'?: string | null
-  '__logo_url'?: string | null
-  '__icon'?: string | null
-}
 
 export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoType }) {
   const [pkgInfo, setPkgInfo] = useState<PackageInfoType>(packageInfo)
@@ -47,17 +27,17 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
   /**
    * @param name
    */
-  const headleInstall = (name: string) => {
+  const onInstall = (name: string) => {
     notification(`开始安装${name}`)
     if (pkgInfo['isLink']) {
       YarnCommands({
         type: `link`,
-        args:[name]
+        args: [name]
       })
     } else {
       YarnCommands({
         type: `add`,
-        args:[name, '-W']
+        args: [name, '-W']
       })
     }
   }
@@ -107,7 +87,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
    * @param item
    * @returns
    */
-  const headleDelete = (item: { name: string; [key: string]: any }) => {
+  const onDelete = (item: { name: string; [key: string]: any }) => {
     if (!item) return
     if (item.isLink) {
       YarnCommands({
@@ -269,7 +249,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
     //
     YarnCommands({
       type: `upgrade`,
-      args:[ `${pkgInfo.name}@${version}`, '-W']
+      args: [`${pkgInfo.name}@${version}`, '-W']
     })
   }
 
@@ -302,7 +282,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
   }
 
   return (
-    <div className=" select-text">
+    <div className="flex-1 flex flex-col size-full select-text">
       <div
         className="p-2  flex items-center justify-center gap-4 border-b 
            border-secondary-border
@@ -359,7 +339,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
                   {pkgInfo.name != '@alemonjs/process' && (
                     <div
                       className="flex items-center gap-1 cursor-pointer"
-                      onClick={() => headleDelete(pkgInfo)}
+                      onClick={() => onDelete(pkgInfo)}
                     >
                       <UploadOutlined /> 卸载
                     </div>
@@ -368,7 +348,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
               ) : (
                 <div
                   className="flex items-center gap-1 cursor-pointer"
-                  onClick={() => headleInstall(pkgInfo.name)}
+                  onClick={() => onInstall(pkgInfo.name)}
                 >
                   <DownloadOutlined /> 下载
                 </div>
@@ -377,9 +357,9 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
           </div>
         </div>
       </div>
-      <div className=" overflow-auto scrollbar h-[calc(100vh-9.7rem)]">
+      <Box >
         <Markdown source={pkgInfo.readme} />
-      </div>
+      </Box>
     </div>
   )
 }

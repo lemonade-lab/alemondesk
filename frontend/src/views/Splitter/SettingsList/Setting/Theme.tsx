@@ -15,6 +15,7 @@ import _ from 'lodash'
 import { useEffect, useState } from 'react'
 
 import { Events } from '@wailsio/runtime'
+import Box from '@/common/layout/Box'
 const EventsOn = Events.On
 
 const Theme = () => {
@@ -65,8 +66,8 @@ const Theme = () => {
     // 监听 css 变量
     EventsOn('theme', e => {
       try {
-      const args = e.data ?? []
-      const data = args[0] ?? null
+        const args = e.data ?? []
+        const data = args[0] ?? null
         const vars = JSON.parse(data)
         const arr = Object.keys(vars).map(key => ({
           name: key.replace(/^alemonjs-/g, ''),
@@ -126,13 +127,13 @@ const Theme = () => {
     updateThemeMode(status)
   }
   return (
-    <div className="animate__animated animate__fadeIn flex-1 flex-col flex">
-      <div className="flex-col gap-2 flex-1 flex p-6 ">
-        <PrimaryDiv className="flex flex-col flex-1  p-6 rounded-lg shadow-inner    max-w-full">
+    <div className="animate__animated animate__fadeIn flex-1 flex-col flex size-full">
+      <div className="flex-col gap-2 flex-1 flex p-4 size-full">
+        <PrimaryDiv className="flex flex-col flex-1 p-2 rounded-lg shadow-inner size-full">
           <div
             className="text-2xl flex items-center justify-between font-semibold mb-4 border-b
             border-secondary-border
-           dark:border-dark-secondary-border
+            dark:border-dark-secondary-border
           "
           >
             <div className="flex gap-2 items-center">
@@ -179,7 +180,7 @@ const Theme = () => {
               <Switch value={isDark} onChange={onChangeDesktop} />
             </div>
           </div>
-          <div className="flex flex-col gap-4 h-[calc(100vh-11rem)] overflow-auto scrollbar">
+          <Box className="gap-4 p-2">
             {isDark
               ? data
                   .filter(item => /dark/.test(item.name))
@@ -258,7 +259,7 @@ const Theme = () => {
                       </div>
                     </div>
                   ))}
-          </div>
+          </Box>
         </PrimaryDiv>
       </div>
     </div>

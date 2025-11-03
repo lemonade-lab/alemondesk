@@ -1,15 +1,13 @@
 import { useNotification } from '@/context/Notification'
 import { RootState } from '@/store'
-import { BarDiv } from '@alemonjs/react-ui'
 import { Pause, Play } from '@/common/Icons'
 import { Input } from '@alemonjs/react-ui'
 import { PrimaryDiv } from '@alemonjs/react-ui'
 import { SecondaryDiv } from '@alemonjs/react-ui'
-import { Tooltip } from '@alemonjs/react-ui'
 import classNames from 'classnames'
 import { useState, useRef, useEffect, Fragment, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons'
+import { ReloadOutlined } from '@ant-design/icons'
 import { setCommand } from '@/store/command'
 import { ExpansionsClose, ExpansionsRun } from '@wailsjs/window/expansions/app'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
@@ -22,7 +20,7 @@ interface Sidebar {
   commond?: string
 }
 
-export default function WordBox() {
+export default function CommandInput() {
   const notification = useNotification()
   const dispatch = useDispatch()
 
@@ -47,11 +45,6 @@ export default function WordBox() {
     })
   }, [expansions.package])
 
-  // 公共样式常量
-  const onClose = () => {
-    setIsDropdownOpen(false)
-  }
-
   // 点击外部关闭下拉菜单
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -69,7 +62,10 @@ export default function WordBox() {
   }, [])
 
   return (
-    <div className="flex-[6] flex gap-2 justify-between items-center">
+    <div className="flex-[6] flex gap-2 justify-center items-center">
+      {
+        // TODO 支持快捷键打开下拉菜单
+      }
       {isDropdownOpen ? (
         <div ref={dropdownRef} className="absolute top-0 left-1/2 transform -translate-x-1/2  z-10">
           <PrimaryDiv className={classNames('rounded-md  shadow-md p-1')}>
@@ -82,37 +78,32 @@ export default function WordBox() {
               onChange={e => setInputValue(e.target.value)}
               // 回车
               onKeyUp={(e: any) => {
-                // const commands = ['open.devtools']
                 if (e.key === 'Enter') {
                   const value = e.target.value
-
                   // 记录当前的命令
                   dispatch(setCommand(value))
-
                   // 关闭下拉菜单
                   setIsDropdownOpen(false)
                 }
               }}
               placeholder="请输入指令"
-              className="border rounded-md min-w-72 px-2 py-1"
+              className="border rounded-md min-w-72 px-2 py-1 h-6"
               aria-label="Command Input"
             />
-            <div className="py-2 flex flex-col gap-2 scrollbar overflow-auto  max-h-[calc(100vh/5*2)]">
+            <div className="py-2 flex flex-col gap-2 scrollbar overflow-y-auto  max-h-[calc(100vh/5*2)]">
               {commandViewList.map((item, index) => (
                 <PrimaryDiv
                   hover={true}
                   key={index}
                   onClick={() => {
                     if (!modules.nodeModulesStatus) return
-
                     // 记录当前的命令
                     dispatch(setCommand(item.command))
-
                     // 关闭下拉菜单
                     setIsDropdownOpen(false)
                   }}
                   className={classNames(
-                    'flex justify-between px-2 py-1 cursor-pointer duration-700 transition-all   rounded-md'
+                    'flex justify-between items-center px-2 py-1 cursor-pointer duration-700 transition-all rounded-md'
                   )}
                 >
                   <div className="flex gap-2">
@@ -129,14 +120,14 @@ export default function WordBox() {
                 </PrimaryDiv>
               ))}
             </div>
-            <div className="flex justify-end">
+            {/* <div className="flex justify-end">
               <BarDiv
                 onClick={onClose}
                 className=" duration-700 rounded-full px-1 transition-all  cursor-pointer"
               >
                 <CloseCircleOutlined />
               </BarDiv>
-            </div>
+            </div> */}
           </PrimaryDiv>
         </div>
       ) : (
@@ -150,7 +141,8 @@ export default function WordBox() {
                     args: ['--ignore-warnings']
                   })
                   // 前往日志中心
-                  dispatch(setCommand('view./bot-log'))
+                  // dispatch(setCommand('view./bot-log'))
+                  // TODO 打开日志
                 }}
               >
                 <ReloadOutlined />
@@ -206,7 +198,8 @@ export default function WordBox() {
                         return
                       }
                       // 前往日志中心
-                      dispatch(setCommand('view./bot-log'))
+                      // dispatch(setCommand('view./bot-log'))
+                      // TODO 打开日志
                       ExpansionsRun([])
                     }}
                   >

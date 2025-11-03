@@ -202,7 +202,7 @@ const WebView = ({ src, name, rules }: WebViewProps) => {
     }
   }, [src])
 
-  return <div ref={containerRef} className="m-0 p-0 w-full h-full" />
+  return <div ref={containerRef} className="m-0 p-0 flex-1 size-full" />
 }
 
 export default WebView

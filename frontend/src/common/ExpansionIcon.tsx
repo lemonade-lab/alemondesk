@@ -19,11 +19,11 @@ const ExpansionIcon = (props: IconProps) => {
     if (viewItem.icon.startsWith('antd.')) {
       // 是antd的图标
       const icon = viewItem.icon.split('.')[1]
-      return <AntdIcon className="text-4xl" defaultIcon={viewItem.name} icon={icon} />
+      return <AntdIcon className="text-xl" defaultIcon={viewItem.name} icon={icon} />
     }
     return (
       <img
-        className="size-12 flex justify-center items-center rounded-md"
+        className="size-10 flex justify-center items-center rounded-md"
         src={createIconURL(viewItem)}
       />
     )

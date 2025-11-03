@@ -10,7 +10,8 @@ interface State {
       // 是否是给主进程发送的
       isMainProcess: boolean
     }
-  ]
+  ],
+  view: string
 }
 
 // 初始状态
@@ -21,7 +22,8 @@ const initialState: State = {
       command: 'open.devTools',
       isMainProcess: true
     }
-  ]
+  ],
+  view: ''
 }
 
 const notificationSlice = createSlice({
@@ -30,9 +32,12 @@ const notificationSlice = createSlice({
   reducers: {
     setCommand(state, action: PayloadAction<string>) {
       state.name = action.payload
+    },
+    setWebview(state, action: PayloadAction<string>) {
+      state.view = action.payload
     }
   }
 })
 
-export const { setCommand } = notificationSlice.actions
+export const { setCommand, setWebview } = notificationSlice.actions
 export default notificationSlice.reducer
