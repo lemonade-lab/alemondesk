@@ -135,6 +135,37 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 				"error": error,
 			})
 		}
+
+	case "upgrade":
+		{
+			// 输入验证
+			if len(p1.Args) == 0 {
+				logger.Error("升级依赖参数为空")
+				// context有效性
+				if a.ctx != nil {
+					a.application.Emit("yarn", map[string]interface{}{
+						"type":  "upgrade",
+						"data":  0,
+						"error": "",
+					})
+				}
+				return
+			}
+			// 升级依赖
+			res, error := logicyarn.Upgrade(config.BotName, p1.Args)
+			data := 0
+			if res {
+				data = 1
+			}
+			// context有效性
+			if a.ctx != nil {
+				a.application.Emit("yarn", map[string]interface{}{
+					"type":  "upgrade",
+					"data":  data,
+					"error": error,
+				})
+			}
+		}
 	case "cmd":
 		// 输入验证
 		if len(p1.Args) == 0 {

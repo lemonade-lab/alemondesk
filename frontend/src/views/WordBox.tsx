@@ -143,20 +143,18 @@ export default function WordBox() {
         <Fragment>
           <div className="flex-1 flex items-center justify-end drag-area">
             <div className="steps-2">
-              <Tooltip text="重载依赖">
-                <div
-                  onClick={() => {
-                    YarnCommands({
-                      type: 'install',
-                      args: ['--ignore-warnings']
-                    })
-                     // 前往日志中心
-                    dispatch(setCommand('view./bot-log'))
-                  }}
-                >
-                  <ReloadOutlined />
-                </div>
-              </Tooltip>
+              <div
+                onClick={() => {
+                  YarnCommands({
+                    type: 'install',
+                    args: ['--ignore-warnings']
+                  })
+                  // 前往日志中心
+                  dispatch(setCommand('view./bot-log'))
+                }}
+              >
+                <ReloadOutlined />
+              </div>
             </div>
           </div>
           <div className="flex-1 flex items-center justify-center">
@@ -190,33 +188,31 @@ export default function WordBox() {
             }
             <div className="flex flex-1">
               <div className="steps-1 flex gap-2 justify-center items-center">
-                <Tooltip text="运行扩展器">
-                  {expansions.runStatus ? (
-                    <div
-                      className=" "
-                      onClick={() => {
-                        ExpansionsClose()
-                      }}
-                    >
-                      <Pause width={20} height={20} />
-                    </div>
-                  ) : (
-                    <div
-                      className=" "
-                      onClick={() => {
-                        if (!modules.nodeModulesStatus) {
-                          notification('依赖未加载', 'warning')
-                          return
-                        }
-                        // 前往日志中心
-                        dispatch(setCommand('view./bot-log'))
-                        ExpansionsRun([])
-                      }}
-                    >
-                      <Play width={20} height={20} />
-                    </div>
-                  )}
-                </Tooltip>
+                {expansions.runStatus ? (
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => {
+                      ExpansionsClose()
+                    }}
+                  >
+                    <Pause width={20} height={20} />
+                  </div>
+                ) : (
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (!modules.nodeModulesStatus) {
+                        notification('依赖未加载', 'warning')
+                        return
+                      }
+                      // 前往日志中心
+                      dispatch(setCommand('view./bot-log'))
+                      ExpansionsRun([])
+                    }}
+                  >
+                    <Play width={20} height={20} />
+                  </div>
+                )}
               </div>
               <div className="drag-area flex-1 "></div>
             </div>

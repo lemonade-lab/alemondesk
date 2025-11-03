@@ -159,6 +159,54 @@ func Remove(name string, names []string) (bool, error) {
 	return true, nil
 }
 
+func Upgrade(name string, args []string) (bool, error) {
+	manager := files.GetNodeJSManager()
+	nodeDir, err := manager.GetNodeExePath()
+
+	// 检查系统是否安装了 Node.js
+	if err != nil {
+		return false, err
+	}
+
+	// 检查机器人是否正在运行
+	if logicbot.IsRunning(name) {
+		return false, os.ErrExist
+	}
+
+	// 检查是否提供了依赖名称
+	if len(args) == 0 {
+		return false, os.ErrInvalid
+	}
+
+	// yarn.cjs 路径
+	cliDir := paths.GetNodeYarnScriptFilePath()
+	botPath := paths.CreateBotPath(name)
+
+	// 构建命令参数
+	curArgs := append([]string{cliDir, "upgrade", "-W"}, args...)
+
+	// 在 Windows 上添加额外的参数
+	if runtime.GOOS == "windows" {
+		curArgs = append(curArgs, "--mutex", "file")
+	}
+
+	// 创建命令工厂函数
+	cmdFactory := func() *exec.Cmd {
+		cmd := utils.Command(nodeDir, curArgs...)
+		cmd.Dir = botPath
+		cmd.Stdout = &logger.LogWriter{Level: "info"}
+		cmd.Stderr = &logger.LogWriter{Level: "error"}
+		return cmd
+	}
+
+	// 使用重试机制执行命令
+	if err := runYarnCommandWithRetry(cmdFactory); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 // 自由 cmd
 func Cmd(name string, args []string) (bool, error) {
 	manager := files.GetNodeJSManager()
