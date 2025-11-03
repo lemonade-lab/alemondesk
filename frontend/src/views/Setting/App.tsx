@@ -3,7 +3,7 @@ import { SecondaryDiv, SidebarDiv } from '@alemonjs/react-ui'
 import { useDispatch } from 'react-redux'
 import { Outlet } from 'react-router-dom'
 
-const SettingsMenu = () => {
+const Settings = () => {
   const dispatch = useDispatch()
 
   // 按钮列表
@@ -29,13 +29,6 @@ const SettingsMenu = () => {
         dispatch(setCommand(`view.${path}`))
       }
     },
-    // {
-    //   children: '仓库',
-    //   onClick: () => {
-    //     const path = '/settings/git-expansions'
-    //     dispatch(setCommand(`view.${path}`))
-    //   }
-    // },
     {
       children: '模板',
       onClick: () => {
@@ -72,4 +65,4 @@ const SettingsMenu = () => {
   )
 }
 
-export default SettingsMenu
+export default Settings

@@ -8,7 +8,7 @@ const initialState: State = {
   nodeModulesStatus: false
 }
 
-const notificationSlice = createSlice({
+const modulesSlice = createSlice({
   name: 'modules',
   initialState,
   reducers: {
@@ -31,5 +31,5 @@ const notificationSlice = createSlice({
   }
 })
 
-export const { setModulesStatus } = notificationSlice.actions
-export default notificationSlice.reducer
+export const { setModulesStatus } = modulesSlice.actions
+export default modulesSlice.reducer

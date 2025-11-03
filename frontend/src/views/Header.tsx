@@ -1,11 +1,13 @@
-import { memo, PropsWithChildren, ReactNode, useEffect, useState } from 'react'
+import { memo, PropsWithChildren, ReactNode, useEffect } from 'react'
 import classNames from 'classnames'
 import { HeaderDiv } from '@alemonjs/react-ui'
 import { Close, Maximize, Minimize } from '@/common/Icons'
-// import { WindowHide, WindowMaximise, WindowMinimise } from '@wailsjs/runtime/runtime'
 import { GetVersions } from '@wailsjs/window/controller/app'
 
 import { Window } from '@wailsio/runtime'
+import { setAbout } from '@/store/about'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@/store'
 const WindowHide = Window.Hide
 const WindowMaximise = Window.Maximise
 const WindowMinimise = Window.Minimise
@@ -25,25 +27,20 @@ const WINDOWS = 'windows'
  * @returns
  */
 export default memo(function Header({ children }: HeaderProps) {
-  const [versions, setVersions] = useState<{
-    node: string
-    platform: string
-  }>({
-    node: '',
-    platform: ''
-  })
-
+  const about = useSelector((state: RootState) => state.about)
+  const dispatch = useDispatch()
   useEffect(() => {
-    GetVersions().then(res => {
-      setVersions(res)
-    })
+    if (!about.platform) {
+      GetVersions().then(res => {
+        dispatch(setAbout(res))
+      })
+    }
   }, [])
-
   return (
     <HeaderDiv className={classNames('h-[1.6rem] flex justify-between  border-b-2 z-50')}>
       <div className="drag-area flex-1"></div>
       {children ?? <div className="flex-[2]"></div>}
-      {versions.platform == WINDOWS ? (
+      {about.platform == WINDOWS ? (
         <div className="flex-1 flex ">
           <div className="flex-1 drag-area "></div>
           <div className="flex px-2   gap-2 justify-center items-center">

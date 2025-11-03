@@ -10,10 +10,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"runtime"
 	"strconv"
 	"sync"
-	"syscall"
 	"time"
 )
 
@@ -40,19 +38,17 @@ type NodeProcessPersist struct {
 
 // 进程管理器
 type ManagedProcess struct {
-	Config         NodeProcessConfig
-	Cmd            *exec.Cmd
-	Ctx            context.Context
-	Cancel         context.CancelFunc
-	Status         string
-	RestartWait    time.Duration
-	mu             sync.Mutex
-	stdinPipe      io.WriteCloser // 新增：用于向Node.js发送消息
-	RestartCount   int
-	MaxRestarts    int
-	LastStartTime  time.Time
-	healthTicker   *time.Ticker
-	healthStopChan chan struct{}
+	Config        NodeProcessConfig
+	Cmd           *exec.Cmd
+	Ctx           context.Context
+	Cancel        context.CancelFunc
+	Status        string
+	RestartWait   time.Duration
+	mu            sync.Mutex
+	stdinPipe     io.WriteCloser // 新增：用于向Node.js发送消息
+	RestartCount  int
+	MaxRestarts   int
+	LastStartTime time.Time
 }
 
 const Restart_Wait = 5 * time.Second
@@ -138,13 +134,12 @@ func GetProcessConfigFilePath() string {
 func NewManagedProcess(cfg NodeProcessConfig) *ManagedProcess {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &ManagedProcess{
-		Config:         cfg,
-		Ctx:            ctx,
-		Cancel:         cancel,
-		Status:         StatusStopped,
-		RestartWait:    Restart_Wait,
-		MaxRestarts:    MaxRestarts,
-		healthStopChan: make(chan struct{}, 1),
+		Config:      cfg,
+		Ctx:         ctx,
+		Cancel:      cancel,
+		Status:      StatusStopped,
+		RestartWait: Restart_Wait,
+		MaxRestarts: MaxRestarts,
 	}
 }
 
@@ -229,17 +224,8 @@ func (mp *ManagedProcess) Start() error {
 		if mp.Config.PidFile != "" && mp.Cmd.Process != nil {
 			_ = os.WriteFile(mp.Config.PidFile, []byte(strconv.Itoa(mp.Cmd.Process.Pid)), 0644)
 		}
-		// 启动健康检查
+		// 启动进程监控
 		go mp.monitor()
-		// 启动健康检查循环（防止重复启动）
-		// 注意：healthTicker 会在 healthCheckLoop 开始时设置
-		if mp.healthTicker == nil {
-			if runtime.GOOS != "windows" {
-				go mp.healthCheckLoop()
-			}
-		} else {
-			logger.Debug("[%s] health check already running, skip start", mp.Config.Name)
-		}
 	}
 	// 状态持久化
 	SaveProcess(mp.Config.Name, mp.Config, mp.Status)
@@ -319,8 +305,6 @@ func (mp *ManagedProcess) Stop() error {
 	}
 	// 等待进程退出
 	mp.cleanupPIDFile()
-	// 关闭日志文件
-	mp.stopHealthCheck()
 	// 持久化状态
 	SaveProcess(mp.Config.Name, mp.Config, mp.Status)
 	return nil
@@ -365,61 +349,6 @@ func (pm *ProcessManager) StopAll() {
 	for _, p := range pm.Processes {
 		p.Stop()
 	}
-}
-
-// 定时健康检查：每 30 秒检查一次进程是否存活
-func (mp *ManagedProcess) healthCheckLoop() {
-	// ✅ 防止ticker泄漏
-	mp.healthTicker = time.NewTicker(TIME_OUT)
-	defer func() {
-		mp.healthTicker.Stop()
-		mp.healthTicker = nil
-	}()
-
-	for {
-		select {
-		case <-mp.healthTicker.C:
-			if !mp.isProcessAlive() {
-				logger.Info("[%s] health check failed, process not alive, restarting...", mp.Config.Name)
-				// 直接调用 Restart，避免启动多个重启 goroutine
-				if err := mp.Restart(); err != nil {
-					logger.Error("[%s] restart failed: %v", mp.Config.Name, err)
-				}
-				return
-			}
-		case <-mp.healthStopChan:
-			logger.Debug("[%s] health check stopped", mp.Config.Name)
-			return
-		}
-	}
-}
-
-// 停止健康检查
-func (mp *ManagedProcess) stopHealthCheck() {
-	// ✅ 防止向nil channel发送
-	if mp.healthStopChan != nil {
-		select {
-		case mp.healthStopChan <- struct{}{}:
-		default:
-		}
-	}
-	// ✅ 停止ticker防止泄漏
-	if mp.healthTicker != nil {
-		mp.healthTicker.Stop()
-		mp.healthTicker = nil
-	}
-}
-
-// 检查进程是否存活
-func (mp *ManagedProcess) isProcessAlive() bool {
-	mp.mu.Lock()
-	defer mp.mu.Unlock()
-	if mp.Cmd == nil || mp.Cmd.Process == nil {
-		return false
-	}
-	// Signal 0 检查进程是否存活
-	err := mp.Cmd.Process.Signal(syscall.Signal(0))
-	return err == nil
 }
 
 // 获取进程

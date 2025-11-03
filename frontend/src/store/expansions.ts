@@ -17,8 +17,8 @@ const initialState: State = {
   package: []
 }
 
-const notificationSlice = createSlice({
-  name: 'notification',
+const expansionsSlice = createSlice({
+  name: 'expansions',
   initialState,
   reducers: {
     /**
@@ -111,5 +111,5 @@ export const {
   putPackage,
   setExpansionsStatus,
   setExpansionsRunAt
-} = notificationSlice.actions
-export default notificationSlice.reducer
+} = expansionsSlice.actions
+export default expansionsSlice.reducer

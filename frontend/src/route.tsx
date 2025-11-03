@@ -5,7 +5,7 @@ import Application from '@/views/Application/App'
 import BotLog from '@/views/BotLog/App'
 import NpmExpansions from '@/views/NPMExpansions/App'
 import GitExpansions from '@/views/GitExpansions/App'
-import Menu from '@/views/Setting/Menu'
+import Settings from '@/views/Setting/App'
 import Common from '@/views/Setting/Common'
 import Theme from '@/views/Setting/Theme'
 import UpdateLog from '@/views/Setting/UpdateLog'
@@ -39,7 +39,7 @@ const router = createHashRouter([
       },
       {
         path: 'settings',
-        element: <Menu />,
+        element: <Settings />,
         children: [
           {
             index: true,

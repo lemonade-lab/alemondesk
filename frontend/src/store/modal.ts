@@ -18,7 +18,7 @@ const initialState: State = {
   code: 0
 }
 
-const notificationSlice = createSlice({
+const modalSlice = createSlice({
   name: 'modal',
   initialState,
   reducers: {
@@ -33,5 +33,5 @@ const notificationSlice = createSlice({
   }
 })
 
-export const { setModalData } = notificationSlice.actions
-export default notificationSlice.reducer
+export const { setModalData } = modalSlice.actions
+export default modalSlice.reducer

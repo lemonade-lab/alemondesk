@@ -10,7 +10,7 @@ const initialState: State = {
   message: []
 }
 
-const notificationSlice = createSlice({
+const logsSlice = createSlice({
   name: 'log',
   initialState,
   reducers: {
@@ -19,12 +19,11 @@ const notificationSlice = createSlice({
       state.message.push(action.payload)
     },
     delMessate(state, action: PayloadAction<number>) {
-      const start = state.message.length - action.payload + 1
       state.rolu = 'del'
-      state.message.splice(start < 0 ? 0 : start, action.payload)
+      state.message.splice(0, action.payload)  // 从开头删除
     }
   }
 })
 
-export const { postMessage, delMessate } = notificationSlice.actions
-export default notificationSlice.reducer
+export const { postMessage, delMessate } = logsSlice.actions
+export default logsSlice.reducer
