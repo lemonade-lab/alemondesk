@@ -60,6 +60,9 @@ const Theme = () => {
   }
 
   useEffect(() => {
+        // 加载css变量
+    ThemeLoadVariables()
+
     // 监听 css 变量
     EventsOn('theme', e => {
       try {
@@ -113,7 +116,7 @@ const Theme = () => {
    */
   const onChangeDesktop = (status: boolean) => {
     if (status) {
-      themeController.light()
+      themeController.dark()
     } else {
       themeController.light()
     }
