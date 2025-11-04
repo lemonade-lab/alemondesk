@@ -12,7 +12,14 @@ const About = () => {
   useEffect(() => {
     if (!about.platform) {
       GetVersions().then(res => {
-        dispatch(setAbout(res))
+        dispatch(
+          setAbout({
+            arch: res.arch,
+            node: res.node,
+            platform: res.platform,
+            version: res.version
+          })
+        )
       })
     }
   }, [])

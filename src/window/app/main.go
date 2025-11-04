@@ -15,6 +15,7 @@ import (
 type App struct {
 	ctx         context.Context
 	application *application.EventManager
+	window      *application.WebviewWindow
 }
 
 func NewApp() *App {
@@ -27,6 +28,12 @@ func (a *App) Startup(ctx context.Context) {
 
 func (a *App) SetApplication(app *application.EventManager) {
 	a.application = app
+}
+
+func (a *App) SetWindow(win *application.WebviewWindow) {
+	a.window = win
+	// 注册事件监听器
+	a.registerEventHandlers()
 }
 
 type PathsState struct {
@@ -96,4 +103,34 @@ func (a *App) GetAppLogsFilePath() (string, error) {
 func (a *App) AppDownloadFiles(localURL string) error {
 	// 写入文件
 	return utils.DownloadFiles(localURL)
+}
+
+func (a *App) registerEventHandlers() {
+	// 注册 Bot 相关事件
+	a.application.On("app", func(event *application.CustomEvent) {
+		payload := event.Data.(map[string]interface{})
+		eventType, ok := payload["type"].(string)
+		if !ok {
+			logger.Error("App 事件类型无效")
+			return
+		}
+
+		switch eventType {
+		case "command":
+			command, ok := payload["data"].(string)
+			if !ok {
+				logger.Error("App command 数据无效")
+				return
+			}
+			if command == "app.open.devtools" {
+				// 打开开发者工具
+				if a.window != nil {
+					a.window.OpenDevTools()
+				}
+				return
+			}
+		default:
+			logger.Error("未知的 App 事件类型:", eventType)
+		}
+	})
 }

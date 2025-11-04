@@ -55,7 +55,13 @@ export default (function App() {
     })
 
     // 获取路径配置
-    AppGetPathsState().then(paths => dispatch(setPath(paths)))
+    AppGetPathsState().then(paths => dispatch(setPath({
+      userDataTemplatePath: paths.userDataTemplatePath,
+      userDataNodeModulesPath: paths.userDataNodeModulesPath,
+      userDataPackagePath: paths.userDataPackagePath,
+      preloadPath: paths.preloadPath,
+      resourcePath: paths.resourcePath
+    })))
 
     // 立即安装依赖
     YarnCommands({
@@ -205,8 +211,31 @@ export default (function App() {
 
     const intervalId = setInterval(onGlobalStatus, 1000 * 3)
 
+    // 坚挺全局快捷键
+    const handleKeyPress = event => {
+      console.log('key pressed', event.key)
+      // Ctrl + S 保存
+      if (event.ctrlKey && event.key === 's') {
+        event.preventDefault()
+        console.log('保存操作')
+        // 执行保存逻辑
+      }
+
+      // ESC 键
+      if (event.key === 'Escape') {
+        console.log('ESC 按下')
+        // 执行取消或关闭逻辑
+      }
+
+      // 空格键
+      if (event.key === ' ') {
+        console.log('空格键按下')
+      }
+    }
     return () => {
       clearInterval(intervalId)
+
+      document.addEventListener('keydown', handleKeyPress)
     }
   }, [])
 
@@ -259,8 +288,14 @@ export default (function App() {
           return
         }
         navigate(viewMap[command.name] || '/')
+      } if (/^app./.test(command.name)) {
+         // 发送之后。重新设置为空
+         Events.Emit('app', { type: 'command', data: command.name })
+         dispatch(setCommand(""))
       } else {
         ExpansionsPostMessage({ type: 'command', data: command.name })
+        // 发送之后。重新设置为空
+        dispatch(setCommand(""))
       }
     }
   }, [command.name])

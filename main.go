@@ -154,30 +154,26 @@ func main() {
 	// app.Window.NewWithOptions(windowOptions)
 	window := app.Window.NewWithOptions(windowOptions)
 
-	if runtime.GOOS == "windows" {
-		sysImg := NewImgVendor()
-		icon, _ := sysImg.GetImg("appicon.png")
-		systray := app.SystemTray.New()
-		systray.SetIcon(icon)
-		systray.SetTooltip("ALemonDesk")
-		menu := application.NewMenu()
+	sysImg := NewImgVendor()
+	icon, _ := sysImg.GetImg("appicon.png")
+	systray := app.SystemTray.New()
+	systray.SetIcon(icon)
+	systray.SetTooltip("ALemonDesk")
+	menu := application.NewMenu()
 
-		menu.Add("显示").OnClick(func(ctx *application.Context) {
+	systray.OnClick(func() {
+		if !window.IsVisible() {
 			window.Show()
-		})
-
-		if config.IsDev() {
-			menu.Add("工具").OnClick(func(ctx *application.Context) {
-				window.OpenDevTools()
-			})
+			return
 		}
+		window.Focus()
+	})
 
-		menu.Add("退出").OnClick(func(ctx *application.Context) {
-			app.Quit()
-		})
+	menu.Add("退出").OnClick(func(ctx *application.Context) {
+		app.Quit()
+	})
 
-		systray.SetMenu(menu)
-	}
+	systray.SetMenu(menu)
 
 	// 启动服务
 	ctx := app.Context()
@@ -188,6 +184,7 @@ func main() {
 	wBot.SetApplication(app.Event)
 	wApp.Startup(ctx)
 	wApp.SetApplication(app.Event)
+	wApp.SetWindow(window)
 	wTheme.Startup(ctx)
 	wTheme.SetApplication(app.Event)
 	wController.Startup(ctx)

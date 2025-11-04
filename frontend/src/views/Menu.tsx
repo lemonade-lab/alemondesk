@@ -11,6 +11,7 @@ import {
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useNavigate } from 'react-router-dom'
+import Box from '@/common/layout/Box'
 
 const MenuButton = () => {
   const navigate = useNavigate()
@@ -21,15 +22,6 @@ const MenuButton = () => {
     className: string
     onClick: () => void
   }[] = [
-    // TODO 应该展示config文件
-    // {
-    //   Icon: <RobotOutlined size={20} />,
-    //   path: '/bot-log',
-    //   className: 'steps-5',
-    //   onClick: path => {
-    //     dispatch(setCommand(`view.${path}`))
-    //   }
-    // },
     {
       Icon: <ContainerOutlined size={20} />,
       className: 'steps-5-1',
@@ -73,22 +65,21 @@ const MenuButton = () => {
           <HomeFilled size={20} />
         </BarDiv>
       </NavDiv>
-      <NavDiv className="px-1 py-4 flex-col  rounded-full flex gap-4">
-        {
-          // TODO 若 nav 支持扩展。这里需要开启允许上下滚动 / 增加展开更多的按钮
-        }
-        {navList.map((item, index) => (
-          <BarDiv
-            key={index}
-            className={classNames(
-              'size-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-700',
-              item.className
-            )}
-            onClick={() => item.onClick()}
-          >
-            <div>{item.Icon}</div>
-          </BarDiv>
-        ))}
+      <NavDiv className="flex-col rounded-full flex flex-1 size-full">
+        <Box className='max-h-80 px-1 py-4 gap-4'>
+          {navList.map((item, index) => (
+            <BarDiv
+              key={index}
+              className={classNames(
+                'size-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-700',
+                item.className
+              )}
+              onClick={() => item.onClick()}
+            >
+              <div>{item.Icon}</div>
+            </BarDiv>
+          ))}
+        </Box>
       </NavDiv>
       <NavDiv className="p-1 flex-col  rounded-full flex gap-3">
         <BarDiv

@@ -12,13 +12,7 @@ import { setCommand } from '@/store/command'
 import { ExpansionsClose, ExpansionsRun } from '@wailsjs/window/expansions/app'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
 import ExpansionIcon from '@/common/ExpansionIcon'
-interface Sidebar {
-  expansions_name: string
-  name: string
-  icon: string
-  command: string
-  commond?: string
-}
+import { Sidebar } from './types'
 
 export default function CommandInput() {
   const notification = useNotification()
@@ -32,6 +26,15 @@ export default function CommandInput() {
   const dropdownRef = useRef<HTMLDivElement | null>(null)
 
   const commandViewList = useMemo(() => {
+    const init = [
+      {
+        name: '开发者工具',
+        icon: 'antd.ToolOutlined',
+        command: 'app.open.devtools',
+        commond: 'app.open.devtools',
+        expansions_name: '开发者工具'
+      }
+    ]
     return expansions.package?.flatMap(item => {
       const commond = item.alemonjs?.desktop?.commond || []
       const command = item.alemonjs?.desktop?.command || []
@@ -42,7 +45,7 @@ export default function CommandInput() {
           expansions_name: item.name
         })) || []
       )
-    })
+    }).concat(init)
   }, [expansions.package])
 
   // 点击外部关闭下拉菜单
