@@ -8,19 +8,18 @@ import {
   HomeFilled,
   SettingFilled
 } from '@ant-design/icons'
-import { setCommand } from '@/store/command'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
+import { useNavigate } from 'react-router-dom'
 
 const MenuButton = () => {
-  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const expansions = useSelector((state: RootState) => state.expansions)
   // 导航列表
   const navList: {
     Icon: React.ReactNode
-    path: string
     className: string
-    onClick: (path: string) => void
+    onClick: () => void
   }[] = [
     // TODO 应该展示config文件
     // {
@@ -33,38 +32,34 @@ const MenuButton = () => {
     // },
     {
       Icon: <ContainerOutlined size={20} />,
-      path: '/git-exp-list',
       className: 'steps-5-1',
-      onClick: path => {
-        dispatch(setCommand(`view.${path}`))
+      onClick: () => {
+        navigate('/git-exp-list')
       }
     },
     {
       Icon: <AppstoreAddOutlined size={20} />,
-      path: '/npm-exp-list',
       className: 'steps-6',
-      onClick: path => {
-        dispatch(setCommand(`view.${path}`))
+      onClick: () => {
+        navigate('/npm-exp-list')
       }
     },
     {
       Icon: <AppstoreOutlined size={20} />,
-      path: '/pkg-app-list',
       className: classNames('steps-7', {
         'opacity-50': !expansions.runStatus
       }),
-      onClick: path => {
+      onClick: () => {
         if (!expansions.runStatus) {
           return
         }
-        dispatch(setCommand(`view.${path}`))
+        navigate('/pkg-app-list')
       }
     }
   ]
 
   const goHome = () => {
-    const path = '/'
-    dispatch(setCommand(`view.${path}`))
+    navigate('/')
   }
   return (
     <aside className={classNames('flex flex-col justify-between items-center px-1 py-4')}>
@@ -84,12 +79,12 @@ const MenuButton = () => {
         }
         {navList.map((item, index) => (
           <BarDiv
-            key={item.path}
+            key={index}
             className={classNames(
               'size-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-700',
               item.className
             )}
-            onClick={() => item.onClick(item.path)}
+            onClick={() => item.onClick()}
           >
             <div>{item.Icon}</div>
           </BarDiv>
@@ -102,8 +97,7 @@ const MenuButton = () => {
             'size-8 rounded-full  flex items-center justify-center cursor-pointer transition-all duration-700'
           )}
           onClick={() => {
-            const path = './settings'
-            dispatch(setCommand(`view.${path}`))
+            navigate('/settings')
           }}
         >
           <SettingFilled width={20} height={20} />

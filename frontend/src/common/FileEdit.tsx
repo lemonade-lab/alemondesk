@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import MonacoEditor from './MonacoEditor'
-import useCodeTheme from '@/hook/useCodeTheme'
 import { createMonacoChineseConfig } from './monacoI18n'
 import { Button, Input } from '@alemonjs/react-ui'
 import { useNotification } from '@/context/Notification'
+import { useTheme } from '@/hook/useTheme'
 
 const FileEdit = ({
   name,
@@ -23,7 +23,7 @@ const FileEdit = ({
   const notification = useNotification()
   const [fileData, setFileData] = useState<string>(value || '')
   const [inputValue, setInputValue] = useState<string>(name || '')
-  const theme = useCodeTheme()
+  const [theme] = useTheme()
 
   useEffect(() => {
     setFileData(value || '')
@@ -37,7 +37,7 @@ const FileEdit = ({
   }
 
   // 获取MonacoEditor稳定配置
-  const monacoConfig = createMonacoChineseConfig(language, theme)
+  const monacoConfig = createMonacoChineseConfig(language, theme === 'dark' ? 'vs-dark' : 'light')
 
   const handleSave = () => {
     if (!inputValue) {
@@ -57,8 +57,8 @@ const FileEdit = ({
               <Input
                 value={inputValue}
                 autoCapitalize="off"
-  autoCorrect="off"
-  spellCheck="false"
+                autoCorrect="off"
+                spellCheck="false"
                 placeholder="文件名称"
                 onChange={e => setInputValue(e.target.value)}
                 style={{ minWidth: 120 }}

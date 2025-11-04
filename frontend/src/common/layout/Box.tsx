@@ -9,24 +9,35 @@ import { PropsWithChildren } from 'react'
  */
 const Box = ({
   boxRef,
+  rootRef,
   children,
   rootClassName,
-  className
+  className,
+  onRootScroll,
+  onBoxScroll
 }: PropsWithChildren<{
   boxRef?: React.RefObject<HTMLDivElement>
+  rootRef?: React.RefObject<HTMLDivElement>
   className?: string
   rootClassName?: string
+  onRootScroll?: (e: React.UIEvent<HTMLDivElement, UIEvent>) => void
+  onBoxScroll?: (e: React.UIEvent<HTMLDivElement, UIEvent>) => void
 }>) => {
   return (
     <SecondaryDiv
-      ref={boxRef}
+      ref={rootRef}
       className={classNames(
         rootClassName,
         'flex flex-1 size-full min-w-0 max-w-full scrollbar overflow-auto transition-colors '
       )}
+      onScroll={onRootScroll}
     >
       <div className="flex flex-1 size-full min-w-0 max-w-full">
-        <div className={classNames(className, 'flex flex-col flex-1 size-full min-w-0 max-w-full')}>
+        <div
+          ref={boxRef}
+          onScroll={onBoxScroll}
+          className={classNames(className, 'flex flex-col flex-1 size-full min-w-0 max-w-full')}
+        >
           {children}
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { RESOURCE_PROTOCOL_PREFIX } from '@/api/config'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
-import { AntdIcon } from './AntdIcon'
+import { AntdIcon } from './ui/AntdIcon'
 
 type IconProps = {
   name: string

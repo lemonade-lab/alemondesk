@@ -17,7 +17,7 @@ const HomeMain: React.FC = () => {
         <Splitter.Panel>
           <Splitter layout="vertical">
             <Splitter.Panel collapsible></Splitter.Panel>
-            <Splitter.Panel defaultSize="30%" collapsible>
+            <Splitter.Panel defaultSize="30%" min="20%" collapsible>
               <Terminal />
             </Splitter.Panel>
           </Splitter>

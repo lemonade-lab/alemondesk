@@ -6,8 +6,8 @@ import EditFile from './EditFile'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 export default function Files() {
-  const [select, setSelect] = useState('')
   const app = useSelector((state: RootState) => state.app)
+  const [select, setSelect] = useState('')
 
   const pages = [
     {

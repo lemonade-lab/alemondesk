@@ -22,6 +22,13 @@ interface State {
             hash: string
             message: string
         }>
+    },
+    isAddLoading: boolean
+    addValues: {
+        repoUrl: string
+        branch: string
+        depth: number
+        force: boolean
     }
 }
 
@@ -38,6 +45,13 @@ const initialState: State = {
         readme: '',
         branches: [],
         commits: []
+    },
+    isAddLoading: false,
+    addValues: {
+        repoUrl: '',
+        branch: '',
+        depth: 1,
+        force: true
     }
 }
 
@@ -59,9 +73,23 @@ const gitExpSlice = createSlice({
         },
         setCurrentRepo(state, action: PayloadAction<State['currentRepo']>) {
             state.currentRepo = action.payload
+        },
+        setAddLoading(state, action: PayloadAction<boolean>) {
+            state.isAddLoading = action.payload
+        },
+        setAddValues(state, action: PayloadAction<State['addValues']>) {
+            state.addValues = action.payload
         }
     }
 })
 
-export const { setLoading, setData, setSpace, setTabValue, setCurrentRepo } = gitExpSlice.actions
+export const {
+    setLoading,
+    setData,
+    setSpace,
+    setTabValue,
+    setCurrentRepo,
+    setAddLoading,
+    setAddValues
+} = gitExpSlice.actions
 export default gitExpSlice.reducer

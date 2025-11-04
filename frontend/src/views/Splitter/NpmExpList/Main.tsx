@@ -9,15 +9,15 @@ const NpmExpListMain: React.FC = () => {
     <Splitter className="h-[calc(100vh-29.8px)] max-w-[calc(100vw-48px)]">
       <Splitter.Panel>
         <Splitter layout="vertical">
-          <Splitter.Panel collapsible>
+          <Splitter.Panel min="40%" collapsible>
             <NPMExpansions />
           </Splitter.Panel>
-          <Splitter.Panel defaultSize="30%" collapsible>
+          <Splitter.Panel defaultSize="30%" min="20%"  collapsible>
             <Terminal />
           </Splitter.Panel>
         </Splitter>
       </Splitter.Panel>
-      <Splitter.Panel collapsible defaultSize="30%" min="30%" max="60%">
+      <Splitter.Panel style={{overflow: 'hidden'}} collapsible defaultSize="30%" min="30%" max="45%">
         <GitExpList />
       </Splitter.Panel>
     </Splitter>

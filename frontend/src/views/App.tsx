@@ -27,6 +27,7 @@ import { Events } from '@wailsio/runtime'
 import { BotStatus } from '@wailsjs/window/bot/app'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
 import { setViews } from '@/store/views'
+import { useTheme } from '@/hook/useTheme'
 const EventsOn = Events.On
 
 export default (function App() {
@@ -37,6 +38,7 @@ export default (function App() {
   const expansions = useSelector((state: RootState) => state.expansions)
   const modulesRef = useRef(modules)
   const { setPopValue, closePop } = usePop()
+  const [_theme, themeController] = useTheme()
 
   // watch
   useEffect(() => {
@@ -46,9 +48,9 @@ export default (function App() {
     // 加载主题
     ThemeMode().then(res => {
       if (res === 'dark') {
-        document.documentElement.classList.add('dark')
+        themeController.dark()
       } else {
-        document.documentElement.classList.remove('dark')
+        themeController.light()
       }
     })
 
@@ -128,7 +130,6 @@ export default (function App() {
     EventsOn('expansions', e => {
       const args = e.data ?? []
       const data = args[0] ?? null
-      // console.log('expansions message', data)
       try {
         if (/^action:/.test(data.type)) {
           const actions = data.type.split(':')
@@ -182,7 +183,6 @@ export default (function App() {
     const onGlobalStatus = async () => {
       try {
         const T = await BotStatus()
-        console.log('BotStatus', T)
         dispatch(
           setBotStatus({
             runStatus: T ? true : false
@@ -193,7 +193,6 @@ export default (function App() {
       }
       try {
         const T = await ExpansionsStatus()
-        console.log('ExpansionsStatus', T)
         dispatch(
           setExpansionsStatus({
             runStatus: T ? true : false
@@ -248,10 +247,18 @@ export default (function App() {
     if (command.name) {
       // view
       if (/^view./.test(command.name)) {
-        // TODO 需要优化。应该内部的路由可能变化。
-        // TODO 需要进行固定化
         // 前往页面
-        navigate(command.name.replace('view.', ''))
+        const viewMap = {
+          'view.home': '/',
+          'view.git-exp-manage': '/git-exp-list',
+          'view.npm-exp-manage': '/npm-exp-list',
+          'view.webview': '/pkg-app-list',
+          'view.settings': '/settings'
+        }
+        if (!viewMap[command.name]) {
+          return
+        }
+        navigate(viewMap[command.name] || '/')
       } else {
         ExpansionsPostMessage({ type: 'command', data: command.name })
       }

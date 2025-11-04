@@ -1,6 +1,6 @@
 import { useNotification } from '@/context/Notification'
 import { RootState } from '@/store'
-import { Pause, Play } from '@/common/Icons'
+import { Pause, Play } from '@/common/ui/Icons'
 import { Input } from '@alemonjs/react-ui'
 import { PrimaryDiv } from '@alemonjs/react-ui'
 import { SecondaryDiv } from '@alemonjs/react-ui'

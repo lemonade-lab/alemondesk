@@ -1,4 +1,3 @@
-import { updateThemeMode } from '@/core/theme'
 import { Button } from '@alemonjs/react-ui'
 import { Input } from '@alemonjs/react-ui'
 import { PrimaryDiv } from '@alemonjs/react-ui'
@@ -6,7 +5,6 @@ import { Switch } from '@alemonjs/react-ui'
 import {
   ThemeDownloadFiles,
   ThemeLoadVariables,
-  ThemeMode,
   ThemeResetTheme,
   ThemeSave
 } from '@wailsjs/window/theme/app'
@@ -16,17 +14,19 @@ import { useEffect, useState } from 'react'
 
 import { Events } from '@wailsio/runtime'
 import Box from '@/common/layout/Box'
+import { useTheme } from '@/hook/useTheme'
 const EventsOn = Events.On
 
+type ThemeVariable = {
+  name: string
+  color: string
+}
+
 const Theme = () => {
-  const [data, setData] = useState<
-    {
-      name: string
-      color: string
-    }[]
-  >([])
+  const [data, setData] = useState<ThemeVariable[]>([])
   const [update, setUpdate] = useState(false)
-  const [isDark, setIsDark] = useState(false)
+  const [_theme, themeController] = useTheme()
+  const isDark = _theme === 'dark'
 
   const saveColor = () => {
     const _data: {
@@ -60,9 +60,6 @@ const Theme = () => {
   }
 
   useEffect(() => {
-    // 加载css变量
-    ThemeLoadVariables()
-
     // 监听 css 变量
     EventsOn('theme', e => {
       try {
@@ -76,14 +73,6 @@ const Theme = () => {
         setData(arr)
       } catch (e) {
         console.error(e)
-      }
-    })
-
-    ThemeMode().then(res => {
-      if (res === 'dark') {
-        setIsDark(true)
-      } else {
-        setIsDark(false)
       }
     })
   }, [])
@@ -123,8 +112,11 @@ const Theme = () => {
    * @param status
    */
   const onChangeDesktop = (status: boolean) => {
-    setIsDark(status)
-    updateThemeMode(status)
+    if (status) {
+      themeController.light()
+    } else {
+      themeController.light()
+    }
   }
   return (
     <div className="animate__animated animate__fadeIn flex-1 flex-col flex size-full">

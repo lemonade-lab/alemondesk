@@ -1,7 +1,7 @@
 import { memo, PropsWithChildren, ReactNode, useEffect } from 'react'
 import classNames from 'classnames'
 import { HeaderDiv } from '@alemonjs/react-ui'
-import { Close, Maximize, Minimize } from '@/common/Icons'
+import { Close, Maximize, Minimize } from '@/common/ui/Icons'
 import { GetVersions } from '@wailsjs/window/controller/app'
 
 import { Window } from '@wailsio/runtime'
