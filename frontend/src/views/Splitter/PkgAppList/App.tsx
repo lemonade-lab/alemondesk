@@ -6,7 +6,7 @@ import { setCommand } from '@/store/command'
 import { SidebarDiv } from '@alemonjs/react-ui'
 import { TagDiv } from '@alemonjs/react-ui'
 import ExpansionIcon from '@/common/ExpansionIcon'
-import { Sidebar } from '@/views/types'
+import { CommandItem } from '@/views/types'
 
 export default function PkgAppList() {
   const dispatch = useDispatch()
@@ -17,7 +17,8 @@ export default function PkgAppList() {
     return (
       expansions.package?.flatMap(item => {
         return (
-          item.alemonjs?.desktop?.sidebars?.map((sidebar: Sidebar) => ({
+          // 读取侧边栏设置
+          item.alemonjs?.desktop?.sidebars?.map((sidebar: CommandItem) => ({
             ...sidebar,
             command: sidebar.command ?? sidebar.commond ?? '',
             expansions_name: item.name
@@ -28,7 +29,7 @@ export default function PkgAppList() {
   }, [expansions.package])
 
   // 点击侧边栏
-  const handleSidebarClick = (viewItem: Sidebar) => {
+  const handleSidebarClick = (viewItem: CommandItem) => {
     if (viewItem.command === command.name) {
       return
     }

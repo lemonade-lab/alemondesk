@@ -18,9 +18,16 @@ export type PackageInfoType = {
   '__icon'?: string | null
 }
 
-export interface Sidebar {
+export interface CommandItem {
   expansions_name: string
   name: string
+  icon: string
+  commond?: string
+  command: string
+}
+
+export interface ControllerItem {
+  position: 'left' | 'right'
   icon: string
   commond?: string
   command: string

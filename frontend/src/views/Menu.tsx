@@ -8,14 +8,20 @@ import {
   HomeFilled,
   SettingFilled
 } from '@ant-design/icons'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useNavigate } from 'react-router-dom'
 import Box from '@/common/layout/Box'
+import { useMemo } from 'react'
+import { CommandItem } from './types'
+import { setCommand } from '@/store/command'
+import ExpansionIcon from '@/common/ExpansionIcon'
 
 const MenuButton = () => {
   const navigate = useNavigate()
   const expansions = useSelector((state: RootState) => state.expansions)
+  const dispatch = useDispatch()
+
   // 导航列表
   const navList: {
     Icon: React.ReactNode
@@ -50,6 +56,21 @@ const MenuButton = () => {
     }
   ]
 
+  const viewMenus = useMemo(() => {
+    const menus =
+      expansions.package?.flatMap(item => {
+        return (
+          // 读取侧边栏设置
+          item.alemonjs?.desktop?.menus?.map((menu: CommandItem) => ({
+            ...menu,
+            command: menu.command ?? menu.commond ?? '',
+            expansions_name: item.name
+          })) || []
+        )
+      }) || []
+    return menus.concat(navList)
+  }, [expansions.package])
+
   const goHome = () => {
     navigate('/')
   }
@@ -65,18 +86,33 @@ const MenuButton = () => {
           <HomeFilled size={20} />
         </BarDiv>
       </NavDiv>
-      <NavDiv className="flex-col rounded-full flex flex-1 size-full">
-        <Box className='max-h-80 px-1 py-4 gap-4'>
-          {navList.map((item, index) => (
+      <NavDiv className="flex-col max-h-56 rounded-full items-center flex flex-1 size-full">
+        <Box className="px-1 py-4 gap-4">
+          {viewMenus.map((item, index) => (
             <BarDiv
               key={index}
               className={classNames(
                 'size-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-700',
                 item.className
               )}
-              onClick={() => item.onClick()}
+              onClick={() => {
+                if (item.onClick) {
+                  // 内部方法
+                  item.onClick()
+                }
+                if (item.command) {
+                  // 外部方法。执行command
+                  dispatch(setCommand(item.command))
+                }
+              }}
             >
-              <div>{item.Icon}</div>
+              {item?.Icon ?? (
+                <ExpansionIcon
+                  name={item.name}
+                  icon={item.icon}
+                  expansions_name={item.expansions_name}
+                />
+              )}
             </BarDiv>
           ))}
         </Box>

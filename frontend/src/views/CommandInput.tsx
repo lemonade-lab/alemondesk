@@ -12,7 +12,9 @@ import { setCommand } from '@/store/command'
 import { ExpansionsClose, ExpansionsRun } from '@wailsjs/window/expansions/app'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
 import ExpansionIcon from '@/common/ExpansionIcon'
-import { Sidebar } from './types'
+import { CommandItem, ControllerItem } from './types'
+
+const isMac = 'darwin'
 
 export default function CommandInput() {
   const notification = useNotification()
@@ -20,6 +22,7 @@ export default function CommandInput() {
 
   const modules = useSelector((state: RootState) => state.modules)
   const expansions = useSelector((state: RootState) => state.expansions)
+  const version = useSelector((state: RootState) => state.about.version)
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -35,18 +38,50 @@ export default function CommandInput() {
         expansions_name: '开发者工具'
       }
     ]
-    return expansions.package?.flatMap(item => {
-      const commond = item.alemonjs?.desktop?.commond || []
-      const command = item.alemonjs?.desktop?.command || []
-      return (
-        [...commond, ...command].map((sidebar: Sidebar) => ({
-          ...sidebar,
-          command: sidebar.command ?? sidebar.commond ?? '',
-          expansions_name: item.name
-        })) || []
-      )
-    }).concat(init)
+    return expansions.package
+      ?.flatMap(item => {
+        // 读取command配置
+        const commond = item.alemonjs?.desktop?.commond || []
+        const command = item.alemonjs?.desktop?.command || []
+        return (
+          [...commond, ...command].map((sidebar: CommandItem) => ({
+            ...sidebar,
+            command: sidebar.command ?? sidebar.commond ?? '',
+            expansions_name: item.name
+          })) || []
+        )
+      })
+      .concat(init)
   }, [expansions.package])
+
+  const viewControllers = useMemo(() => {
+    const controllers =
+      expansions.package?.flatMap(item => {
+        return (
+          // 读取侧边栏设置
+          item.alemonjs?.desktop?.controls?.map((menu: ControllerItem) => ({
+            ...menu,
+            command: menu.command ?? menu.commond ?? '',
+            expansions_name: item.name
+          })) || []
+        )
+      }) || []
+    // 判断当前是什么系统。
+    if (version === isMac) {
+      // 默认在右边。找到所有在左边的
+      // 找到左右在 左边的
+      const left = controllers.filter(item => item.position === 'left')
+      const right = controllers.filter(item => item.position !== 'left')
+      return [left, right]
+    }
+    // 找到所有在 右边的
+    const right = controllers.filter(item => item.position === 'right')
+    const left = controllers.filter(item => item.position !== 'right')
+    return [left, right]
+  }, [expansions.package, version])
+
+  const viewControllersLeft = viewControllers[0]
+  const viewControllersRight = viewControllers[1]
 
   // 点击外部关闭下拉菜单
   useEffect(() => {
@@ -123,19 +158,32 @@ export default function CommandInput() {
                 </PrimaryDiv>
               ))}
             </div>
-            {/* <div className="flex justify-end">
-              <BarDiv
-                onClick={onClose}
-                className=" duration-700 rounded-full px-1 transition-all  cursor-pointer"
-              >
-                <CloseCircleOutlined />
-              </BarDiv>
-            </div> */}
           </PrimaryDiv>
         </div>
       ) : (
         <Fragment>
-          <div className="flex-1 flex items-center justify-end drag-area">
+          <div className="flex-1 flex gap-2 items-center justify-end drag-area">
+            {
+              // 显示左边的
+              viewControllersLeft.map((item, index) => (
+                <div
+                  key={index}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    if (item.command) {
+                      // 记录当前的命令
+                      dispatch(setCommand(item.command))
+                    }
+                  }}
+                >
+                  <ExpansionIcon
+                    name={item?.name ?? item?.icon}
+                    icon={item?.icon}
+                    expansions_name={item?.expansions_name ?? item?.icon}
+                  />
+                </div>
+              ))
+            }
             <div className="steps-2">
               <div
                 onClick={() => {
@@ -143,9 +191,6 @@ export default function CommandInput() {
                     type: 'install',
                     args: ['--ignore-warnings']
                   })
-                  // 前往日志中心
-                  // dispatch(setCommand('view./bot-log'))
-                  // TODO 打开日志
                 }}
               >
                 <ReloadOutlined />
@@ -183,6 +228,24 @@ export default function CommandInput() {
             }
             <div className="flex flex-1">
               <div className="steps-1 flex gap-2 justify-center items-center">
+                {viewControllersRight.map((item, index) => (
+                  <div
+                    key={index}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (item.command) {
+                        // 记录当前的命令
+                        dispatch(setCommand(item.command))
+                      }
+                    }}
+                  >
+                    <ExpansionIcon
+                      name={item?.name ?? item?.icon}
+                      icon={item?.icon}
+                      expansions_name={item?.expansions_name ?? item?.icon}
+                    />
+                  </div>
+                ))}
                 {expansions.runStatus ? (
                   <div
                     className="cursor-pointer"
@@ -200,9 +263,6 @@ export default function CommandInput() {
                         notification('依赖未加载', 'warning')
                         return
                       }
-                      // 前往日志中心
-                      // dispatch(setCommand('view./bot-log'))
-                      // TODO 打开日志
                       ExpansionsRun([])
                     }}
                   >

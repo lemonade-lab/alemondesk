@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { SecondaryDiv } from '@alemonjs/react-ui'
 import WebView from '@/common/WebView'
 import { RESOURCE_PROTOCOL_PREFIX } from '@/api/config'
-import { Sidebar } from '@/views/types'
+import { CommandItem } from '@/views/types'
 import Box from '@/common/layout/Box'
 
 export default function Webviews() {
@@ -15,7 +15,7 @@ export default function Webviews() {
     return (
       expansions.package?.flatMap(item => {
         return (
-          item.alemonjs?.desktop?.sidebars?.map((sidebar: Sidebar) => ({
+          item.alemonjs?.desktop?.sidebars?.map((sidebar: CommandItem) => ({
             ...sidebar,
             command: sidebar.command ?? sidebar.commond ?? '',
             expansions_name: item.name

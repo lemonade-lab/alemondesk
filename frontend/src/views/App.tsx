@@ -55,13 +55,17 @@ export default (function App() {
     })
 
     // 获取路径配置
-    AppGetPathsState().then(paths => dispatch(setPath({
-      userDataTemplatePath: paths.userDataTemplatePath,
-      userDataNodeModulesPath: paths.userDataNodeModulesPath,
-      userDataPackagePath: paths.userDataPackagePath,
-      preloadPath: paths.preloadPath,
-      resourcePath: paths.resourcePath
-    })))
+    AppGetPathsState().then(paths =>
+      dispatch(
+        setPath({
+          userDataTemplatePath: paths.userDataTemplatePath,
+          userDataNodeModulesPath: paths.userDataNodeModulesPath,
+          userDataPackagePath: paths.userDataPackagePath,
+          preloadPath: paths.preloadPath,
+          resourcePath: paths.resourcePath
+        })
+      )
+    )
 
     // 立即安装依赖
     YarnCommands({
@@ -282,20 +286,26 @@ export default (function App() {
           'view.git-exp-manage': '/git-exp-list',
           'view.npm-exp-manage': '/npm-exp-list',
           'view.webview': '/pkg-app-list',
-          'view.settings': '/settings'
+          'view.settings': '/settings',
+          'view.settings.common': '/settings/common',
+          'view.settings.about': '/settings/about',
+          'view.settings.theme': '/settings/theme',
+          'view.settings.files': '/settings/files',
+          'view.settings.notice': '/settings/notice'
         }
         if (!viewMap[command.name]) {
           return
         }
         navigate(viewMap[command.name] || '/')
-      } if (/^app./.test(command.name)) {
-         // 发送之后。重新设置为空
-         Events.Emit('app', { type: 'command', data: command.name })
-         dispatch(setCommand(""))
+      }
+      if (/^app./.test(command.name)) {
+        // 发送之后。重新设置为空
+        Events.Emit('app', { type: 'command', data: command.name })
+        dispatch(setCommand(''))
       } else {
         ExpansionsPostMessage({ type: 'command', data: command.name })
         // 发送之后。重新设置为空
-        dispatch(setCommand(""))
+        dispatch(setCommand(''))
       }
     }
   }, [command.name])

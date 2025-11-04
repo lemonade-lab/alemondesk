@@ -41,6 +41,7 @@ export default memo(function Header({ children }: HeaderProps) {
       })
     }
   }, [])
+  
   return (
     <HeaderDiv className={classNames('h-[1.8rem] flex justify-center items-center z-50')}>
       {
