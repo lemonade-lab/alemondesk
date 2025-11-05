@@ -10,7 +10,7 @@ import Tabs from '@/common/ui/Tabs'
 import { RootState } from '@/store'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppExists, AppReadFiles } from '@wailsjs/window/app/app'
-import { setCurrentRepo, setData, setLoading, setSpace, setTabValue } from '@/store/gitExp'
+import { setCurrentRepo, setExpData, setLoading, setSpace, setTabValue } from '@/store/gitExp'
 import { setViews } from '@/store/views'
 
 const initialSpace = 'packages'
@@ -116,7 +116,16 @@ export default function GitExpList() {
 
   const updateReposList = () => {
     GitReposList(gitExp.space).then(res => {
-      dispatch(setData(res || []))
+          const d = res.map(item => {
+        return {
+          Branch: item.Branch,
+          Depth: item.Depth,
+          IsFullRepo: item.IsFullRepo,
+          Name: item.Name,
+          RemoteURL: item.RemoteURL
+        }
+      })
+      dispatch(setExpData(d || []))
     })
   }
 

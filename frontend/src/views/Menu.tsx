@@ -86,8 +86,8 @@ const MenuButton = () => {
           <HomeFilled size={20} />
         </BarDiv>
       </NavDiv>
-      <NavDiv className="flex-col max-h-56 rounded-full items-center flex flex-1 size-full">
-        <Box className="px-1 py-4 gap-4">
+      <div className="flex-col max-h-56 items-center flex">
+        <Box type="nav" rootClassName='rounded-full px-1 py-4' >
           {viewMenus.map((item, index) => (
             <BarDiv
               key={index}
@@ -116,7 +116,7 @@ const MenuButton = () => {
             </BarDiv>
           ))}
         </Box>
-      </NavDiv>
+      </div>
       <NavDiv className="p-1 flex-col  rounded-full flex gap-3">
         <BarDiv
           className={classNames(

@@ -6,7 +6,7 @@ import { Spin } from 'antd'
 import classNames from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { GitClone, GitReposList } from '@wailsjs/window/git/app'
-import { setAddLoading, setAddValues, setData } from '@/store/gitExp'
+import { setAddLoading, setAddValues, setExpData } from '@/store/gitExp'
 
 export type PackageCloneProps = {
   space: string
@@ -24,7 +24,16 @@ const PackageClone = ({ space, show }: PackageCloneProps) => {
 
   const updateReposList = () => {
     GitReposList(gitExp.space).then(res => {
-      dispatch(setData(res || []))
+      const d = res.map(item => {
+        return {
+          Branch: item.Branch,
+          Depth: item.Depth,
+          IsFullRepo: item.IsFullRepo,
+          Name: item.Name,
+          RemoteURL: item.RemoteURL
+        }
+      })
+      dispatch(setExpData(d || []))
     })
   }
 

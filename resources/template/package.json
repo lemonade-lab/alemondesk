@@ -7,7 +7,7 @@
     "@alemonjs/discord": "^2.1.0-alpha.19",
     "@alemonjs/onebot": "^2.1.0-alpha.11",
     "@alemonjs/process": "^0.0.7",
-    "alemonjs": "^2.1.4",
+    "alemonjs": "^2.1.5",
     "jsxp": "1.2.2"
   },
   "devDependencies": {

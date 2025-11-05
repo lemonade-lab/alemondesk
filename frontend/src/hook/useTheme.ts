@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { ThemeSetMode } from "@wailsjs/window/theme/app"
 
 /**
  * 主题切换 Hook
@@ -28,10 +29,13 @@ export const useTheme = () => {
         dark() {
             document.documentElement.classList.add(dark)
             setMode(dark)
+            // TODO 同步向 webview 发送主题变更消息
+            ThemeSetMode(dark)
         },
         light() {
             document.documentElement.classList.remove(dark)
             setMode(light)
+            ThemeSetMode(light)
         }
     }
     return [mode, controller] as const

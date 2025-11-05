@@ -62,7 +62,7 @@ const gitExpSlice = createSlice({
         setLoading(state, action: PayloadAction<boolean>) {
             state.loading = action.payload
         },
-        setData(state, action: PayloadAction<GitRepoInfo[]>) {
+        setExpData(state, action: PayloadAction<GitRepoInfo[]>) {
             state.data = action.payload
         },
         setSpace(state, action: PayloadAction<string>) {
@@ -85,7 +85,7 @@ const gitExpSlice = createSlice({
 
 export const {
     setLoading,
-    setData,
+    setExpData,
     setSpace,
     setTabValue,
     setCurrentRepo,
