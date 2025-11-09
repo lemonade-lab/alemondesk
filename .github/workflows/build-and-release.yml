@@ -51,10 +51,10 @@ jobs:
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/yarn.lock') }}
       - name: Install frontend dependencies
         run: |
-          yarn --cwd frontend install --frozen-lockfile
+          yarn --cwd frontend install --ignore-engines
       - name: Install template dependencies
         run: |
-          yarn --cwd resources/template install --frozen-lockfile
+          yarn --cwd resources/template install --ignore-engines
       - name: Delete symlinks (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
