@@ -3,12 +3,15 @@
   "name": "alemonb",
   "type": "module",
   "dependencies": {
-    "@alemonjs/db": "^0.0.12",
-    "@alemonjs/discord": "^2.1.0-alpha.19",
-    "@alemonjs/onebot": "^2.1.0-alpha.11",
+    "@alemonjs/db": "^0.0.13",
+    "@alemonjs/kook": "^2.1.4",
+    "@alemonjs/discord": "^2.1.4",
+    "@alemonjs/onebot": "^2.1.4",
+    "@alemonjs/qq-bot": "^2.1.4",
+    "@alemonjs/bubble": "^2.1.4",
     "@alemonjs/process": "^0.0.7",
-    "alemonjs": "^2.1.5",
-    "jsxp": "1.2.2"
+    "alemonjs": "^2.1.37",
+    "jsxp": "1.2.4"
   },
   "devDependencies": {
     "npm": "^11.0.0",

@@ -1,36 +1,35 @@
 import { SidebarDiv } from '@alemonjs/react-ui'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 const SettingsList = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   // 按钮列表
   const buttons = [
     {
       children: '通用',
+      path: '/settings/common',
       onClick: () => {
         navigate('/settings/common')
       }
     },
     {
       children: '主题',
+      path: '/settings/theme',
       onClick: () => {
         navigate('/settings/theme')
       }
     },
     {
       children: '记录',
+      path: '/settings/notice',
       onClick: () => {
         navigate('/settings/notice')
       }
     },
     {
-      children: '模板',
-      onClick: () => {
-        navigate('/settings/files')
-      }
-    },
-    {
       children: '关于',
+      path: '/settings/about',
       onClick: () => {
         navigate('/settings/about')
       }
@@ -43,7 +42,11 @@ const SettingsList = () => {
         <div
           key={item.children}
           onClick={item.onClick}
-          className="px-4 py-2 cursor-pointer border-b border-gray-200 text-sm"
+          className={`px-4 py-2 cursor-pointer border-b text-sm transition-colors ${
+            location.pathname === item.path
+              ? 'bg-secondary-bg dark:bg-dark-secondary-bg font-semibold'
+              : 'border-secondary-border dark:border-dark-secondary-border hover:bg-secondary-bg/50 dark:hover:bg-dark-secondary-bg/50'
+          }`}
         >
           {item.children}
         </div>

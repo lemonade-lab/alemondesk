@@ -29,7 +29,7 @@ const Common = () => {
           <div className="flex flex-col gap-4">
             {[
               {
-                title: '依赖锁文件',
+                title: '缓存记录',
                 description: 'yarn.lock',
                 children: (
                   <Button
@@ -103,8 +103,8 @@ const Common = () => {
       </div>
       <FeatModal
         open={open}
-        title="选择重置"
-        textOk="启动"
+        title="确认重置"
+        textOk="确认重置"
         onClose={() => setOpen(false)}
         footer={null}
       >

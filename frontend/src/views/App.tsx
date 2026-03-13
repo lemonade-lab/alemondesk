@@ -95,7 +95,7 @@ export default (function App() {
       if (data.type == 'install') {
         if (value == 0) {
           // 失败就让用户重启
-          notification('初始化失败，请尝试重启', 'error')
+          notification('初始化失败，请重启应用', 'error')
         }
         dispatch(
           setModulesStatus({
@@ -215,31 +215,18 @@ export default (function App() {
 
     const intervalId = setInterval(onGlobalStatus, 1000 * 3)
 
-    // 坚挺全局快捷键
-    const handleKeyPress = event => {
-      console.log('key pressed', event.key)
-      // Ctrl + S 保存
+    // 监听全局快捷键
+    const handleKeyPress = (event: KeyboardEvent) => {
+      // Ctrl + S 阻止默认保存
       if (event.ctrlKey && event.key === 's') {
         event.preventDefault()
-        console.log('保存操作')
-        // 执行保存逻辑
-      }
-
-      // ESC 键
-      if (event.key === 'Escape') {
-        console.log('ESC 按下')
-        // 执行取消或关闭逻辑
-      }
-
-      // 空格键
-      if (event.key === ' ') {
-        console.log('空格键按下')
       }
     }
+    document.addEventListener('keydown', handleKeyPress)
+
     return () => {
       clearInterval(intervalId)
-
-      document.addEventListener('keydown', handleKeyPress)
+      document.removeEventListener('keydown', handleKeyPress)
     }
   }, [])
 

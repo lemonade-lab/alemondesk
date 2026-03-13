@@ -1,2 +1,5 @@
-port: 17117
-serverPort: 18110
+# alemonjs 配置文件
+# websocket 服务端口（可选，留空使用默认值）
+# port:
+# koa http 服务端口（可选，留空使用默认值）
+# serverPort:

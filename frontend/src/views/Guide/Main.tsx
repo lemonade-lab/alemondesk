@@ -8,40 +8,32 @@ const KEY_DATA = '1'
 // 定义引导步骤
 const steps = [
   {
-    target: '.steps-1',
-    content: '这是“扩展器运行和暂停”按钮。用于增强和扩展应用功能。'
-  },
-  {
-    target: '.steps-3',
-    content: '这是“指令”输入框，可以快捷执行桌面或扩展器设计的功能'
-  },
-  {
-    target: '.steps-2',
-    content: '这是“重载依赖”按钮。当提示缺失必要依赖(包)或挂本地文件(包)时，可尝试点击。'
-  },
-  {
     target: '.steps-4',
-    content: '这是“主页”按钮，可返回主页面的入口'
+    content: '点击回到主页'
   },
   {
     target: '.steps-5',
-    content: '这里“菜单栏-控制台”。可以查看机器人的运行日志，操作机器人的启动和停止'
+    content: '查看运行日志，启动或停止机器人'
   },
   {
     target: '.steps-5-1',
-    content: '这里“菜单栏-仓库管理”。使用Git管理本地扩展器'
+    content: '管理本地扩展'
   },
   {
     target: '.steps-6',
-    content: '这里“菜单栏-扩展市场”。可以查看和安装被成功挂起的扩展器'
+    content: '浏览和安装扩展'
   },
   {
     target: '.steps-7',
-    content: '这里“菜单栏-应用列表”。可以查看和操作应用，修改不同应用的配置等。'
+    content: '查看和操作已安装的应用'
+  },
+  {
+    target: '.steps-config',
+    content: '配置机器人的运行参数'
   },
   {
     target: '.steps-8',
-    content: '设置可以让你对应用进行个性化调整，如主题...'
+    content: '个性化设置，如主题、通用选项等'
   }
 ]
 

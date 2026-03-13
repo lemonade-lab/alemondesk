@@ -194,7 +194,7 @@ const Theme = () => {
                           onChange={value => {
                             const color = value.target.value
                             // #开头。且只能是数字和字母。最多6位
-                            const reg = /^#[0-9a-zA-Z]$/
+                            const reg = /^#[0-9a-fA-F]{0,8}$/
                             if (!reg.test(color)) return
                             onChangeColor(item.name, color)
                             setColor(item.name, color)

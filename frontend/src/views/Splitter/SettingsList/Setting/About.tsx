@@ -33,7 +33,14 @@ const About = () => {
               {about.platform}-{about.arch}-{about.node}
             </div>
             <div>Copyright © 2024-present Lemonade-Lab</div>
-            <div className="select-text">https://alemonjs.com</div>
+            <a
+              href="https://alemonjs.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="select-text text-blue-500 hover:underline cursor-pointer"
+            >
+              https://alemonjs.com
+            </a>
           </div>
         </div>
       </div>

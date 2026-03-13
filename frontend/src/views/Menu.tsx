@@ -6,6 +6,7 @@ import {
   AppstoreOutlined,
   ContainerOutlined,
   HomeFilled,
+  ProfileOutlined,
   SettingFilled
 } from '@ant-design/icons'
 import { useDispatch, useSelector } from 'react-redux'
@@ -16,11 +17,13 @@ import { useMemo } from 'react'
 import { CommandItem } from './types'
 import { setCommand } from '@/store/command'
 import ExpansionIcon from '@/common/ExpansionIcon'
+import { useNotification } from '@/context/Notification'
 
 const MenuButton = () => {
   const navigate = useNavigate()
   const expansions = useSelector((state: RootState) => state.expansions)
   const dispatch = useDispatch()
+  const notification = useNotification()
 
   // 导航列表
   const navList: {
@@ -49,9 +52,17 @@ const MenuButton = () => {
       }),
       onClick: () => {
         if (!expansions.runStatus) {
+          notification('请先启动机器人')
           return
         }
         navigate('/pkg-app-list')
+      }
+    },
+    {
+      Icon: <ProfileOutlined size={20} />,
+      className: 'steps-config',
+      onClick: () => {
+        navigate('/config')
       }
     }
   ]

@@ -30,6 +30,10 @@ const router = createHashRouter([
         element: <NpmExpList />
       },
       {
+        path: 'config',
+        element: <Files />
+      },
+      {
         path: 'settings',
         element: <SettingsList />,
         children: [
@@ -40,10 +44,6 @@ const router = createHashRouter([
           {
             path: 'common',
             element: <Common />
-          },
-          {
-            path: 'files',
-            element: <Files />
           },
           {
             path: 'notice',

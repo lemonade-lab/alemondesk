@@ -6,7 +6,7 @@ import { Fragment, useEffect, useState, useRef } from 'react'
 import RunForm, { Config, getRunConfig, initialRunConfig, setRunConfig } from './RunForm'
 import { BotClose, BotRun } from '@wailsjs/window/bot/app'
 import { FeatModal } from '@/context/Pop'
-import { delMessage } from '@/store/log'
+import { delMessage, clearMessages } from '@/store/log'
 import ParseLogMessage from '@/common/BotTerminalText'
 import Box from '@/common/layout/Box'
 
@@ -15,6 +15,7 @@ function Terminal() {
   const log = useSelector((state: RootState) => state.log)
   const bot = useSelector((state: RootState) => state.bot)
   const modules = useSelector((state: RootState) => state.modules)
+  const app = useSelector((state: RootState) => state.app)
   const [fromValue, setFromValue] = useState<Config>(initialRunConfig)
   const [open, setOpen] = useState(false)
   const [isAtBottom, setIsAtBottom] = useState(true)
@@ -94,9 +95,10 @@ function Terminal() {
   }, 100)
 
   useEffect(() => {
-    const values = getRunConfig()
-    setFromValue(values)
-  }, [])
+    if (app.userDataTemplatePath) {
+      getRunConfig(app.userDataTemplatePath + '/alemon.config.yaml').then(setFromValue)
+    }
+  }, [app.userDataTemplatePath])
 
   // 监听日志变化，自动滚动到底部
   useEffect(() => {
@@ -131,6 +133,12 @@ function Terminal() {
                 删除{item}条
               </Button>
             ))}
+            <Button
+              className="px-2 text-sm rounded-md"
+              onClick={() => dispatch(clearMessages())}
+            >
+              清空全部
+            </Button>
           </div>
           <div className="flex-1 items-center gap-2">
             <div className="flex justify-end">
@@ -199,8 +207,10 @@ function Terminal() {
         <RunForm
           value={fromValue}
           onChange={value => {
-            setRunConfig(value)
             setFromValue(value)
+            if (app.userDataTemplatePath) {
+              setRunConfig(value, app.userDataTemplatePath + '/alemon.config.yaml')
+            }
           }}
         />
       </FeatModal>
