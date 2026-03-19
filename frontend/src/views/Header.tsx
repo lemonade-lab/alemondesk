@@ -53,7 +53,7 @@ export default memo(function Header({ children }: HeaderProps) {
       {
         // center
       }
-      {children ?? <div className="flex-[2]" />}
+      {children ?? <div className="size-full drag-area" />}
       {
         // right
       }
@@ -62,7 +62,7 @@ export default memo(function Header({ children }: HeaderProps) {
           {
             // windows left
           }
-          <div className="flex-1 drag-area " />
+          <div className="flex-1 drag-area" />
           {
             // windows right
           }

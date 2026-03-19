@@ -10,6 +10,7 @@ import Notice from './views/Splitter/SettingsList/Setting/Notice'
 import Theme from './views/Splitter/SettingsList/Setting/Theme'
 import Files from './views/Splitter/SettingsList/Setting/Files/App'
 import About from './views/Splitter/SettingsList/Setting/About'
+import AISettings from './views/Splitter/SettingsList/Setting/AISettings'
 
 const router = createHashRouter([
   {
@@ -52,6 +53,10 @@ const router = createHashRouter([
           {
             path: 'theme',
             element: <Theme />
+          },
+          {
+            path: 'ai',
+            element: <AISettings />
           },
           {
             path: 'about',

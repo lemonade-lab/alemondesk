@@ -13,3 +13,9 @@ func GetStoragePersonalThemeFilePath() string {
 	filePath := filepath.Join(storagePath, "them.personal.json")
 	return filePath
 }
+
+func GetStorageAIConfigFilePath() string {
+	storagePath := GetStoragePath()
+	filePath := filepath.Join(storagePath, "ai.config.json")
+	return filePath
+}

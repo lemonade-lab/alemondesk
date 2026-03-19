@@ -9,6 +9,14 @@ import { initPackage, setExpansionsStatus } from '@/store/expansions'
 import { RootState } from '@/store'
 import { setPath } from '@/store/app'
 import { postMessage } from '@/store/log'
+import {
+  appendMessageContent,
+  setLoading,
+  setMessageLoading,
+  setStreamingId,
+  addToolMessage,
+  resolveToolConfirm
+} from '@/store/chat'
 import { usePop } from '@/context/Pop'
 import { useNotification } from '@/context/Notification'
 import { HeaderDiv, PrimaryDiv } from '@alemonjs/react-ui'
@@ -16,6 +24,7 @@ import Menu from '@/views/Menu'
 import WordBox from '@/views/CommandInput'
 import GuideMain from '@/views/Guide/Main'
 import Header from '@/views/Header'
+import { SettingOutlined } from '@ant-design/icons'
 import {
   ExpansionsPostMessage,
   ExpansionsRun,
@@ -171,6 +180,79 @@ export default (function App() {
       const data = args[0] ?? null
       dispatch(postMessage(data))
     })
+    // 监听 AI chat 消息
+    EventsOn('chat', e => {
+      const args = e.data ?? []
+      const data = args[0] ?? null
+      if (!data) return
+      const { messageId, type, content } = data
+      switch (type) {
+        case 'start':
+          dispatch(setMessageLoading({ id: messageId, loading: true }))
+          break
+        case 'chunk':
+          dispatch(setMessageLoading({ id: messageId, loading: false }))
+          dispatch(appendMessageContent({ id: messageId, content }))
+          break
+        case 'done':
+          dispatch(setMessageLoading({ id: messageId, loading: false }))
+          dispatch(setLoading(false))
+          dispatch(setStreamingId(null))
+          break
+        case 'stop':
+          dispatch(setMessageLoading({ id: messageId, loading: false }))
+          dispatch(setLoading(false))
+          dispatch(setStreamingId(null))
+          break
+        case 'error':
+          dispatch(setMessageLoading({ id: messageId, loading: false }))
+          dispatch(appendMessageContent({ id: messageId, content: `⚠️ ${content}` }))
+          dispatch(setLoading(false))
+          dispatch(setStreamingId(null))
+          break
+        case 'tool_confirm': {
+          const { toolCallId, toolName, description, arguments: toolArgs } = data
+          const argsStr = toolArgs ? Object.entries(toolArgs).map(([k, v]) => `${k}: ${v}`).join(', ') : ''
+          dispatch(
+            addToolMessage({
+              id: `tool-${toolCallId}`,
+              toolCallId,
+              toolName,
+              content: `🔧 请求执行: ${description}${argsStr ? `\n参数: ${argsStr}` : ''}`,
+              confirmPending: true
+            })
+          )
+          // 弹出确认框
+          setPopValue({
+            open: true,
+            title: '操作确认',
+            description: `${description}${argsStr ? `\n参数: ${argsStr}` : ''}`,
+            buttonText: '确认执行',
+            data: { toolCallId },
+            onConfirm: () => {
+              import('@wailsjs/window/chat/app').then(m => m.ChatConfirmTool(toolCallId, true))
+            },
+            onCancel: () => {
+              import('@wailsjs/window/chat/app').then(m => m.ChatConfirmTool(toolCallId, false))
+            }
+          })
+          break
+        }
+        case 'tool_result': {
+          const { toolCallId, toolName, result, executed } = data
+          dispatch(
+            resolveToolConfirm({
+              toolCallId,
+              executed,
+              result: executed
+                ? `✅ ${toolName}: ${result}`
+                : `❌ ${toolName}: ${result}`
+            })
+          )
+          break
+        }
+      }
+    })
     // 监听  modal 弹窗机制
     EventsOn('controller', e => {
       const args = e.data ?? []
@@ -278,7 +360,8 @@ export default (function App() {
           'view.settings.about': '/settings/about',
           'view.settings.theme': '/settings/theme',
           'view.settings.files': '/settings/files',
-          'view.settings.notice': '/settings/notice'
+          'view.settings.notice': '/settings/notice',
+          'view.settings.ai': '/settings/ai'
         }
         if (!viewMap[command.name]) {
           return
@@ -300,8 +383,17 @@ export default (function App() {
   return (
     <Fragment>
       <div className="flex flex-col flex-1 h-screen relative ">
-        <Header>
-          <WordBox />
+        <Header
+          RightSlot={
+            <span
+              className="cursor-pointer flex items-center justify-center size-5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors opacity-60 hover:opacity-100"
+              title="AI 设置"
+              onClick={() => dispatch(setCommand('view.settings.ai'))}
+            >
+              <SettingOutlined style={{ fontSize: 12 }} />
+            </span>
+          }
+        >
         </Header>
         <HeaderDiv className="border-b w-full" />
         <PrimaryDiv className="steps-0 flex flex-1 z-40 size-full">

@@ -10,6 +10,7 @@ import viewsReducer from '@/store/views'
 import gitExpSliceReducer from '@/store/gitExp'
 import settingsSlice from '@/store/settings'
 import npmExpansionsReducer from '@/store/NPMExpansions'
+import chatReducer, { chatPersistMiddleware } from '@/store/chat'
 const store = configureStore({
   reducer: {
     about: aboutReducer,
@@ -22,8 +23,11 @@ const store = configureStore({
     views: viewsReducer,
     gitExp: gitExpSliceReducer,
     settings: settingsSlice,
-    npmExpansions: npmExpansionsReducer
-  }
+    npmExpansions: npmExpansionsReducer,
+    chat: chatReducer
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(chatPersistMiddleware as ReturnType<typeof getDefaultMiddleware>[number])
 })
 export type RootState = ReturnType<typeof store.getState>
 export default store

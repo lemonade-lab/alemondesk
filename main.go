@@ -9,6 +9,7 @@ import (
 	utils "alemonapp/src/utils"
 	windowapp "alemonapp/src/window/app"
 	windowbot "alemonapp/src/window/bot"
+	windowchat "alemonapp/src/window/chat"
 	windowcontroller "alemonapp/src/window/controller"
 	windowexpansions "alemonapp/src/window/expansions"
 	windowgit "alemonapp/src/window/git"
@@ -106,6 +107,7 @@ func main() {
 	wExpansions := windowexpansions.NewApp()
 	wYarn := windowyarn.NewApp()
 	wGit := windowgit.NewApp()
+	wChat := windowchat.NewApp()
 
 	// 创建应用
 	app := application.New(application.Options{
@@ -119,6 +121,7 @@ func main() {
 			application.NewService(wExpansions),
 			application.NewService(wYarn),
 			application.NewService(wGit),
+			application.NewService(wChat),
 		},
 		Assets: assetServer.CreateAssetServer(&assets),
 		Mac: application.MacOptions{
@@ -193,6 +196,16 @@ func main() {
 	wExpansions.SetApplication(app.Event)
 	wYarn.Startup(ctx)
 	wYarn.SetApplication(app.Event)
+	wChat.Startup(ctx)
+	wChat.SetApplication(app.Event)
+	wChat.SetServices(windowchat.ServiceRefs{
+		Bot:        wBot,
+		Theme:      wTheme,
+		Controller: wController,
+		Expansions: wExpansions,
+		Git:        wGit,
+		Yarn:       wYarn,
+	})
 
 	// set logger application
 	logger.SetApplication(app.Event)

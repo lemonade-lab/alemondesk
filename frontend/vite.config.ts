@@ -24,6 +24,9 @@ export default defineConfig({
     ],
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
+  optimizeDeps: {
+    include: ['slate', 'slate-dom', 'slate-react', 'slate-history', 'is-hotkey']
+  },
   esbuild: {
     drop: NODE_ENV ? [] : ['console', 'debugger']
   },

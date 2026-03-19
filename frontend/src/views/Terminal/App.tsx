@@ -124,7 +124,7 @@ function Terminal() {
         <PrimaryDiv className="border-b px-2 py-1 flex gap-4 justify-center items-center">
           <div className="flex gap-2">
             {/* 删除按钮示例 */}
-            {[20, 50, 99].map((item, index) => (
+            {[20].map((item, index) => (
               <Button
                 key={index}
                 className="px-2 text-sm rounded-md"

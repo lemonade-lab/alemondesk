@@ -1,9 +1,14 @@
 # 阿柠檬桌面
 
+AI智能桌面，你的机器人桌面何必仅是一个启动器。
 
-一款安装即用的，可启动单例[ALemonJS](https://alemonjs.com/)机器人的桌面应用。 [点击下载](https://github.com/lemonade-lab/alemondesk/releases)
+[点击下载 https://github.com/lemonade-lab/alemondesk/releases](https://github.com/lemonade-lab/alemondesk/releases)
+
+[image.png](./image.png)
 
 其功能包括且不仅限于以下功能：
+
+- 对话式控制应用
 
 - 一键启动机器人
 
