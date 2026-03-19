@@ -15,8 +15,8 @@ export default function BaseGuide(props: {
 
   // 引导回调函数
   const handleJoyrideCallback = (data: { action: string; index: number; type: string }) => {
-    if (data.action == 'skip' && data.type == 'tour:end') {
-      // 跳过，关闭引导
+    if (data.type == 'tour:end') {
+      // 跳过或完成，都持久化记住
       localStorage.setItem(stepStoreKey, stepSessionKey)
     }
   }

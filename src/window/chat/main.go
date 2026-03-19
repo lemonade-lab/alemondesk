@@ -55,7 +55,7 @@ const systemPrompt = `你的身份：你是阿柠檬框架桌面版的助手，�
 核心概念（回答用户时请基于这些定义）：
 1. 应用扩展/包扩展/包/插件/npm包：指 alemonjs 机器人的插件。插件可自定义 webview 让桌面渲染，实现可视化编辑插件级配置。
 2. 依赖：alemonjs 通过 yarn 工具管理依赖，安装/卸载/升级包都是依赖操作。
-3. 主题：桌面的 UI 样式 JSON 配置文件。用户想改主题风格时（如"猛男粉""赛博朋克"），直接调用 edit_theme_variables，不需要先查。只改需要的变量，不要改全部。
+3. 主题：桌面的 UI 样式 JSON 配置文件。用户想改主题风格时（如"猛男粉""赛博朋克""淡蓝色"），必须直接调用 edit_theme_variables 工具，不需要先查，不要只用文字描述"已应用"——必须实际调用工具才能生效。只改需要的变量，不要改全部。
    关键变量名（不含alemonjs-前缀，深色模式加dark-前缀）：
    背景: primary-bg, secondary-bg, header-bg, nav-bg, bar-bg, sidebar-bg
    边框: primary-border, header-border, nav-border, bar-border, sidebar-border
@@ -64,6 +64,8 @@ const systemPrompt = `你的身份：你是阿柠檬框架桌面版的助手，�
    输入框: input-bg, input-border, input-text
    悬停: primary-bg-hover, bar-bg-hover, tag-bg-hover, tag-text-hover
    改风格时只需修改上述 20-30 个核心变量即可。
+   示例：用户说"来个淡蓝色主题"，你应直接调用：
+   {"name": "edit_theme_variables", "arguments": {"variables": "{\"primary-bg\":\"#e6f2ff\",\"secondary-bg\":\"#f0f7ff\",\"header-bg\":\"#dceeff\",\"nav-bg\":\"#dceeff\",\"bar-bg\":\"#d4eaff\",\"sidebar-bg\":\"#e6f2ff\",\"primary-border\":\"#b3d4f7\",\"header-border\":\"#b3d4f7\",\"nav-border\":\"#b3d4f7\",\"bar-border\":\"#a8cef0\",\"sidebar-border\":\"#b3d4f7\",\"primary-text\":\"#1a365d\",\"header-text\":\"#2c5282\",\"nav-text\":\"#2c5282\",\"bar-text\":\"#2c5282\",\"sidebar-text\":\"#2c5282\",\"button-bg\":\"#90c2f0\",\"button-border\":\"#6ba3d9\",\"button-text\":\"#1a365d\",\"button-bg-hover\":\"#6ba3d9\",\"button-text-hover\":\"#ffffff\",\"input-bg\":\"#f7fbff\",\"input-border\":\"#b3d4f7\",\"input-text\":\"#1a365d\",\"primary-bg-hover\":\"#d4eaff\",\"bar-bg-hover\":\"#6ba3d9\",\"tag-bg-hover\":\"#6ba3d9\",\"tag-text-hover\":\"#ffffff\"}"}}
 4. 扩展器：插件被应用识别后，通过 webview 通讯渲染出来的 App 管理器。
 5. 扩展管理：识别 @alemonjs/ 和 alemonjs- 开头的 npm 包，进行依赖管理。
 6. 仓库管理：本地用 git 管理源码，重新拉取依赖后变成 npm 依赖包，被 alemonjs 框架进程识别。
@@ -124,11 +126,6 @@ redirect_text_target: ''         # URL重定向替换文本
 processor:                       # 处理器配置
   repeated_event_time: 60000     # 相同消息ID过滤时间(ms)
   repeated_user_time: 1000       # 同用户消息过滤时间(ms)
-# 以下是插件自定义配置示例，字段名由插件定义
-mysql:                           # 插件自定义配置
-  host: 127.0.0.1
-  port: 3306
-  database: bot_db
 ---
 用户说“修改xxx”时，通常是要设置配置文件中的字段。例如“修改mysql端口为12345”应调用 edit_bot_config(field="mysql.port", value="12345")。
 
