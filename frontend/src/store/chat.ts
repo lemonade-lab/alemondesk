@@ -26,6 +26,7 @@ interface ChatState {
   activeConversationId: string | null
   loading: boolean
   streamingId: string | null
+  suggestions: { label: string; text: string }[]
 }
 
 const STORAGE_KEY = 'alemondesk_chat'
@@ -51,7 +52,8 @@ const initialState: ChatState = {
   conversations: persisted.conversations || [],
   activeConversationId: persisted.activeConversationId || null,
   loading: false,
-  streamingId: null
+  streamingId: null,
+  suggestions: []
 }
 
 const chatSlice = createSlice({
@@ -98,6 +100,10 @@ const chatSlice = createSlice({
           conv.title = action.payload.content.slice(0, 20) + (action.payload.content.length > 20 ? '...' : '')
         }
       }
+      // 发送新消息时清除建议
+      if (action.payload.role === 'user') {
+        state.suggestions = []
+      }
     },
     updateMessage(state, action: PayloadAction<{ id: string; content: string }>) {
       const conv = state.conversations.find(c => c.id === state.activeConversationId)
@@ -134,6 +140,7 @@ const chatSlice = createSlice({
       }
       state.loading = false
       state.streamingId = null
+      state.suggestions = []
     },
     removeMessage(state, action: PayloadAction<string>) {
       const conv = state.conversations.find(c => c.id === state.activeConversationId)
@@ -194,6 +201,10 @@ const chatSlice = createSlice({
           }
         }
       }
+    },
+    // 设置下一步建议
+    setSuggestions(state, action: PayloadAction<{ label: string; text: string }[]>) {
+      state.suggestions = action.payload
     }
   }
 })
@@ -213,7 +224,8 @@ export const {
   removeMessage,
   truncateFromMessage,
   addToolMessage,
-  resolveToolConfirm
+  resolveToolConfirm,
+  setSuggestions
 } = chatSlice.actions
 
 /** 持久化中间件：每次 chat action 后保存到 localStorage */

@@ -150,11 +150,15 @@ func (te *ToolExecutor) ExecuteTool(name string, argsJSON string) (string, error
 		return fmt.Sprintf("已开始卸载 %s", name), nil
 
 	case "upgrade_package":
+		name, _ := args["name"].(string)
+		if name == "" {
+			return "请指定要升级的包名，如果想重新安装所有依赖，请使用安装依赖功能。", nil
+		}
 		te.services.Yarn.YarnCommands(windowyarn.YarnCommandsParams{
 			Type: "upgrade",
-			Args: []string{},
+			Args: []string{name},
 		})
-		return "已开始升级所有依赖", nil
+		return fmt.Sprintf("已开始升级 %s", name), nil
 
 	case "clone_repo":
 		url, _ := args["url"].(string)

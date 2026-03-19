@@ -67,10 +67,10 @@ const systemPrompt = `你的身份：你是阿柠檬框架桌面版的助手，�
 - reset_bot: 重置机器人（无参数）
 - switch_theme: 切换主题（参数: mode="dark"或"light"）
 - reset_theme: 重置主题（无参数）
-- yarn_install: 安装所有依赖（无参数）
-- install_package: 安装单个包（参数: name="包名"）
-- remove_package: 卸载包（参数: name="包名"）
-- upgrade_package: 升级所有依赖（无参数）
+- yarn_install: 安装所有依赖，相当于 yarn install（无参数）
+- install_package: 添加一个新的包（参数: name="包名"）
+- remove_package: 卸载一个包（参数: name="包名"）
+- upgrade_package: 升级指定的包到最新版本（参数: name="包名"）
 - clone_repo: 克隆仓库（参数: url="地址", space="packages"或"plugins"）
 - delete_repo: 删除仓库（参数: name="名称", space="packages"或"plugins"）
 - git_checkout: 切换分支（参数: space, name, branch）
@@ -314,17 +314,23 @@ func (a *App) streamChat(ctx context.Context, cancel context.CancelFunc, message
 			})
 		}
 
+		// 记录最后执行的工具名称
+		lastToolName := ""
+		if len(toolCallResult.ToolCalls) > 0 {
+			lastToolName = toolCallResult.ToolCalls[len(toolCallResult.ToolCalls)-1].Name
+		}
+
 		// 工具执行完毕后，进行第二次请求（流式），让 AI 生成最终回复
-		a.streamFinalResponse(ctx, messageID, apiMessages, cfg)
+		a.streamFinalResponse(ctx, messageID, apiMessages, cfg, lastToolName)
 	} else if toolCallResult.Content != "" {
 		// 无工具调用，直接返回内容
 		a.emitChatEvent(messageID, "chunk", toolCallResult.Content)
 		a.mu.Lock()
 		a.history = append(a.history, ChatMessage{Role: "assistant", Content: toolCallResult.Content})
 		a.mu.Unlock()
-		a.emitChatEvent(messageID, "done", "")
+		a.emitChatDone(messageID, getDefaultSuggestions())
 	} else {
-		a.emitChatEvent(messageID, "done", "")
+		a.emitChatDone(messageID, getDefaultSuggestions())
 	}
 }
 
@@ -506,9 +512,9 @@ func (a *App) requestWithTools(ctx context.Context, messages []interface{}, cfg 
 		tc := a.detectToolFromJSON(tcResult.Content)
 
 		if tc == nil {
-			// 只有当 AI 回复看起来在"推诿"或"无法执行"时，
-			// 才从用户消息做关键词降级，避免 AI 正常回答后重复触发工具
-			if a.isEvasiveResponse(tcResult.Content) {
+			// AI 没输出 JSON 工具调用时，检查是否应该从用户消息做关键词降级
+			if a.shouldFallbackToKeywords(tcResult.Content) {
+				// 优先从用户消息检测
 				for i := len(messages) - 1; i >= 0; i-- {
 					if msg, ok := messages[i].(map[string]interface{}); ok {
 						if role, _ := msg["role"].(string); role == "user" {
@@ -518,6 +524,10 @@ func (a *App) requestWithTools(ctx context.Context, messages []interface{}, cfg 
 							break
 						}
 					}
+				}
+				// 用户消息未匹配时，从 AI 回复的意图描述中检测
+				if tc == nil {
+					tc = a.detectToolFromText(tcResult.Content)
 				}
 			}
 		}
@@ -542,10 +552,12 @@ func (a *App) requestWithTools(ctx context.Context, messages []interface{}, cfg 
 	return tcResult, nil
 }
 
-// isEvasiveResponse 判断 AI 回复是否在"推诿"（没有实际执行用户请求）
-// 只有在这种情况下，才对用户消息做关键词降级检测
-func (a *App) isEvasiveResponse(text string) bool {
-	text = strings.ToLower(text)
+// shouldFallbackToKeywords 判断是否应该从用户消息做关键词降级
+// 两种情况触发：1) AI 在推诿  2) AI 声称要执行但没真正调工具
+func (a *App) shouldFallbackToKeywords(text string) bool {
+	lower := strings.ToLower(text)
+
+	// 推诿型：AI 表示无法执行
 	evasivePatterns := []string{
 		"无法直接", "无法访问", "无法执行", "无法操作",
 		"不能直接", "不能访问", "不能执行",
@@ -555,10 +567,24 @@ func (a *App) isEvasiveResponse(text string) bool {
 		"i can't", "i cannot", "unable to",
 	}
 	for _, p := range evasivePatterns {
-		if strings.Contains(text, p) {
+		if strings.Contains(lower, p) {
 			return true
 		}
 	}
+
+	// 意图型：AI 声称要执行但没真正调用工具（短回复 + 包含行动意图词）
+	intentPatterns := []string{
+		"我来帮你", "帮你", "我将", "我会",
+		"好的，", "好的,", "知道了",
+		"马上", "正在", "开始",
+		"已经帮你", "为你",
+	}
+	for _, p := range intentPatterns {
+		if strings.Contains(lower, p) {
+			return true
+		}
+	}
+
 	return false
 }
 
@@ -633,25 +659,24 @@ func (a *App) detectToolFromText(text string) *ToolCall {
 		{[]string{"启动机器人", "开启机器人", "运行机器人", "跑机器人", "start bot", "start_bot"}, "start_bot", "{}"},
 		{[]string{"停止机器人", "关闭机器人", "停掉机器人", "stop bot", "stop_bot"}, "stop_bot", "{}"},
 		{[]string{"重置机器人", "重建机器人", "reset bot", "reset_bot"}, "reset_bot", "{}"},
-		{[]string{"机器人状态", "机器人运行", "机器人是否", "bot status", "get_bot_status"}, "get_bot_status", "{}"},
+		{[]string{"机器人状态", "机器人的状态", "机器人当前", "查看机器人", "查询机器人", "机器人运行", "机器人是否", "bot status", "get_bot_status"}, "get_bot_status", "{}"},
 		// 扩展服务
-		{[]string{"扩展器状态", "扩展状态", "查看扩展", "扩展器", "扩展服务", "expansions status"}, "get_expansions_status", "{}"},
+		{[]string{"扩展器状态", "扩展状态", "扩展器的状态", "查看扩展", "查询扩展", "扩展器", "扩展服务", "expansions status"}, "get_expansions_status", "{}"},
 		{[]string{"启动扩展", "开启扩展", "start expansions"}, "start_expansions", "{}"},
 		{[]string{"停止扩展", "关闭扩展", "stop expansions"}, "stop_expansions", "{}"},
 		// 主题
 		{[]string{"切换到深色", "dark mode", "深色主题", "暗色模式", "夜间模式"}, "switch_theme", `{"mode":"dark"}`},
 		{[]string{"切换到浅色", "light mode", "浅色主题", "亮色模式", "白色模式"}, "switch_theme", `{"mode":"light"}`},
-		{[]string{"当前主题", "什么主题", "查看主题", "theme mode"}, "get_theme_mode", "{}"},
+		{[]string{"当前主题", "什么主题", "查看主题", "查询主题", "theme mode"}, "get_theme_mode", "{}"},
 		{[]string{"重置主题", "恢复默认主题", "reset theme"}, "reset_theme", "{}"},
 		// 依赖管理
-		{[]string{"安装依赖", "加载依赖", "install dependencies", "yarn install"}, "yarn_install", "{}"},
-		{[]string{"升级依赖", "更新依赖", "upgrade packages", "yarn upgrade"}, "upgrade_package", "{}"},
+		{[]string{"安装依赖", "加载依赖", "拉取依赖", "重新安装依赖", "重装依赖", "install dependencies", "yarn install"}, "yarn_install", "{}"},
 		// Git
 		{[]string{"拉取更新", "git fetch", "同步仓库", "更新仓库"}, "git_fetch", "{}"},
 		{[]string{"切换分支", "git checkout", "换分支"}, "git_checkout", "{}"},
 		{[]string{"查看仓库", "列出仓库", "功能包", "插件列表", "list repos"}, "list_repos", `{"space":"packages"}`},
 		// 系统
-		{[]string{"版本信息", "版本号", "version", "查看版本"}, "get_versions", "{}"},
+		{[]string{"版本信息", "版本号", "version", "查看版本", "查询版本"}, "get_versions", "{}"},
 		// 导航
 		{[]string{"打开设置", "进入设置", "去设置"}, "navigate", `{"page":"settings"}`},
 		{[]string{"打开配置", "编辑配置", "查看配置", "配置文件"}, "navigate", `{"page":"config"}`},
@@ -673,8 +698,134 @@ func (a *App) detectToolFromText(text string) *ToolCall {
 	return nil
 }
 
+// getSuggestionsForTool 根据执行的工具返回下一步建议
+func getSuggestionsForTool(toolName string) []map[string]string {
+	switch toolName {
+	case "start_bot":
+		return []map[string]string{
+			{"label": "停止机器人", "text": "帮我停止机器人"},
+			{"label": "查看机器人状态", "text": "查看一下机器人的状态"},
+		}
+	case "stop_bot":
+		return []map[string]string{
+			{"label": "启动机器人", "text": "帮我启动机器人"},
+			{"label": "查看机器人状态", "text": "查看一下机器人的状态"},
+		}
+	case "reset_bot":
+		return []map[string]string{
+			{"label": "安装依赖", "text": "帮我安装依赖"},
+			{"label": "启动机器人", "text": "帮我启动机器人"},
+		}
+	case "yarn_install":
+		return []map[string]string{
+			{"label": "启动机器人", "text": "帮我启动机器人"},
+			{"label": "查看版本信息", "text": "查看一下版本信息"},
+		}
+	case "install_package", "remove_package", "upgrade_package":
+		return []map[string]string{
+			{"label": "安装依赖", "text": "帮我安装依赖"},
+			{"label": "启动机器人", "text": "帮我启动机器人"},
+		}
+	case "get_bot_status":
+		return []map[string]string{
+			{"label": "启动机器人", "text": "帮我启动机器人"},
+			{"label": "停止机器人", "text": "帮我停止机器人"},
+		}
+	case "get_expansions_status":
+		return []map[string]string{
+			{"label": "启动扩展器", "text": "帮我启动扩展器"},
+			{"label": "停止扩展器", "text": "帮我停止扩展器"},
+		}
+	case "start_expansions":
+		return []map[string]string{
+			{"label": "停止扩展器", "text": "帮我停止扩展器"},
+			{"label": "查看扩展器状态", "text": "查看一下扩展器状态"},
+		}
+	case "stop_expansions":
+		return []map[string]string{
+			{"label": "启动扩展器", "text": "帮我启动扩展器"},
+			{"label": "查看扩展器状态", "text": "查看一下扩展器状态"},
+		}
+	case "switch_theme":
+		return []map[string]string{
+			{"label": "重置主题", "text": "帮我重置主题"},
+			{"label": "查看当前主题", "text": "当前是什么主题？"},
+		}
+	case "reset_theme":
+		return []map[string]string{
+			{"label": "切换深色模式", "text": "帮我切换到深色模式"},
+			{"label": "切换浅色模式", "text": "帮我切换到浅色模式"},
+		}
+	case "get_theme_mode":
+		return []map[string]string{
+			{"label": "切换深色模式", "text": "帮我切换到深色模式"},
+			{"label": "切换浅色模式", "text": "帮我切换到浅色模式"},
+		}
+	case "clone_repo":
+		return []map[string]string{
+			{"label": "查看功能包列表", "text": "查看一下功能包列表"},
+			{"label": "安装依赖", "text": "帮我安装依赖"},
+		}
+	case "delete_repo":
+		return []map[string]string{
+			{"label": "查看功能包列表", "text": "查看一下功能包列表"},
+		}
+	case "list_repos":
+		return []map[string]string{
+			{"label": "安装依赖", "text": "帮我安装依赖"},
+			{"label": "拉取更新", "text": "帮我拉取更新"},
+		}
+	case "git_checkout":
+		return []map[string]string{
+			{"label": "安装依赖", "text": "帮我安装依赖"},
+			{"label": "拉取更新", "text": "帮我拉取更新"},
+		}
+	case "git_fetch":
+		return []map[string]string{
+			{"label": "查看功能包列表", "text": "查看一下功能包列表"},
+			{"label": "切换分支", "text": "帮我切换分支"},
+		}
+	case "navigate":
+		return []map[string]string{
+			{"label": "启动机器人", "text": "帮我启动机器人"},
+			{"label": "安装依赖", "text": "帮我安装依赖"},
+		}
+	case "get_versions":
+		return []map[string]string{
+			{"label": "安装依赖", "text": "帮我安装依赖"},
+			{"label": "启动机器人", "text": "帮我启动机器人"},
+		}
+	default:
+		return getDefaultSuggestions()
+	}
+}
+
+// getDefaultSuggestions 默认建议
+func getDefaultSuggestions() []map[string]string {
+	return []map[string]string{
+		{"label": "启动机器人", "text": "帮我启动机器人"},
+		{"label": "安装依赖", "text": "帮我安装依赖"},
+		{"label": "查看版本信息", "text": "查看一下版本信息"},
+	}
+}
+
+// emitChatDone 发送完成事件，附带下一步建议
+func (a *App) emitChatDone(messageID string, suggestions []map[string]string) {
+	if a.application != nil {
+		data := map[string]interface{}{
+			"messageId": messageID,
+			"type":      "done",
+			"content":   "",
+		}
+		if len(suggestions) > 0 {
+			data["suggestions"] = suggestions
+		}
+		a.application.Emit("chat", data)
+	}
+}
+
 // streamFinalResponse 流式请求最终回复（工具执行后）
-func (a *App) streamFinalResponse(ctx context.Context, messageID string, messages []interface{}, cfg ChatConfig) {
+func (a *App) streamFinalResponse(ctx context.Context, messageID string, messages []interface{}, cfg ChatConfig, executedTool string) {
 	reqBody := map[string]interface{}{
 		"model":       cfg.Model,
 		"messages":    messages,
@@ -756,7 +907,11 @@ func (a *App) streamFinalResponse(ctx context.Context, messageID string, message
 				a.mu.Unlock()
 			}
 		}
-		a.emitChatEvent(messageID, "done", "")
+		nonStreamSuggestions := getDefaultSuggestions()
+		if executedTool != "" {
+			nonStreamSuggestions = getSuggestionsForTool(executedTool)
+		}
+		a.emitChatDone(messageID, nonStreamSuggestions)
 		return
 	}
 
@@ -823,7 +978,11 @@ func (a *App) streamFinalResponse(ctx context.Context, messageID string, message
 		a.history = append(a.history, ChatMessage{Role: "assistant", Content: fullContent.String()})
 	}
 	a.mu.Unlock()
-	a.emitChatEvent(messageID, "done", "")
+	suggestions := getDefaultSuggestions()
+	if executedTool != "" {
+		suggestions = getSuggestionsForTool(executedTool)
+	}
+	a.emitChatDone(messageID, suggestions)
 }
 
 func (a *App) emitChatEvent(messageID string, eventType string, content string) {

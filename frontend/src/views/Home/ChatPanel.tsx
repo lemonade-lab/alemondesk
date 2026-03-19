@@ -30,6 +30,8 @@ const ChatPanel: React.FC = () => {
     return conv?.messages || []
   }, [chat.conversations, chat.activeConversationId])
 
+  const suggestions = chat.suggestions || []
+
   // 自动滚动到底部
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -135,9 +137,9 @@ const ChatPanel: React.FC = () => {
     () => [
       { icon: '🤖', label: '启动机器人', text: '帮我启动机器人' },
       { icon: '🤚', label: '停止机器人', text: '帮我停止机器人' },
-      { icon: '📦', label: '加载依赖', text: '帮我重新拉取一下依赖' },
-      { icon: '🧩', label: '查看扩展器', text: '现在都有多少扩展器？' },
-      { icon: '⚙️', label: '机器人配置', text: '机器人都支持配置什么信息？' }
+      { icon: '📦', label: '加载依赖', text: '帮我重新安装依赖' },
+      { icon: '🧩', label: '查看扩展器', text: '机器人现在有多少个可用包扩展' },
+      { icon: '⚙️', label: '机器人配置', text: '机器人现在的配置是什么' }
     ],
     []
   )
@@ -168,6 +170,20 @@ const ChatPanel: React.FC = () => {
             {activeMessages.map(msg => (
               <ChatMessage key={msg.id} message={msg} onEdit={handleEdit} />
             ))}
+            {/* 下一步建议 */}
+            {suggestions.length > 0 && !chat.loading && (
+              <div className="flex flex-wrap gap-2 px-4 py-2 justify-start">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    className="chat-suggestion-btn"
+                    onClick={() => handleSend(s.text)}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
         )}

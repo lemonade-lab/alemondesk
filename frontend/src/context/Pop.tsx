@@ -101,11 +101,8 @@ export default function PopProvider({ children }: { children: ReactNode }) {
     onConfirm: null
   })
 
-  // 关闭 modal
-  const closePop = async () => {
-    if (modalData.onCancel) {
-      await modalData.onCancel()
-    }
+  // 关闭 modal（不触发 onCancel）
+  const resetModal = () => {
     setModalData({
       open: false,
       title: '',
@@ -114,8 +111,17 @@ export default function PopProvider({ children }: { children: ReactNode }) {
       buttonCancelText: '',
       data: {},
       code: 0,
-      onConfirm: () => {}
+      onConfirm: null,
+      onCancel: null
     })
+  }
+
+  // 关闭 modal（触发 onCancel）
+  const closePop = async () => {
+    if (modalData.onCancel) {
+      await modalData.onCancel()
+    }
+    resetModal()
   }
 
   // 设置modal
@@ -128,16 +134,14 @@ export default function PopProvider({ children }: { children: ReactNode }) {
     if (!modalData.code) {
       if (modalData?.onConfirm) {
         await modalData.onConfirm()
-        // 关闭modal
-        closePop()
+        resetModal()
       }
       return
     }
     // 点击按钮后的操作
     const T = await ControllerOnClick(modalData.code, modalData.data)
     if (T) {
-      // 关闭modal
-      closePop()
+      resetModal()
     }
   }
 

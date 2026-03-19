@@ -15,13 +15,13 @@ import {
   setMessageLoading,
   setStreamingId,
   addToolMessage,
-  resolveToolConfirm
+  resolveToolConfirm,
+  setSuggestions
 } from '@/store/chat'
 import { usePop } from '@/context/Pop'
 import { useNotification } from '@/context/Notification'
 import { HeaderDiv, PrimaryDiv } from '@alemonjs/react-ui'
 import Menu from '@/views/Menu'
-import WordBox from '@/views/CommandInput'
 import GuideMain from '@/views/Guide/Main'
 import Header from '@/views/Header'
 import { SettingOutlined } from '@ant-design/icons'
@@ -198,6 +198,9 @@ export default (function App() {
           dispatch(setMessageLoading({ id: messageId, loading: false }))
           dispatch(setLoading(false))
           dispatch(setStreamingId(null))
+          if (data.suggestions && Array.isArray(data.suggestions)) {
+            dispatch(setSuggestions(data.suggestions))
+          }
           break
         case 'stop':
           dispatch(setMessageLoading({ id: messageId, loading: false }))

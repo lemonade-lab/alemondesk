@@ -176,11 +176,17 @@ func getAllTools() []ToolDef {
 		},
 		{
 			Name:           "upgrade_package",
-			Description:    "升级所有依赖包",
+			Description:    "升级指定的 npm 包到最新版本",
 			RequireConfirm: true,
 			Parameters: map[string]interface{}{
-				"type":       "object",
-				"properties": map[string]interface{}{},
+				"type": "object",
+				"properties": map[string]interface{}{
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "要升级的包名",
+					},
+				},
+				"required": []string{"name"},
 			},
 		},
 		// ===== Git 操作 =====
