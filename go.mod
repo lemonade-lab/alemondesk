@@ -4,7 +4,10 @@ go 1.24.0
 
 toolchain go1.24.2
 
-require github.com/wailsapp/wails/v3 v3.0.0-alpha.36
+require (
+	github.com/wailsapp/wails/v3 v3.0.0-alpha.36
+	go.yaml.in/yaml/v3 v3.0.4
+)
 
 require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
@@ -16,7 +19,6 @@ require (
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
 )
 
 require (

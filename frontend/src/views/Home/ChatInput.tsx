@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback } from 'react'
+import React, { memo, useMemo, useCallback, useEffect } from 'react'
 import classNames from 'classnames'
 import { SendOutlined, StopOutlined, ClearOutlined } from '@ant-design/icons'
 import { useSelector } from 'react-redux'
@@ -23,6 +23,8 @@ interface ChatInputProps {
   onSend: (message: string) => void
   onStop: () => void
   onClear: () => void
+  editingContent?: string | null
+  onEditingConsumed?: () => void
 }
 
 const emptyValue: Descendant[] = [{ type: 'paragraph', children: [{ text: '' }] }]
@@ -34,7 +36,7 @@ const serialize = (nodes: Descendant[]): string =>
 /** 检查编辑器内容是否为空 */
 const isEmpty = (nodes: Descendant[]) => serialize(nodes).trim().length === 0
 
-const ChatInput: React.FC<ChatInputProps> = memo(({ onSend, onStop, onClear }) => {
+const ChatInput: React.FC<ChatInputProps> = memo(({ onSend, onStop, onClear, editingContent, onEditingConsumed }) => {
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
   const chat = useSelector((state: RootState) => state.chat)
   const isLoading = chat.loading
@@ -53,6 +55,31 @@ const ChatInput: React.FC<ChatInputProps> = memo(({ onSend, onStop, onClear }) =
       Transforms.insertNodes(editor, { type: 'paragraph', children: [{ text: '' }] })
     }
   }, [editor])
+
+  // 编辑消息时将内容填入输入框
+  useEffect(() => {
+    if (editingContent != null) {
+      // 先清空
+      Transforms.delete(editor, {
+        at: {
+          anchor: Editor.start(editor, []),
+          focus: Editor.end(editor, [])
+        }
+      })
+      // 按行拆分插入
+      const lines = editingContent.split('\n')
+      const nodes: Descendant[] = lines.map(line => ({
+        type: 'paragraph' as const,
+        children: [{ text: line }]
+      }))
+      Transforms.removeNodes(editor, { at: [0] })
+      Transforms.insertNodes(editor, nodes, { at: [0] })
+      // 光标移到末尾
+      Transforms.select(editor, Editor.end(editor, []))
+      ReactEditor.focus(editor)
+      onEditingConsumed?.()
+    }
+  }, [editingContent, editor, onEditingConsumed])
 
   const handleSend = useCallback(() => {
     const text = serialize(editor.children)

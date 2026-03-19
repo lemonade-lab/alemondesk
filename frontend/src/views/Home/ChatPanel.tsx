@@ -15,6 +15,7 @@ import {
 import ChatMessage from './ChatMessage'
 import ChatInput from './ChatInput'
 import { RobotOutlined } from '@ant-design/icons'
+import { ChatSend, ChatStop, ChatSetHistory, ChatConfirmTool, ChatClear } from '@wailsjs/window/chat/app'
 
 let _msgCounter = 0
 const genId = () => `msg_${Date.now()}_${++_msgCounter}`
@@ -72,7 +73,6 @@ const ChatPanel: React.FC = () => {
       dispatch(setStreamingId(aiMsgId))
 
       try {
-        const { ChatSend } = await import('@wailsjs/window/chat/app')
         ChatSend(aiMsgId, content)
       } catch {
         dispatch(
@@ -92,14 +92,17 @@ const ChatPanel: React.FC = () => {
   // 停止生成
   const handleStop = useCallback(async () => {
     try {
-      const { ChatStop } = await import('@wailsjs/window/chat/app')
       ChatStop()
     } catch {
       // ignore
     }
   }, [])
 
-  // 重新编辑消息：截断到该消息并重新发送
+  // 编辑中内容
+  const [editingContent, setEditingContent] = React.useState<string | null>(null)
+  const handleEditingConsumed = useCallback(() => setEditingContent(null), [])
+
+  // 重新编辑消息：截断到该消息，将内容填入输入框等待用户修改
   const handleEdit = useCallback(
     (messageId: string, content: string) => {
       if (chat.loading) return
@@ -113,20 +116,30 @@ const ChatPanel: React.FC = () => {
           .slice(0, idx)
           .filter(m => m.role === 'user' || m.role === 'assistant')
           .map(m => ({ role: m.role, content: m.content }))
-        import('@wailsjs/window/chat/app')
-          .then(({ ChatSetHistory }) => ChatSetHistory(remaining))
-          .catch(() => {})
+        ChatSetHistory(remaining).catch(() => {})
       }
-      setTimeout(() => handleSend(content), 0)
+      // 将内容填入输入框，等用户修改后手动发送
+      setEditingContent(content)
     },
-    [dispatch, chat.loading, chat.conversations, chat.activeConversationId, handleSend]
+    [dispatch, chat.loading, chat.conversations, chat.activeConversationId]
+  )
+
+  // 工具确认/拒绝
+  const handleToolConfirm = useCallback(
+    async (toolCallId: string, confirmed: boolean) => {
+      try {
+        ChatConfirmTool(toolCallId, confirmed)
+      } catch {
+        // ignore
+      }
+    },
+    []
   )
 
   // 清空当前对话消息
   const handleClear = useCallback(async () => {
     dispatch(clearMessages())
     try {
-      const { ChatClear } = await import('@wailsjs/window/chat/app')
       ChatClear()
     } catch {
       // ignore
@@ -138,7 +151,7 @@ const ChatPanel: React.FC = () => {
       { icon: '🤖', label: '启动机器人', text: '帮我启动机器人' },
       { icon: '🤚', label: '停止机器人', text: '帮我停止机器人' },
       { icon: '📦', label: '加载依赖', text: '帮我重新安装依赖' },
-      { icon: '🧩', label: '查看扩展器', text: '机器人现在有多少个可用包扩展' },
+      { icon: '🧩', label: '插件列表', text: '现在有多少个插件' },
       { icon: '⚙️', label: '机器人配置', text: '机器人现在的配置是什么' }
     ],
     []
@@ -168,7 +181,7 @@ const ChatPanel: React.FC = () => {
         ) : (
           <div className="py-4">
             {activeMessages.map(msg => (
-              <ChatMessage key={msg.id} message={msg} onEdit={handleEdit} />
+              <ChatMessage key={msg.id} message={msg} onEdit={handleEdit} onToolConfirm={handleToolConfirm} />
             ))}
             {/* 下一步建议 */}
             {suggestions.length > 0 && !chat.loading && (
@@ -190,7 +203,13 @@ const ChatPanel: React.FC = () => {
       </div>
 
       {/* 输入区域 */}
-      <ChatInput onSend={handleSend} onStop={handleStop} onClear={handleClear} />
+      <ChatInput
+        onSend={handleSend}
+        onStop={handleStop}
+        onClear={handleClear}
+        editingContent={editingContent}
+        onEditingConsumed={handleEditingConsumed}
+      />
     </div>
   )
 }

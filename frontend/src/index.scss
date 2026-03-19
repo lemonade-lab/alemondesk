@@ -67,24 +67,26 @@ img {
 }
 
 .chat-input-box {
-  border: 1px solid var(--input-border-color, #e0e0e0);
+  border: 1px solid var(--alemonjs-input-border);
   border-radius: 16px;
-  background: var(--input-bg, #ffffff);
+  background: var(--alemonjs-input-bg);
+  color: var(--alemonjs-input-text);
   overflow: hidden;
   transition: border-color 0.2s, box-shadow 0.2s;
 
   &:focus-within {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    border-color: var(--alemonjs-input-border-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--alemonjs-input-border-focus) 15%, transparent);
   }
 }
 
 :root.dark .chat-input-box {
-  background: var(--input-bg, #1e293b);
-  border-color: var(--input-border-color, #334155);
+  background: var(--alemonjs-dark-input-bg);
+  border-color: var(--alemonjs-dark-input-border);
+  color: var(--alemonjs-dark-input-text);
   &:focus-within {
-    border-color: #818cf8;
-    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+    border-color: var(--alemonjs-dark-input-border-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--alemonjs-dark-input-border-focus) 15%, transparent);
   }
 }
 
@@ -160,17 +162,80 @@ img {
   align-items: center;
   padding: 4px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(128, 128, 128, 0.25);
-  background: rgba(128, 128, 128, 0.06);
-  color: inherit;
+  border: 1px solid var(--alemonjs-button-border);
+  background: var(--alemonjs-button-bg);
+  color: var(--alemonjs-button-text);
   cursor: pointer;
   font-size: 12px;
   white-space: nowrap;
   transition: background 0.15s, border-color 0.15s;
 
   &:hover {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.4);
+    background: var(--alemonjs-button-bg-hover);
+    border-color: var(--alemonjs-button-border-hover);
+    color: var(--alemonjs-button-text-hover);
+  }
+}
+
+:root.dark .chat-suggestion-btn {
+  border-color: var(--alemonjs-dark-button-border);
+  background: var(--alemonjs-dark-button-bg);
+  color: var(--alemonjs-dark-button-text);
+
+  &:hover {
+    background: var(--alemonjs-dark-button-bg-hover);
+    border-color: var(--alemonjs-dark-button-border-hover);
+    color: var(--alemonjs-dark-button-text-hover);
+  }
+}
+
+.chat-confirm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.15s, opacity 0.15s;
+
+  &--ok {
+    background: color-mix(in srgb, var(--alemonjs-notification-text) 15%, transparent);
+    color: var(--alemonjs-notification-text);
+
+    &:hover {
+      background: color-mix(in srgb, var(--alemonjs-notification-text) 30%, transparent);
+    }
+  }
+
+  &--cancel {
+    background: color-mix(in srgb, var(--alemonjs-notification-bg-error) 10%, transparent);
+    color: var(--alemonjs-notification-text-error);
+
+    &:hover {
+      background: color-mix(in srgb, var(--alemonjs-notification-bg-error) 20%, transparent);
+    }
+  }
+}
+
+:root.dark .chat-confirm-btn {
+  &--ok {
+    background: color-mix(in srgb, var(--alemonjs-dark-notification-text) 15%, transparent);
+    color: var(--alemonjs-dark-notification-text);
+
+    &:hover {
+      background: color-mix(in srgb, var(--alemonjs-dark-notification-text) 30%, transparent);
+    }
+  }
+
+  &--cancel {
+    background: color-mix(in srgb, var(--alemonjs-dark-notification-bg-error) 10%, transparent);
+    color: var(--alemonjs-dark-notification-text-error);
+
+    &:hover {
+      background: color-mix(in srgb, var(--alemonjs-dark-notification-bg-error) 20%, transparent);
+    }
   }
 }
 
@@ -196,25 +261,43 @@ img {
 }
 
 .chat-send-btn-active {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
+  background: var(--alemonjs-button-bg-hover);
+  color: var(--alemonjs-button-text-hover);
   &:hover {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: var(--alemonjs-tag-bg-hover);
+    color: var(--alemonjs-tag-text-hover);
+  }
+}
+
+:root.dark .chat-send-btn-active {
+  background: var(--alemonjs-dark-button-bg-hover);
+  color: var(--alemonjs-dark-button-text-hover);
+  &:hover {
+    background: var(--alemonjs-dark-tag-bg-hover);
+    color: var(--alemonjs-dark-tag-text-hover);
   }
 }
 
 .chat-send-btn-disabled {
-  background: rgba(128, 128, 128, 0.1);
+  background: color-mix(in srgb, var(--alemonjs-button-bg) 40%, transparent);
   color: inherit;
   opacity: 0.35;
   cursor: not-allowed;
 }
 
 .chat-stop-btn {
-  background: #ef4444;
-  color: #fff;
+  background: var(--alemonjs-notification-bg-error);
+  color: var(--alemonjs-notification-text-error);
   &:hover {
-    background: #dc2626;
+    background: color-mix(in srgb, var(--alemonjs-notification-bg-error) 85%, black);
+  }
+}
+
+:root.dark .chat-stop-btn {
+  background: var(--alemonjs-dark-notification-bg-error);
+  color: var(--alemonjs-dark-notification-text-error);
+  &:hover {
+    background: color-mix(in srgb, var(--alemonjs-dark-notification-bg-error) 85%, black);
   }
 }
 
@@ -229,15 +312,17 @@ img {
   gap: 6px;
   padding: 14px 18px;
   border-radius: 12px;
-  border: 1px solid rgba(128, 128, 128, 0.15);
-  background: rgba(128, 128, 128, 0.04);
+  border: 1px solid var(--alemonjs-button-border);
+  background: var(--alemonjs-secondary-bg);
+  color: var(--alemonjs-secondary-text);
   cursor: pointer;
   transition: all 0.2s;
   min-width: 110px;
 
   &:hover {
-    border-color: rgba(128, 128, 128, 0.3);
-    background: rgba(128, 128, 128, 0.08);
+    border-color: var(--alemonjs-button-border-hover);
+    background: var(--alemonjs-button-bg-hover);
+    color: var(--alemonjs-button-text-hover);
     transform: translateY(-1px);
   }
   &:active {
@@ -245,14 +330,104 @@ img {
   }
 }
 
+:root.dark .chat-quick-btn {
+  border-color: var(--alemonjs-dark-button-border);
+  background: var(--alemonjs-dark-secondary-bg);
+  color: var(--alemonjs-dark-secondary-text);
+
+  &:hover {
+    border-color: var(--alemonjs-dark-button-border-hover);
+    background: var(--alemonjs-dark-button-bg-hover);
+    color: var(--alemonjs-dark-button-text-hover);
+  }
+}
+
 .chat-bubble-ai {
-  background: var(--secondary-bg, #f3f4f6);
-  color: var(--secondary-color, #1f2937);
+  background: var(--alemonjs-secondary-bg);
+  color: var(--alemonjs-secondary-text);
+  border: 1px solid var(--alemonjs-secondary-border);
 }
 
 :root.dark .chat-bubble-ai {
-  background: var(--secondary-bg, #374151);
-  color: var(--secondary-color, #e5e7eb);
+  background: var(--alemonjs-dark-secondary-bg);
+  color: var(--alemonjs-dark-secondary-text);
+  border-color: var(--alemonjs-dark-secondary-border);
+}
+
+.chat-bubble-user {
+  background: var(--alemonjs-button-bg-hover);
+  color: var(--alemonjs-button-text-hover);
+  border: 1px solid var(--alemonjs-button-border-hover);
+}
+
+:root.dark .chat-bubble-user {
+  background: var(--alemonjs-dark-button-bg-hover);
+  color: var(--alemonjs-dark-button-text-hover);
+  border-color: var(--alemonjs-dark-button-border-hover);
+}
+
+.chat-tool-msg {
+  border: 1px solid var(--alemonjs-notification-border);
+  background: var(--alemonjs-notification-bg);
+  color: var(--alemonjs-notification-text);
+}
+
+:root.dark .chat-tool-msg {
+  border-color: var(--alemonjs-dark-notification-border);
+  background: var(--alemonjs-dark-notification-bg);
+  color: var(--alemonjs-dark-notification-text);
+}
+
+.chat-tool-msg-pending {
+  border-color: var(--alemonjs-notification-border-warning);
+  background: var(--alemonjs-notification-bg-warning);
+  color: var(--alemonjs-notification-text-warning);
+}
+
+:root.dark .chat-tool-msg-pending {
+  border-color: var(--alemonjs-dark-notification-border-warning);
+  background: var(--alemonjs-dark-notification-bg-warning);
+  color: var(--alemonjs-dark-notification-text-warning);
+}
+
+.chat-tool-msg-error {
+  border-color: var(--alemonjs-notification-border-error);
+  background: var(--alemonjs-notification-bg-error);
+  color: var(--alemonjs-notification-text-error);
+}
+
+:root.dark .chat-tool-msg-error {
+  border-color: var(--alemonjs-dark-notification-border-error);
+  background: var(--alemonjs-dark-notification-bg-error);
+  color: var(--alemonjs-dark-notification-text-error);
+}
+
+.chat-icon-btn {
+  &:hover {
+    background: var(--alemonjs-button-bg);
+    color: var(--alemonjs-button-text);
+  }
+}
+
+:root.dark .chat-icon-btn {
+  &:hover {
+    background: var(--alemonjs-dark-button-bg);
+    color: var(--alemonjs-dark-button-text);
+  }
+}
+
+.chat-icon-btn-danger {
+  &:hover {
+    background: color-mix(in srgb, var(--alemonjs-notification-bg-error) 15%, transparent);
+    color: var(--alemonjs-notification-text-error);
+  }
+}
+
+:root.dark .chat-icon-btn-danger {
+  &:hover {
+    background: color-mix(in srgb, var(--alemonjs-dark-notification-bg-error) 20%, transparent);
+    color: var(--alemonjs-dark-notification-text-error);
+  }
 }
 
 .chat-markdown {
@@ -301,21 +476,23 @@ img {
 
 /* Conversation list */
 .conv-item-active {
-  background: var(--secondary-bg, #f3f4f6);
+  background: var(--alemonjs-secondary-bg);
+  color: var(--alemonjs-secondary-text);
   font-weight: 600;
+}
+
+:root.dark .conv-item-active {
+  background: var(--alemonjs-dark-secondary-bg);
+  color: var(--alemonjs-dark-secondary-text);
 }
 
 .conv-item {
   &:hover {
-    background: var(--secondary-bg, #f3f4f6);
+    background: var(--alemonjs-secondary-bg-hover, var(--alemonjs-secondary-bg));
     opacity: 0.8;
   }
 }
 
-:root.dark .conv-item-active {
-  background: var(--secondary-bg, #374151);
-}
-
 :root.dark .conv-item:hover {
-  background: var(--secondary-bg, #374151);
+  background: var(--alemonjs-dark-secondary-bg);
 }

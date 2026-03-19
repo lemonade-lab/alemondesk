@@ -98,7 +98,7 @@ const MenuButton = () => {
         </BarDiv>
       </NavDiv>
       <div className="flex-col max-h-56 items-center flex">
-        <Box type="nav" rootClassName='rounded-full px-1 py-4' >
+        <Box type="nav" className='gap-1' rootClassName='rounded-full  px-1 py-4' >
           {viewMenus.map((item, index) => (
             <BarDiv
               key={index}

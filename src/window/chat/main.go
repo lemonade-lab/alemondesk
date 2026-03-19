@@ -52,6 +52,23 @@ const systemPrompt = `你的身份：你是阿柠檬框架桌面版的助手，�
 禁止事项：不要编造、不要乱承诺、遇到敏感问题时回答无法理解。不要说"我将调用"然后不调用，要么直接调用工具，要么直接回答。
 输出限制：简短、分点、适合聊天窗口阅读。
 
+核心概念（回答用户时请基于这些定义）：
+1. 应用扩展/包扩展/包/插件/npm包：指 alemonjs 机器人的插件。插件可自定义 webview 让桌面渲染，实现可视化编辑插件级配置。
+2. 依赖：alemonjs 通过 yarn 工具管理依赖，安装/卸载/升级包都是依赖操作。
+3. 主题：桌面的 UI 样式 JSON 配置文件。用户想改主题风格时（如"猛男粉""赛博朋克"），直接调用 edit_theme_variables，不需要先查。只改需要的变量，不要改全部。
+   关键变量名（不含alemonjs-前缀，深色模式加dark-前缀）：
+   背景: primary-bg, secondary-bg, header-bg, nav-bg, bar-bg, sidebar-bg
+   边框: primary-border, header-border, nav-border, bar-border, sidebar-border
+   文字: primary-text, header-text, nav-text, bar-text, sidebar-text
+   按钮: button-bg, button-border, button-text, button-bg-hover, button-text-hover
+   输入框: input-bg, input-border, input-text
+   悬停: primary-bg-hover, bar-bg-hover, tag-bg-hover, tag-text-hover
+   改风格时只需修改上述 20-30 个核心变量即可。
+4. 扩展器：插件被应用识别后，通过 webview 通讯渲染出来的 App 管理器。
+5. 扩展管理：识别 @alemonjs/ 和 alemonjs- 开头的 npm 包，进行依赖管理。
+6. 仓库管理：本地用 git 管理源码，重新拉取依赖后变成 npm 依赖包，被 alemonjs 框架进程识别。
+7. 平台与启动：机器人通过配置文件中的 login 字段指定运行平台。例如用户说"启动QQ机器人"，意思是将 login 设为对应平台值后启动。常见平台值：qq-bot(QQ机器人)、discord(Discord)、telegram(Telegram)、kook(KOOK)、one-bot(OneBot协议)。如果当前 login 已是目标平台则直接启动；否则需先用 edit_bot_config 修改 login，再用 start_bot 启动。
+
 工具调用：当用户请求你执行操作时，你必须直接输出工具调用 JSON，格式为：
 {"name": "工具名", "arguments": {参数}}
 
@@ -67,6 +84,8 @@ const systemPrompt = `你的身份：你是阿柠檬框架桌面版的助手，�
 - reset_bot: 重置机器人（无参数）
 - switch_theme: 切换主题（参数: mode="dark"或"light"）
 - reset_theme: 重置主题（无参数）
+- get_theme_variables: 获取当前主题颜色变量（可选参数: category=分类名，如primary/button/input等）
+- edit_theme_variables: 批量修改主题颜色变量（参数: variables=JSON字符串，键为变量名不含alemonjs-前缀，值为颜色值如#ff6b9d）。用户要求某种主题风格时使用此工具
 - yarn_install: 安装所有依赖，相当于 yarn install（无参数）
 - install_package: 添加一个新的包（参数: name="包名"）
 - remove_package: 卸载一个包（参数: name="包名"）
@@ -77,6 +96,41 @@ const systemPrompt = `你的身份：你是阿柠檬框架桌面版的助手，�
 - git_fetch: 拉取更新（参数: space, url）
 - start_expansions: 启动扩展服务（无参数）
 - stop_expansions: 停止扩展服务（无参数）
+- get_bot_config: 查看机器人配置信息（无参数）
+- edit_bot_config: 编辑机器人配置（参数: field=字段名, value=值）
+  内置字段: login(平台), port(端口), serverPort(HTTP端口), url(连接地址), input(输入参数), is_full_receive(全量接收true/false), add_master_id/remove_master_id(管理员), add_bot_id/remove_bot_id(机器人ID), add_disabled_user_id/remove_disabled_user_id(屏蔽用户), enable_event/disable_event(事件开关), disabled_text_regular(禁用正则), redirect_text_regular/redirect_text_target(URL重定向), repeated_event_time/repeated_user_time(过滤时间ms)
+  也支持任意自定义字段，用点号分隔嵌套路径。如 mysql.port=3306, redis.host=127.0.0.1
+
+配置文件说明（alemon.config.yaml）：
+机器人的配置文件是 YAML 格式，完整结构示例：
+---
+login: qq-bot                    # 平台名称
+port: 17117                      # WebSocket 端口
+serverPort: 8080                 # HTTP 服务端口
+url: ws://127.0.0.1:17117        # 连接地址
+input: ''                        # 启动输入参数
+is_full_receive: false           # 是否接收全量消息
+master_id:                       # 管理员ID列表
+  user123: true
+bot_id:                          # 机器人ID列表
+  bot456: true
+disabled_selects:                # 禁用的事件类型
+  private.message.create: true
+disabled_user_id:                # 屏蔽的用户ID
+  spammer: true
+disabled_text_regular: ''        # 禁用消息正则
+redirect_text_regular: ''        # URL重定向正则
+redirect_text_target: ''         # URL重定向替换文本
+processor:                       # 处理器配置
+  repeated_event_time: 60000     # 相同消息ID过滤时间(ms)
+  repeated_user_time: 1000       # 同用户消息过滤时间(ms)
+# 以下是插件自定义配置示例，字段名由插件定义
+mysql:                           # 插件自定义配置
+  host: 127.0.0.1
+  port: 3306
+  database: bot_db
+---
+用户说“修改xxx”时，通常是要设置配置文件中的字段。例如“修改mysql端口为12345”应调用 edit_bot_config(field="mysql.port", value="12345")。
 
 示例：用户说"帮我安装依赖"，你应回复：
 好的，我来帮你安装依赖。
@@ -682,6 +736,11 @@ func (a *App) detectToolFromText(text string) *ToolCall {
 		{[]string{"打开配置", "编辑配置", "查看配置", "配置文件"}, "navigate", `{"page":"config"}`},
 		{[]string{"仓库管理", "git仓库", "git-exp"}, "navigate", `{"page":"git-exp-list"}`},
 		{[]string{"机器人配置", "bot配置", "bot设置"}, "navigate", `{"page":"config"}`},
+		// 配置查看
+		{[]string{"查看配置信息", "查询配置", "当前配置", "机器人的配置", "配置是什么", "get_bot_config"}, "get_bot_config", "{}"},
+		// 主题变量
+		{[]string{"查看主题变量", "主题颜色", "主题配色", "当前主题变量", "theme variables", "get_theme_variables"}, "get_theme_variables", "{}"},
+		{[]string{"修改主题颜色", "更新主题", "改主题", "换主题", "edit_theme_variables", "自定义主题"}, "edit_theme_variables", "{}"},
 	}
 
 	for _, p := range patterns {
@@ -750,16 +809,30 @@ func getSuggestionsForTool(toolName string) []map[string]string {
 		return []map[string]string{
 			{"label": "重置主题", "text": "帮我重置主题"},
 			{"label": "查看当前主题", "text": "当前是什么主题？"},
+			{"label": "自定义主题颜色", "text": "帮我把主题改成赛博朋克风格"},
 		}
 	case "reset_theme":
 		return []map[string]string{
 			{"label": "切换深色模式", "text": "帮我切换到深色模式"},
 			{"label": "切换浅色模式", "text": "帮我切换到浅色模式"},
+			{"label": "自定义主题", "text": "帮我自定义一套主题"},
 		}
 	case "get_theme_mode":
 		return []map[string]string{
 			{"label": "切换深色模式", "text": "帮我切换到深色模式"},
 			{"label": "切换浅色模式", "text": "帮我切换到浅色模式"},
+			{"label": "自定义主题颜色", "text": "帮我自定义主题颜色"},
+		}
+	case "get_theme_variables":
+		return []map[string]string{
+			{"label": "修改主题颜色", "text": "帮我把主题改成粉色系"},
+			{"label": "重置主题", "text": "帮我重置主题"},
+		}
+	case "edit_theme_variables":
+		return []map[string]string{
+			{"label": "查看主题变量", "text": "查看当前主题变量"},
+			{"label": "重置主题", "text": "帮我重置主题"},
+			{"label": "切换模式", "text": "切换到深色模式"},
 		}
 	case "clone_repo":
 		return []map[string]string{
@@ -784,6 +857,17 @@ func getSuggestionsForTool(toolName string) []map[string]string {
 		return []map[string]string{
 			{"label": "查看功能包列表", "text": "查看一下功能包列表"},
 			{"label": "切换分支", "text": "帮我切换分支"},
+		}
+	case "get_bot_config":
+		return []map[string]string{
+			{"label": "修改平台", "text": "帮我把平台改为 discord"},
+			{"label": "添加管理员", "text": "帮我添加管理员ID"},
+			{"label": "打开配置页面", "text": "打开配置页面"},
+		}
+	case "edit_bot_config":
+		return []map[string]string{
+			{"label": "查看配置", "text": "查看当前机器人配置"},
+			{"label": "启动机器人", "text": "帮我启动机器人"},
 		}
 	case "navigate":
 		return []map[string]string{

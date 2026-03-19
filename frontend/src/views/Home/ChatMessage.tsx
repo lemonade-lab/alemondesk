@@ -2,14 +2,15 @@ import React, { memo, useCallback, useState } from 'react'
 import classNames from 'classnames'
 import Markdown from '@/common/Markdown'
 import { ChatMessage as ChatMessageType } from '@/store/chat'
-import { CopyOutlined, EditOutlined, CheckOutlined } from '@ant-design/icons'
+import { CopyOutlined, EditOutlined, CheckOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 
 interface ChatMessageProps {
   message: ChatMessageType
   onEdit?: (messageId: string, content: string) => void
+  onToolConfirm?: (toolCallId: string, confirmed: boolean) => void
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = memo(({ message, onEdit }) => {
+const ChatMessage: React.FC<ChatMessageProps> = memo(({ message, onEdit, onToolConfirm }) => {
   const isUser = message.role === 'user'
   const isTool = message.role === 'tool'
   const [copied, setCopied] = useState(false)
@@ -32,20 +33,30 @@ const ChatMessage: React.FC<ChatMessageProps> = memo(({ message, onEdit }) => {
       <div className="flex px-4 py-1 justify-center">
         <div
           className={classNames(
-            'max-w-[85%] min-w-0 rounded-lg px-3 py-2 text-xs leading-relaxed border',
+            'max-w-[85%] min-w-0 rounded-lg px-3 py-2 text-xs leading-relaxed',
             {
-              'border-yellow-400/40 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300':
-                message.confirmPending,
-              'border-green-400/40 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300':
-                !message.confirmPending && message.executed,
-              'border-red-400/40 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300':
-                !message.confirmPending && message.executed === false
+              'chat-tool-msg-pending': message.confirmPending,
+              'chat-tool-msg': !message.confirmPending && message.executed,
+              'chat-tool-msg-error': !message.confirmPending && message.executed === false
             }
           )}
         >
           <span className="whitespace-pre-wrap break-words">{message.content}</span>
           {message.confirmPending && (
-            <span className="ml-2 opacity-60 animate-pulse">等待确认...</span>
+            <div className="flex items-center justify-end gap-2 mt-2">
+              <button
+                className="chat-confirm-btn chat-confirm-btn--cancel"
+                onClick={() => onToolConfirm?.(message.toolCallId!, false)}
+              >
+                <CloseCircleOutlined /> 拒绝
+              </button>
+              <button
+                className="chat-confirm-btn chat-confirm-btn--ok"
+                onClick={() => onToolConfirm?.(message.toolCallId!, true)}
+              >
+                <CheckCircleOutlined /> 确认执行
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -63,7 +74,7 @@ const ChatMessage: React.FC<ChatMessageProps> = memo(({ message, onEdit }) => {
       <div className={classNames('max-w-[80%] min-w-0')}>
         <div
           className={classNames('rounded-2xl px-4 py-2 text-sm leading-relaxed', {
-            'bg-blue-500 text-white rounded-tr-sm': isUser,
+            'chat-bubble-user rounded-tr-sm': isUser,
             'chat-bubble-ai rounded-tl-sm': !isUser
           })}
         >

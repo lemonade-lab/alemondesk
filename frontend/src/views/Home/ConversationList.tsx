@@ -71,7 +71,7 @@ const ConversationList: React.FC = () => {
         <span className="text-sm font-medium">对话列表</span>
         <button
           onClick={handleNew}
-          className="size-6 flex items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+          className="size-6 flex items-center justify-center rounded chat-icon-btn transition-colors cursor-pointer"
           title="新建对话"
         >
           <PlusOutlined style={{ fontSize: 12 }} />
@@ -120,21 +120,21 @@ const ConversationList: React.FC = () => {
                 {editingId === conv.id ? (
                   <button
                     onClick={handleConfirmRename}
-                    className="size-5 flex items-center justify-center rounded hover:bg-gray-300 dark:hover:bg-gray-600"
+                    className="size-5 flex items-center justify-center rounded chat-icon-btn"
                   >
                     <CheckOutlined style={{ fontSize: 10 }} />
                   </button>
                 ) : (
                   <button
                     onClick={e => handleStartRename(e, conv.id, conv.title)}
-                    className="size-5 flex items-center justify-center rounded hover:bg-gray-300 dark:hover:bg-gray-600"
+                    className="size-5 flex items-center justify-center rounded chat-icon-btn"
                   >
                     <EditOutlined style={{ fontSize: 10 }} />
                   </button>
                 )}
                 <button
                   onClick={e => handleDelete(e, conv.id)}
-                  className="size-5 flex items-center justify-center rounded hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/30"
+                  className="size-5 flex items-center justify-center rounded chat-icon-btn-danger"
                 >
                   <DeleteOutlined style={{ fontSize: 10 }} />
                 </button>

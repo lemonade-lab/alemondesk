@@ -293,6 +293,65 @@ func getAllTools() []ToolDef {
 				"properties": map[string]interface{}{},
 			},
 		},
+		// ===== 主题变量 =====
+		{
+			Name:           "get_theme_variables",
+			Description:    "获取当前主题的颜色变量列表（JSON格式）。可指定分类筛选，如 primary、button、input 等",
+			RequireConfirm: false,
+			Parameters: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"category": map[string]interface{}{
+						"type":        "string",
+						"description": "可选，按分类筛选变量。如 primary/secondary/header/nav/bar/sidebar/tag/button/input/select/textarea/switch/notification。不填则返回全部",
+					},
+				},
+			},
+		},
+		{
+			Name:           "edit_theme_variables",
+			Description:    "批量修改主题颜色变量并立即应用到桌面。参数为 JSON 字符串，键为变量名（不含 alemonjs- 前缀），值为颜色值（如 #ff0000）。修改会保存到个性化主题文件",
+			RequireConfirm: true,
+			Parameters: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"variables": map[string]interface{}{
+						"type":        "string",
+						"description": "JSON格式的变量修改。键为变量名（不含 alemonjs- 前缀），值为颜色值。例: {\"primary-bg\":\"#ff6b9d\",\"primary-text\":\"#ffffff\"}。深色模式变量需加 dark- 前缀，如 dark-primary-bg",
+					},
+				},
+				"required": []string{"variables"},
+			},
+		},
+		// ===== 机器人配置 =====
+		{
+			Name:           "get_bot_config",
+			Description:    "查看机器人的配置信息（平台、端口、管理员、消息过滤等）",
+			RequireConfirm: false,
+			Parameters: map[string]interface{}{
+				"type":       "object",
+				"properties": map[string]interface{}{},
+			},
+		},
+		{
+			Name:           "edit_bot_config",
+			Description:    "编辑机器人配置。可修改平台(login)、端口(port)、连接地址(url)、管理员ID(master_id)、屏蔽用户(disabled_user_id)、消息事件开关(disabled_selects)、全量消息接收(is_full_receive)等，也可设置任意自定义字段（如插件配置，用点号分隔嵌套路径，如 mysql.port）",
+			RequireConfirm: true,
+			Parameters: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"field": map[string]interface{}{
+						"type":        "string",
+						"description": "要修改的配置字段。内置字段: login/port/serverPort/input/url/is_full_receive/add_master_id/remove_master_id/add_bot_id/remove_bot_id/add_disabled_user_id/remove_disabled_user_id/enable_event/disable_event/disabled_text_regular/redirect_text_regular/redirect_text_target/repeated_event_time/repeated_user_time。也支持任意 YAML 路径，用点号分隔嵌套键，如 mysql.port、redis.host",
+					},
+					"value": map[string]interface{}{
+						"type":        "string",
+						"description": "要设置的值。数字会自动转换为数值类型，true/false 转为布尔类型。事件类型用 private.message.create/message.create/interaction.create",
+					},
+				},
+				"required": []string{"field", "value"},
+			},
+		},
 	}
 }
 

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Button, PrimaryDiv } from '@alemonjs/react-ui'
 import { Input } from '@alemonjs/react-ui'
 import Box from '@/common/layout/Box'
+import { ChatGetConfig, ChatSetConfig } from '@wailsjs/window/chat/app'
 
 interface AIConfig {
   apiEndpoint: string
@@ -25,8 +26,7 @@ const AISettings = () => {
   const [config, setConfig] = useState<AIConfig>(defaultConfig)
 
   useEffect(() => {
-    import('@wailsjs/window/chat/app')
-      .then(({ ChatGetConfig }) => ChatGetConfig())
+    ChatGetConfig()
       .then(cfg => {
         setConfig(prev => ({ ...prev, ...cfg }))
       })
@@ -35,7 +35,6 @@ const AISettings = () => {
 
   const handleSave = async () => {
     try {
-      const { ChatSetConfig } = await import('@wailsjs/window/chat/app')
       await ChatSetConfig(config)
       notification('AI 配置已保存')
     } catch {

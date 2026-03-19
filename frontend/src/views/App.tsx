@@ -225,20 +225,6 @@ export default (function App() {
               confirmPending: true
             })
           )
-          // 弹出确认框
-          setPopValue({
-            open: true,
-            title: '操作确认',
-            description: `${description}${argsStr ? `\n参数: ${argsStr}` : ''}`,
-            buttonText: '确认执行',
-            data: { toolCallId },
-            onConfirm: () => {
-              import('@wailsjs/window/chat/app').then(m => m.ChatConfirmTool(toolCallId, true))
-            },
-            onCancel: () => {
-              import('@wailsjs/window/chat/app').then(m => m.ChatConfirmTool(toolCallId, false))
-            }
-          })
           break
         }
         case 'tool_result': {
