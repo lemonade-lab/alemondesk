@@ -4,7 +4,7 @@ AI智能桌面，你的机器人桌面何必仅是一个启动器。
 
 [点击下载 https://github.com/lemonade-lab/alemondesk/releases](https://github.com/lemonade-lab/alemondesk/releases)
 
-[image.png](./image.png)
+<img src="./image.png" >
 
 其功能包括且不仅限于以下功能：
 
