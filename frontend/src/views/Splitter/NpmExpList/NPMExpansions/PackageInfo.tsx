@@ -21,6 +21,7 @@ import { fetchPackageInfo } from '@/api'
 import Markdown from '@/common/Markdown'
 import { PackageInfoType } from '@/views/types'
 import Box from '@/common/layout/Box'
+import { usePop } from '@/context/Pop'
 const EventsOn = Events.On
 
 export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoType }) {
@@ -31,6 +32,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
   const dispatch = useDispatch()
   const [options, setOptions] = useState<string[]>([])
   const [operating, setOperating] = useState(false)
+  const { setPopValue } = usePop()
 
   // 同步 ref
   useEffect(() => {
@@ -52,7 +54,21 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
     if (!pkgInfo || operating) return
     setOperating(true)
 
-    // Git 仓库走 git pull + yarn install
+    // Git 仓库（isPkg 时 git 优先）走 git pull + yarn install
+    if (pkgInfo['isPkg'] && pkgInfo['isGit']) {
+      notification(`正在拉取 ${pkgInfo.name} 最新代码...`)
+      GitPull('packages', pkgInfo.name)
+      return
+    }
+
+    // 非 isPkg 的 link 包不支持更新
+    if (pkgInfo['isLink']) {
+      notification('link 包无法更新')
+      setOperating(false)
+      return
+    }
+
+    // 非 isPkg 的 git 包也走 git pull
     if (pkgInfo['isGit']) {
       notification(`正在拉取 ${pkgInfo.name} 最新代码...`)
       GitPull('packages', pkgInfo.name)
@@ -86,9 +102,32 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
 
   const onDelete = (item: { name: string; [key: string]: any }) => {
     if (!item || operating) return
+    const isPkgGit = item.isPkg && item.isGit
+    setPopValue({
+      open: true,
+      title: isPkgGit ? '确认删除仓库' : '确认卸载',
+      description: isPkgGit
+        ? `确认删除仓库 ${item.name}？此操作将移除本地仓库文件，不可恢复。`
+        : `确认卸载 ${item.name}？`,
+      buttonText: '确认',
+      buttonCancelText: '取消',
+      data: {},
+      code: 0,
+      confirmDelay: 6,
+      onConfirm: doDelete
+    })
+  }
+
+  const doDelete = () => {
+    const item = pkgInfoRef.current
+    if (!item) return
     setOperating(true)
     notification(`开始卸载 ${item.name}`)
-    if (item.isLink) {
+    // 优先级：isPkg 时 git > link，否则 link > git
+    if (item.isPkg && item.isGit) {
+      notification(`正在删除 ${item.name} 仓库...`)
+      GitDelete('packages', item.name)
+    } else if (item.isLink) {
       YarnCommands({ type: 'unlink', args: [item.name] })
     } else if (item.isGit) {
       notification(`正在删除 ${item.name} 仓库...`)
@@ -243,17 +282,22 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
     if (operating) return
     const version = e.target.value
     if (version === pkgInfo['dist-tags'].latest) return
-
-    // 版本切换需要确认
-    const confirmed = window.confirm(
-      `确定要将 ${pkgInfo.name} 从 v${pkgInfo['dist-tags'].latest} 切换到 v${version} 吗？`
-    )
-    if (!confirmed) return
-
-    setOperating(true)
-    notification(`开始切换 ${pkgInfo.name} 到 v${version}`)
-    setPkgInfo({ ...pkgInfo, __version: version })
-    YarnCommands({ type: 'upgrade', args: [`${pkgInfo.name}@${version}`, '-W'] })
+    setPopValue({
+      open: true,
+      title: '确认版本切换',
+      description: `确定要将 ${pkgInfo.name} 从 v${pkgInfo['dist-tags'].latest} 切换到 v${version} 吗？`,
+      buttonText: '确认',
+      buttonCancelText: '取消',
+      data: {},
+      code: 0,
+      confirmDelay: 6,
+      onConfirm: () => {
+        setOperating(true)
+        notification(`开始切换 ${pkgInfo.name} 到 v${version}`)
+        setPkgInfo({ ...pkgInfo, __version: version })
+        YarnCommands({ type: 'upgrade', args: [`${pkgInfo.name}@${version}`, '-W'] })
+      }
+    })
   }
 
   /**
@@ -296,6 +340,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
           <div className="flex justify-between">
             <div className="text-xl flex gap-2 text-secondary-text">
               <div className="font-bold">{pkgInfo.name}</div>
+              {pkgInfo['isPkg'] && <div className="text-xs text-secondary-text">pkg</div>}
               {pkgInfo['isLink'] && <div className="text-xs text-secondary-text">link</div>}
               {pkgInfo['isGit'] && <div className="text-xs text-secondary-text">git</div>}
             </div>
@@ -339,7 +384,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
                     onClick={onClickUpdate}
                   >
                     {operating ? <LoadingOutlined /> : <SyncOutlined />}
-                    {pkgInfo['isGit'] ? '拉取更新' : '更新'}
+                    {(pkgInfo['isPkg'] && pkgInfo['isGit']) || pkgInfo['isGit'] ? '拉取更新' : '更新'}
                   </div>
                   {pkgInfo.name != '@alemonjs/process' && (
                     <div
@@ -365,6 +410,8 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
       <Box >
         <Markdown source={pkgInfo.readme} />
       </Box>
+
+
     </div>
   )
 }

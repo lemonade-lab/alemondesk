@@ -194,6 +194,58 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 				"error": error,
 			})
 		}
+	case "link":
+		// 输入验证
+		if len(p1.Args) == 0 {
+			logger.Error("链接依赖参数为空")
+			if a.ctx != nil {
+				a.application.Emit("yarn", map[string]interface{}{
+					"type":  "link",
+					"data":  0,
+					"error": "请指定要链接的依赖包名称",
+				})
+			}
+			return
+		}
+		// link 实际执行 yarn add
+		res, error := logicyarn.Add(config.BotName, p1.Args)
+		data := 0
+		if res {
+			data = 1
+		}
+		if a.ctx != nil {
+			a.application.Emit("yarn", map[string]interface{}{
+				"type":  "link",
+				"data":  data,
+				"error": error,
+			})
+		}
+	case "unlink":
+		// 输入验证
+		if len(p1.Args) == 0 {
+			logger.Error("取消链接依赖参数为空")
+			if a.ctx != nil {
+				a.application.Emit("yarn", map[string]interface{}{
+					"type":  "unlink",
+					"data":  0,
+					"error": "请指定要取消链接的依赖包名称",
+				})
+			}
+			return
+		}
+		// unlink 实际执行 yarn remove
+		res, error := logicyarn.Remove(config.BotName, p1.Args)
+		data := 0
+		if res {
+			data = 1
+		}
+		if a.ctx != nil {
+			a.application.Emit("yarn", map[string]interface{}{
+				"type":  "unlink",
+				"data":  data,
+				"error": error,
+			})
+		}
 	default:
 		// 未知命令类型
 		logger.Error("未知的Yarn命令类型: %s", p1.Type)

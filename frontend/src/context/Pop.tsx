@@ -1,6 +1,6 @@
 import { Button } from '@alemonjs/react-ui'
 import { Modal } from '@alemonjs/react-ui'
-import { createContext, useState, ReactNode, useContext, PropsWithChildren, Fragment } from 'react'
+import { createContext, useState, useEffect, ReactNode, useContext, PropsWithChildren, Fragment } from 'react'
 import { ControllerOnClick } from '@wailsjs/window/controller/app'
 import classNames from 'classnames'
 
@@ -12,6 +12,7 @@ type ModalProps = PropsWithChildren & {
   textOk?: string
   textCancel?: string
   footer?: ReactNode
+  confirmDelay?: number
 }
 
 export const BaseModal = ({
@@ -22,8 +23,31 @@ export const BaseModal = ({
   onOk,
   textOk,
   textCancel,
-  footer
+  footer,
+  confirmDelay
 }: ModalProps) => {
+  const [countdown, setCountdown] = useState(0)
+
+  useEffect(() => {
+    if (open && confirmDelay && confirmDelay > 0) {
+      setCountdown(confirmDelay)
+      const timer = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(timer)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+      return () => clearInterval(timer)
+    } else {
+      setCountdown(0)
+    }
+  }, [open, confirmDelay])
+
+  const confirmDisabled = countdown > 0
+
   return (
     <Modal isOpen={open} onClose={() => onClose && onClose()}>
       <h2 className="text-xl mb-4">{title}</h2>
@@ -38,8 +62,11 @@ export const BaseModal = ({
               <Button onClick={() => onClose && onClose()} className="mt-4 px-4 py-2   rounded ">
                 {textCancel || '取消'}
             </Button>
-            <Button onClick={() => onOk && onOk()} className="mt-4 px-4 py-2   rounded ">
-              {textOk || '确定'}
+            <Button
+              onClick={() => !confirmDisabled && onOk && onOk()}
+              className={`mt-4 px-4 py-2   rounded ${confirmDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {confirmDisabled ? `${textOk || '确定'} (${countdown}s)` : (textOk || '确定')}
             </Button>
           </Fragment>
         )}
@@ -75,6 +102,7 @@ type DataType = {
   buttonCancelText?: string
   data: any
   code?: number
+  confirmDelay?: number
   // 取消
   onCancel?: (() => void) | null
   onConfirm?: (() => void) | null
@@ -156,6 +184,7 @@ export default function PopProvider({ children }: { children: ReactNode }) {
         onOk={onModal}
         textOk={modalData.buttonText}
         textCancel={modalData.buttonCancelText}
+        confirmDelay={modalData.confirmDelay}
       />
     </PopContext.Provider>
   )

@@ -9,7 +9,7 @@ import { Input } from '@alemonjs/react-ui'
 import ExpansionsCard from './ExpansionsCard'
 import SearchCard from './SearchCard'
 import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
-import { AppReadFiles } from '@wailsjs/window/app/app'
+import { AppExists, AppReadFiles } from '@wailsjs/window/app/app'
 import { ExpansionsPostMessage } from '@wailsjs/window/expansions/app'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
 import { Events } from '@wailsio/runtime'
@@ -149,9 +149,15 @@ export default function NpmExpList() {
       'readme': '',
       'isLink': info?.isLink || false,
       'isGit': info?.isGit || false,
+      'isPkg': false,
       '__logo': __logo,
       '__icon': __icon
     }
+    // 检查是否位于 packages 目录
+    try {
+      const pkgDir = app.userDataTemplatePath + '/packages/' + packageName
+      data.isPkg = await AppExists(pkgDir)
+    } catch {}
     try {
       const readme = await AppReadFiles(dir)
       data.readme = readme
