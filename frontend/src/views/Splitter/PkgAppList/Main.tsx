@@ -4,7 +4,7 @@ import Terminal from '@/views/Terminal/App'
 import GitExpList from './App'
 import Application from './Application/App'
 
-const TERMINAL_SIZES_KEY = 'alemondesk_terminal_panel_sizes'
+const TERMINAL_SIZES_KEY = 'ALemonDesk_terminal_panel_sizes'
 
 const readSizes = (): number[] | undefined => {
   try {

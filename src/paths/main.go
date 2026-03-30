@@ -23,7 +23,7 @@ func GetUserHomeDir() string {
 		}
 		return filepath.Join(home, appName)
 	}
-	
+
 	home := usr.HomeDir
 	switch runtime.GOOS {
 	case "windows":

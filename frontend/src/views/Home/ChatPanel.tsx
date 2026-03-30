@@ -14,7 +14,6 @@ import {
 } from '@/store/chat'
 import ChatMessage from './ChatMessage'
 import ChatInput from './ChatInput'
-import { RobotOutlined } from '@ant-design/icons'
 import { ChatSend, ChatStop, ChatSetHistory, ChatConfirmTool, ChatClear } from '@wailsjs/window/chat/app'
 
 let _msgCounter = 0
@@ -152,7 +151,8 @@ const ChatPanel: React.FC = () => {
       { icon: '🤚', label: '停止机器人', text: '帮我停止机器人' },
       { icon: '📦', label: '加载依赖', text: '帮我重新安装依赖' },
       { icon: '🧩', label: '插件列表', text: '现在有多少个插件' },
-      { icon: '⚙️', label: '机器人配置', text: '机器人现在的配置是什么' }
+      { icon: '⚙️', label: '机器人配置', text: '机器人现在的配置是什么' },
+      { icon: '🎨', label: '随机主题', text: '根据配置说明随机生成主题' }
     ],
     []
   )
@@ -163,8 +163,6 @@ const ChatPanel: React.FC = () => {
       <div className="flex-1 min-h-0 overflow-y-auto chat-messages-scroll">
         {activeMessages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full select-none px-6">
-            <RobotOutlined className="text-5xl mb-3 opacity-25" />
-            <p className="text-base opacity-30 mb-6">开始一段新的对话</p>
             <div className="flex flex-wrap gap-3 justify-center max-w-md">
               {quickStarts.map(q => (
                 <button

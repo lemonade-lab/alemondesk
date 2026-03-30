@@ -334,15 +334,13 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
               <div>Version: {pkgInfo['dist-tags'].latest}</div>
               {expansions.package.find(item => item.name == pkgInfo.name) ? (
                 <Fragment>
-                  {!pkgInfo['isLink'] && (
-                    <div
-                      className={`flex items-center gap-1 cursor-pointer ${operating ? 'opacity-50 pointer-events-none' : ''}`}
-                      onClick={onClickUpdate}
-                    >
-                      {operating ? <LoadingOutlined /> : <SyncOutlined />}
-                      {pkgInfo['isGit'] ? '拉取更新' : '更新'}
-                    </div>
-                  )}
+                  <div
+                    className={`flex items-center gap-1 cursor-pointer ${operating ? 'opacity-50 pointer-events-none' : ''}`}
+                    onClick={onClickUpdate}
+                  >
+                    {operating ? <LoadingOutlined /> : <SyncOutlined />}
+                    {pkgInfo['isGit'] ? '拉取更新' : '更新'}
+                  </div>
                   {pkgInfo.name != '@alemonjs/process' && (
                     <div
                       className={`flex items-center gap-1 cursor-pointer ${operating ? 'opacity-50 pointer-events-none' : ''}`}

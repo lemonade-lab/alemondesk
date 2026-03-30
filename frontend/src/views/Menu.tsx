@@ -6,6 +6,7 @@ import {
   AppstoreOutlined,
   HomeFilled,
   ProfileOutlined,
+  RobotOutlined,
   SettingFilled
 } from '@ant-design/icons'
 import { useDispatch, useSelector } from 'react-redux'
@@ -55,6 +56,13 @@ const MenuButton = () => {
       className: 'steps-config',
       onClick: () => {
         navigate('/config')
+      }
+    },
+    {
+      Icon: <RobotOutlined size={20} />,
+      className: 'steps-ai',
+      onClick: () => {
+        navigate('/ai-settings')
       }
     }
   ]

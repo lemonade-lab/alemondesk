@@ -42,9 +42,9 @@ class __Desk_WebView {
 declare global {
     interface Window {
         runtime: any;
-        __alemondesk_webview: __Desk_WebView;
-        __alemondesk_webview_runtime_event_listeners: Map<string, Function[]>;
-        __alemondesk_webview_observe_keys: {
+        __ALemonDesk_webview: __Desk_WebView;
+        __ALemonDesk_webview_runtime_event_listeners: Map<string, Function[]>;
+        __ALemonDesk_webview_observe_keys: {
             [key: string | symbol]: boolean
         }
         __expansions_name: string;
@@ -52,32 +52,32 @@ declare global {
 }
 
 // 允许订阅的订阅的 key 列表
-window.__alemondesk_webview_observe_keys = {
+window.__ALemonDesk_webview_observe_keys = {
     EventsOnMultiple: true
 }
 
 // 收集订阅
-window.__alemondesk_webview_runtime_event_listeners = new Map();
+window.__ALemonDesk_webview_runtime_event_listeners = new Map();
 
 // 初始化
-window.__alemondesk_webview = new __Desk_WebView();
+window.__ALemonDesk_webview = new __Desk_WebView();
 
 // 代理 runtime 对象
 window.runtime = new Proxy({}, {
     get(target, prop) {
         return (...args: any[]) => {
             // 处理特殊的订阅机制
-            if (window.__alemondesk_webview_observe_keys[prop]) {
+            if (window.__ALemonDesk_webview_observe_keys[prop]) {
                 const eventName = args[0];
                 const callback = args[1];
-                if (!window.__alemondesk_webview_runtime_event_listeners.has(eventName)) {
-                    window.__alemondesk_webview_runtime_event_listeners.set(eventName, []);
+                if (!window.__ALemonDesk_webview_runtime_event_listeners.has(eventName)) {
+                    window.__ALemonDesk_webview_runtime_event_listeners.set(eventName, []);
                 }
-                window.__alemondesk_webview_runtime_event_listeners.get(eventName)?.push(callback);
+                window.__ALemonDesk_webview_runtime_event_listeners.get(eventName)?.push(callback);
                 return new Promise((resolve, reject) => {
-                    const callbackId = window.__alemondesk_webview.callbackId++;
-                    window.__alemondesk_webview.callbacks.set(callbackId, { resolve, reject });
-                    window.__alemondesk_webview.send({
+                    const callbackId = window.__ALemonDesk_webview.callbackId++;
+                    window.__ALemonDesk_webview.callbacks.set(callbackId, { resolve, reject });
+                    window.__ALemonDesk_webview.send({
                         global: 'runtime',
                         type: prop,
                         // 只传第一个参数 eventName，回调函数不传
@@ -87,9 +87,9 @@ window.runtime = new Proxy({}, {
                 });
             }
             return new Promise((resolve, reject) => {
-                const callbackId = window.__alemondesk_webview.callbackId++;
-                window.__alemondesk_webview.callbacks.set(callbackId, { resolve, reject });
-                window.__alemondesk_webview.send({
+                const callbackId = window.__ALemonDesk_webview.callbackId++;
+                window.__ALemonDesk_webview.callbacks.set(callbackId, { resolve, reject });
+                window.__ALemonDesk_webview.send({
                     global: 'runtime',
                     type: prop,
                     args: args,
@@ -101,14 +101,14 @@ window.runtime = new Proxy({}, {
 });
 
 // 处理来自父窗口的响应
-window.__alemondesk_webview.on((data) => {
+window.__ALemonDesk_webview.on((data) => {
     if (data.callbackId) {
-        window.__alemondesk_webview.handleResponse(data);
+        window.__ALemonDesk_webview.handleResponse(data);
     }
 });
 
 // 处理 runtime 事件和初始化消息
-window.__alemondesk_webview.on(async (data: {
+window.__ALemonDesk_webview.on(async (data: {
     global: string;
     type: string;
     args?: any[];
@@ -116,8 +116,8 @@ window.__alemondesk_webview.on(async (data: {
 }) => {
     if (data.global === 'runtime') {
         // 先检查是否是订阅的事件
-        if (window.__alemondesk_webview_runtime_event_listeners.has(data.type)) {
-            const callbacks = window.__alemondesk_webview_runtime_event_listeners.get(data.type);
+        if (window.__ALemonDesk_webview_runtime_event_listeners.has(data.type)) {
+            const callbacks = window.__ALemonDesk_webview_runtime_event_listeners.get(data.type);
             if (Array.isArray(callbacks)) {
                 Promise.all(callbacks.map(callback => {
                     const args = data.args || [];
@@ -132,7 +132,7 @@ window.__alemondesk_webview.on(async (data: {
 });
 
 // 处理初始化消息，动态加载 HTML 内容
-window.__alemondesk_webview.on((e: {
+window.__ALemonDesk_webview.on((e: {
     global: string;
     type: string;
     data: {

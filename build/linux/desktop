@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=1.0
 Name=ALemonDesk
-Comment=ALemonDesk Description
+Comment=A ALemonDesk application
 # The Exec line includes %u to pass the URL to the application
 Exec=/usr/local/bin/ALemonDesk %u
 Terminal=false

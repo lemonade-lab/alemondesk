@@ -1,4 +1,4 @@
-import Box from '@/common/layout/Box'
+import { PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
 
 const data = [
   {
@@ -32,25 +32,22 @@ const data = [
 
 const Notice = () => {
   return (
-    <div className="animate__animated animate__fadeIn flex-1 flex-col flex size-full">
-      <div className="flex-col gap-2 flex-1 flex p-4 size-full">
-        <div className="flex flex-col flex-1 p-2 rounded-lg shadow-inner size-full">
-          <div
-            className="text-2xl flex items-center justify-between font-semibold mb-4 border-b
-            border-secondary-border
-           dark:border-dark-secondary-border
-          "
-          >
-            <div>更新日志</div>
-          </div>
-          <Box className="flex flex-col gap-4 h-[calc(100vh-11rem)] overflow-auto scrollba">
-            <div className="flex  flex-col flex-1 overflow-auto h-[calc(100vh-2.4rem)] scrollbar gap-6 py-4 rounded-lg  ">
+    <section className="flex flex-row h-[calc(100vh-29.8px)] w-full shadow-md overflow-hidden">
+      <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1 overflow-hidden">
+        <div className="flex flex-col h-full p-4 gap-4 overflow-auto">
+          <PrimaryDiv className="flex flex-col p-6 rounded-lg shadow-inner gap-5">
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between border-b border-secondary-border dark:border-dark-secondary-border pb-2">
+              <div className="text-xl font-semibold">更新日志</div>
+            </div>
+
+            <div className="flex flex-col gap-6">
               {data.map((item, index) => (
                 <div key={index}>
-                  <h2 className="text-2xl font-semibold mb-4">{item.version}</h2>
-                  <ul className="list-disc pl-6 space-y-2 ">
-                    {item.log.map((log, index) => (
-                      <li key={index} className="text-sm ">
+                  <h2 className="text-lg font-semibold mb-2">{item.version}</h2>
+                  <ul className="list-disc pl-6 space-y-2">
+                    {item.log.map((log, i) => (
+                      <li key={i} className="text-sm">
                         {log}
                       </li>
                     ))}
@@ -58,10 +55,10 @@ const Notice = () => {
                 </div>
               ))}
             </div>
-          </Box>
+          </PrimaryDiv>
         </div>
-      </div>
-    </div>
+      </SecondaryDiv>
+    </section>
   )
 }
 

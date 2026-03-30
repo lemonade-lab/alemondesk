@@ -5,10 +5,13 @@ import { Button, PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
 import { Fragment, useEffect, useState, useRef } from 'react'
 import RunForm, { Config, getRunConfig, initialRunConfig, setRunConfig } from './RunForm'
 import { BotClose, BotRun } from '@wailsjs/window/bot/app'
+import { YarnCommands } from '@wailsjs/window/yarn/app'
 import { FeatModal } from '@/context/Pop'
 import { delMessage, clearMessages } from '@/store/log'
 import ParseLogMessage from '@/common/BotTerminalText'
 import Box from '@/common/layout/Box'
+import { Events } from '@wailsio/runtime'
+const EventsOn = Events.On
 
 function Terminal() {
   const dispatch = useDispatch()
@@ -19,6 +22,7 @@ function Terminal() {
   const [fromValue, setFromValue] = useState<Config>(initialRunConfig)
   const [open, setOpen] = useState(false)
   const [isAtBottom, setIsAtBottom] = useState(true)
+  const [installing, setInstalling] = useState(false)
   const logContainerRef = useRef<HTMLDivElement>(null)
   /**
    * @returns
@@ -63,6 +67,24 @@ function Terminal() {
   const onStart = () => {
     setOpen(true)
   }
+
+  const onReloadDeps = () => {
+    if (installing || bot.runStatus) return
+    setInstalling(true)
+    YarnCommands({ type: 'install', args: ['--ignore-warnings'] })
+  }
+
+  // 监听 yarn install 完成
+  useEffect(() => {
+    const cancel = EventsOn('yarn', (e: any) => {
+      const args = e.data ?? []
+      const data = args[0] ?? null
+      if (data?.type === 'install') {
+        setInstalling(false)
+      }
+    })
+    return () => { if (cancel) cancel() }
+  }, [])
 
   // 删除日志
   const onClickDeleteLog = (size = 10) => {
@@ -141,7 +163,15 @@ function Terminal() {
             </Button>
           </div>
           <div className="flex-1 items-center gap-2">
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                className="px-2 rounded-md duration-700 transition-all"
+                disabled={installing || bot.runStatus}
+                onClick={onReloadDeps}
+              >
+                <span>{installing ? '安装中...' : '重载依赖'}</span>
+              </Button>
               {modules.nodeModulesStatus &&
                 (bot.runStatus ? (
                   <Button

@@ -2,19 +2,21 @@
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10">
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  IgnorableNamespaces="uap3">
   
   <Identity 
-    Name="com.wails.ALemonDesk"
-    Publisher="CN=ALemonDesk"
+    Name="com.example.ALemonDesk"
+    Publisher="CN=LEMONADE"
     Version="0.1.0.0" 
     ProcessorArchitecture="x64" />
   
   <Properties>
     <DisplayName>ALemonDesk</DisplayName>
-    <PublisherDisplayName>ALemonDesk</PublisherDisplayName>
-    <Description>ALemonDesk Description</Description>
+    <PublisherDisplayName>LEMONADE</PublisherDisplayName>
+    <Description>A ALemonDesk application</Description>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   
@@ -27,10 +29,10 @@
   </Resources>
   
   <Applications>
-    <Application Id="com.wails.ALemonDesk" Executable="ALemonDesk" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="com.example.ALemonDesk" Executable="ALemonDesk" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="ALemonDesk"
-        Description="ALemonDesk Description"
+        Description="A ALemonDesk application"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
@@ -40,6 +42,7 @@
       
       <Extensions>
         <desktop:Extension Category="windows.fullTrustProcess" Executable="ALemonDesk" />
+        
         
       </Extensions>
     </Application>

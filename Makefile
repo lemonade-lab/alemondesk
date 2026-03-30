@@ -12,6 +12,12 @@ help: ## 显示帮助信息
 # 开发相关命令
 dev: ## 启动开发模式
 	@echo "启动开发模式..."
+	@if lsof -ti :9245 > /dev/null 2>&1; then \
+		echo "检测到端口 9245 被占用，正在关闭进程..."; \
+		lsof -ti :9245 | xargs kill 2>/dev/null || true; \
+		sleep 1; \
+		lsof -ti :9245 | xargs kill -9 2>/dev/null || true; \
+	fi
 	sh ./app-dev.sh
 
 build: ## 构建项目

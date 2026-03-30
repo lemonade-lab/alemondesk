@@ -8,7 +8,7 @@
     !define INFO_PROJECTNAME "ALemonDesk"
 !endif
 !ifndef INFO_COMPANYNAME
-    !define INFO_COMPANYNAME "ALemonDesk"
+    !define INFO_COMPANYNAME "LEMONADE"
 !endif
 !ifndef INFO_PRODUCTNAME
     !define INFO_PRODUCTNAME "ALemonDesk"
@@ -17,7 +17,7 @@
     !define INFO_PRODUCTVERSION "0.1.0"
 !endif
 !ifndef INFO_COPYRIGHT
-    !define INFO_COPYRIGHT "© now, ALemonDesk"
+    !define INFO_COPYRIGHT "© 2026, LEMONADE"
 !endif
 !ifndef PRODUCT_EXECUTABLE
     !define PRODUCT_EXECUTABLE "${INFO_PROJECTNAME}.exe"

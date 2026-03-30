@@ -30,6 +30,10 @@ const router = createHashRouter([
         element: <Files />
       },
       {
+        path: 'ai-settings',
+        element: <AISettings />
+      },
+      {
         path: 'settings',
         element: <SettingsList />,
         children: [

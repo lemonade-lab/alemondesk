@@ -29,7 +29,7 @@ import Box from '@/common/layout/Box'
 import CloneForm from './CloneForm'
 const EventsOn = Events.On
 
-const SEARCH_CACHE_KEY = 'alemondesk_npm_search_cache'
+const SEARCH_CACHE_KEY = 'ALemonDesk_npm_search_cache'
 const SEARCH_CACHE_TTL = 1000 * 60 * 30 // 30 分钟缓存
 
 export default function NpmExpList() {

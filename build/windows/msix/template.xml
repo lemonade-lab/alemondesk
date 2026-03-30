@@ -10,23 +10,23 @@
     <Installer
         Path="ALemonDesk"
         Arguments=""
-        InstallLocation="C:\Program Files\ALemonDesk\ALemonDesk">
+        InstallLocation="C:\Program Files\LEMONADE\ALemonDesk">
     </Installer>
     <PackageInformation
         PackageName="ALemonDesk"
         PackageDisplayName="ALemonDesk"
-        PublisherName="CN=ALemonDesk"
-        PublisherDisplayName="ALemonDesk"
+        PublisherName="CN=LEMONADE"
+        PublisherDisplayName="LEMONADE"
         Version="0.1.0.0"
-        PackageDescription="ALemonDesk Description">
+        PackageDescription="A ALemonDesk application">
         <Capabilities>
             <Capability Name="runFullTrust" />
             
         </Capabilities>
         <Applications>
             <Application
-                Id="com.wails.ALemonDesk"
-                Description="ALemonDesk Description"
+                Id="com.example.ALemonDesk"
+                Description="A ALemonDesk application"
                 DisplayName="ALemonDesk"
                 ExecutableName="ALemonDesk"
                 EntryPoint="Windows.FullTrustApplication">
@@ -42,8 +42,8 @@
         <Properties>
             <Framework>false</Framework>
             <DisplayName>ALemonDesk</DisplayName>
-            <PublisherDisplayName>ALemonDesk</PublisherDisplayName>
-            <Description>ALemonDesk Description</Description>
+            <PublisherDisplayName>LEMONADE</PublisherDisplayName>
+            <Description>A ALemonDesk application</Description>
             <Logo>Assets\AppIcon.png</Logo>
         </Properties>
     </PackageInformation>

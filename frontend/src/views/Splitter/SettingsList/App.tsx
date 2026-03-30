@@ -28,13 +28,6 @@ const SettingsList = () => {
       }
     },
     {
-      children: 'AI+',
-      path: '/settings/ai',
-      onClick: () => {
-        navigate('/settings/ai')
-      }
-    },
-    {
       children: '关于',
       path: '/settings/about',
       onClick: () => {

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ALemonDesk
+Exec=ALemonDesk
+Icon=ALemonDesk
+Categories=Development;
+Terminal=false
+Keywords=wails
+Version=1.0
+StartupNotify=false

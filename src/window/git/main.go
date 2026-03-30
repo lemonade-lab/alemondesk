@@ -127,7 +127,7 @@ func (a *App) GitClone(params GitCloneOptions) {
 	// 确保目录存在
 	if err := os.MkdirAll(path, 0755); err != nil {
 		// 发送git-clone-error事件
-		logger.Error("创建目录失败:", err)
+		logger.Error("创建目录失败: %v", err)
 		// context有效性
 		if a.ctx != nil {
 			a.application.Emit("git", map[string]interface{}{
@@ -147,7 +147,7 @@ func (a *App) GitClone(params GitCloneOptions) {
 		if force {
 			// 强制覆盖：删除已存在的目录
 			if err := os.RemoveAll(clonePath); err != nil {
-				logger.Error("删除已存在目录失败:", clonePath, err)
+				logger.Error("删除已存在目录失败: %s %v", clonePath, err)
 				// context有效性
 				if a.ctx != nil {
 					a.application.Emit("git", map[string]interface{}{
@@ -159,7 +159,7 @@ func (a *App) GitClone(params GitCloneOptions) {
 			}
 		} else {
 			// 目录已存在且不强制覆盖，返回失败
-			logger.Error("目录已存在，克隆失败:", clonePath)
+			logger.Error("目录已存在，克隆失败: %s", clonePath)
 			return
 		}
 	}
@@ -180,7 +180,7 @@ func (a *App) GitClone(params GitCloneOptions) {
 	// 使用 PlainClone 方法克隆仓库
 	_, err := git.PlainClone(clonePath, false, cloneOpts)
 	if err != nil {
-		logger.Error("克隆仓库错误:", err)
+		logger.Error("克隆仓库错误: %v", err)
 		// context有效性
 		if a.ctx != nil {
 			a.application.Emit("git", map[string]interface{}{
@@ -211,7 +211,7 @@ func (a *App) GitDelete(space string, name string) {
 	// 删除目录
 	err := os.RemoveAll(repoPath)
 	if err != nil {
-		logger.Error("删除仓库错误:", repoPath, err)
+		logger.Error("删除仓库错误: %s %v", repoPath, err)
 		// context有效性
 		if a.ctx != nil {
 			a.application.Emit("git", map[string]interface{}{
@@ -237,53 +237,76 @@ func (a *App) GitPull(space string, name string) {
 	}
 	repoPath := filepath.Join(path, name)
 
+	emitPull := func(value int) {
+		if a.ctx != nil {
+			a.application.Emit("git", map[string]interface{}{
+				"type":  "pull",
+				"value": value,
+			})
+		}
+	}
+
 	// 打开仓库
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
-		logger.Error("打开仓库错误:", repoPath, err)
-		if a.ctx != nil {
-			a.application.Emit("git", map[string]interface{}{
-				"type":  "pull",
-				"value": 0,
-			})
-		}
+		logger.Error("打开仓库错误: %s %v", repoPath, err)
+		emitPull(0)
 		return
 	}
 
-	// 获取工作树
+	// 获取远程
+	remote, err := repo.Remote("origin")
+	if err != nil {
+		logger.Error("获取远程错误: %v", err)
+		emitPull(0)
+		return
+	}
+
+	// 使用 fetch + reset 策略，兼容浅克隆
+	err = remote.Fetch(&git.FetchOptions{})
+	if err != nil && err != git.NoErrAlreadyUpToDate {
+		logger.Error("拉取远程错误: %v", err)
+		emitPull(0)
+		return
+	}
+
+	// 获取当前分支名
+	head, err := repo.Head()
+	if err != nil {
+		logger.Error("获取HEAD错误: %v", err)
+		emitPull(0)
+		return
+	}
+	branchName := head.Name().Short()
+
+	// 获取远程分支引用
+	remoteRefName := plumbing.NewRemoteReferenceName("origin", branchName)
+	remoteRef, err := repo.Reference(remoteRefName, true)
+	if err != nil {
+		logger.Error("获取远程分支引用错误: %v", err)
+		emitPull(0)
+		return
+	}
+
+	// 获取工作树并 hard reset 到远程最新
 	worktree, err := repo.Worktree()
 	if err != nil {
-		logger.Error("获取工作树错误:", err)
-		if a.ctx != nil {
-			a.application.Emit("git", map[string]interface{}{
-				"type":  "pull",
-				"value": 0,
-			})
-		}
+		logger.Error("获取工作树错误: %v", err)
+		emitPull(0)
 		return
 	}
 
-	// 拉取最新更改
-	err = worktree.Pull(&git.PullOptions{
-		RemoteName: "origin",
+	err = worktree.Reset(&git.ResetOptions{
+		Commit: remoteRef.Hash(),
+		Mode:   git.HardReset,
 	})
-	if err != nil && err != git.NoErrAlreadyUpToDate {
-		logger.Error("拉取错误:", err)
-		if a.ctx != nil {
-			a.application.Emit("git", map[string]interface{}{
-				"type":  "pull",
-				"value": 0,
-			})
-		}
+	if err != nil {
+		logger.Error("重置工作树错误: %v", err)
+		emitPull(0)
 		return
 	}
 
-	if a.ctx != nil {
-		a.application.Emit("git", map[string]interface{}{
-			"type":  "pull",
-			"value": 1,
-		})
-	}
+	emitPull(1)
 }
 
 func (a *App) GitFetch(space string, repoUrl string) {
@@ -297,23 +320,21 @@ func (a *App) GitFetch(space string, repoUrl string) {
 	// 打开仓库
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
-		logger.Error("打开仓库错误:", repoPath, err)
+		logger.Error("打开仓库错误: %s %v", repoPath, err)
 		return
 	}
 
 	// 获取远程
 	remote, err := repo.Remote("origin")
 	if err != nil {
-		logger.Error("获取远程错误:", err)
+		logger.Error("获取远程错误: %v", err)
 		return
 	}
 
 	// 拉取最新更改
-	err = remote.Fetch(&git.FetchOptions{
-		// Progress: os.Stdout,
-	})
+	err = remote.Fetch(&git.FetchOptions{})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
-		logger.Error("拉取错误:", err)
+		logger.Error("拉取错误: %v", err)
 		return
 	}
 
@@ -330,14 +351,14 @@ func (a *App) GitCheckout(space string, name string, branch string) {
 	// 打开仓库
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
-		logger.Error("打开仓库错误:", repoPath, err)
+		logger.Error("打开仓库错误: %s %v", repoPath, err)
 		return
 	}
 
 	// 获取工作树
 	worktree, err := repo.Worktree()
 	if err != nil {
-		logger.Error("获取工作树错误:", err)
+		logger.Error("获取工作树错误: %v", err)
 		return
 	}
 
@@ -347,7 +368,7 @@ func (a *App) GitCheckout(space string, name string, branch string) {
 		// Branch: git.Renamed("refs/heads/" + branch),
 	})
 	if err != nil {
-		logger.Error("切换分支错误:", err)
+		logger.Error("切换分支错误: %v", err)
 		return
 	}
 
