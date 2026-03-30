@@ -4,7 +4,6 @@ import classNames from 'classnames'
 import {
   AppstoreAddOutlined,
   AppstoreOutlined,
-  ContainerOutlined,
   HomeFilled,
   ProfileOutlined,
   SettingFilled
@@ -31,13 +30,6 @@ const MenuButton = () => {
     className: string
     onClick: () => void
   }[] = [
-    {
-      Icon: <ContainerOutlined size={20} />,
-      className: 'steps-5-1',
-      onClick: () => {
-        navigate('/git-exp-list')
-      }
-    },
     {
       Icon: <AppstoreAddOutlined size={20} />,
       className: 'steps-6',

@@ -195,11 +195,13 @@ func (a *App) ChatSetConfig(cfg ChatConfig) {
 // ChatSend 发送消息并获取 AI 回复（流式）
 func (a *App) ChatSend(messageID string, content string) {
 	a.mu.Lock()
+	// 将用户消息添加到历史中，供后续请求使用
 	a.history = append(a.history, ChatMessage{
 		Role:    "user",
 		Content: content,
 	})
 
+	// 检查 API 地址是否配置
 	if a.config.APIEndpoint == "" {
 		a.mu.Unlock()
 		a.emitChatError(messageID, "请先配置 API 地址（在设置中配置）")
@@ -207,6 +209,7 @@ func (a *App) ChatSend(messageID string, content string) {
 	}
 
 	messages := make([]ChatMessage, len(a.history))
+	// 复制历史消息，避免后续修改历史时影响正在请求的消息
 	copy(messages, a.history)
 	cfg := a.config
 

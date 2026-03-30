@@ -24,6 +24,7 @@ interface State {
         }>
     },
     isAddLoading: boolean
+    proxy: string
     addValues: {
         repoUrl: string
         branch: string
@@ -47,9 +48,10 @@ const initialState: State = {
         commits: []
     },
     isAddLoading: false,
+    proxy: 'https://ghfast.top/',
     addValues: {
         repoUrl: '',
-        branch: '',
+        branch: 'release',
         depth: 1,
         force: true
     }
@@ -77,6 +79,9 @@ const gitExpSlice = createSlice({
         setAddLoading(state, action: PayloadAction<boolean>) {
             state.isAddLoading = action.payload
         },
+        setProxy(state, action: PayloadAction<string>) {
+            state.proxy = action.payload
+        },
         setAddValues(state, action: PayloadAction<State['addValues']>) {
             state.addValues = action.payload
         }
@@ -90,6 +95,7 @@ export const {
     setTabValue,
     setCurrentRepo,
     setAddLoading,
+    setProxy,
     setAddValues
 } = gitExpSlice.actions
 export default gitExpSlice.reducer

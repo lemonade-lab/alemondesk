@@ -230,7 +230,7 @@ func (a *App) GitDelete(space string, name string) {
 	}
 }
 
-func GitPull(space string, name string) {
+func (a *App) GitPull(space string, name string) {
 	path := paths.GetBotPackagesPath(config.BotName)
 	if space == "plugins" {
 		path = paths.GetBotPluginsPath(config.BotName)
@@ -241,6 +241,12 @@ func GitPull(space string, name string) {
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
 		logger.Error("打开仓库错误:", repoPath, err)
+		if a.ctx != nil {
+			a.application.Emit("git", map[string]interface{}{
+				"type":  "pull",
+				"value": 0,
+			})
+		}
 		return
 	}
 
@@ -248,19 +254,36 @@ func GitPull(space string, name string) {
 	worktree, err := repo.Worktree()
 	if err != nil {
 		logger.Error("获取工作树错误:", err)
+		if a.ctx != nil {
+			a.application.Emit("git", map[string]interface{}{
+				"type":  "pull",
+				"value": 0,
+			})
+		}
 		return
 	}
 
 	// 拉取最新更改
 	err = worktree.Pull(&git.PullOptions{
 		RemoteName: "origin",
-		// Progress:   os.Stdout,
 	})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
 		logger.Error("拉取错误:", err)
+		if a.ctx != nil {
+			a.application.Emit("git", map[string]interface{}{
+				"type":  "pull",
+				"value": 0,
+			})
+		}
 		return
 	}
 
+	if a.ctx != nil {
+		a.application.Emit("git", map[string]interface{}{
+			"type":  "pull",
+			"value": 1,
+		})
+	}
 }
 
 func (a *App) GitFetch(space string, repoUrl string) {

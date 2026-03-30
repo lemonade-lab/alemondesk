@@ -1,7 +1,6 @@
 import { createHashRouter, Navigate } from 'react-router-dom'
 import App from '@/views/App'
 import Main from '@/views/Home/Main'
-import GitExpList from './views/Splitter/GitExpList/Main'
 import NpmExpList from './views/Splitter/NpmExpList/Main'
 import PkgAppList from './views/Splitter/PkgAppList/Main'
 import SettingsList from './views/Splitter/SettingsList/Main'
@@ -18,10 +17,6 @@ const router = createHashRouter([
     element: <App />,
     children: [
       { path: '', element: <Main /> },
-      {
-        path: 'git-exp-list',
-        element: <GitExpList />
-      },
       {
         path: 'pkg-app-list',
         element: <PkgAppList />

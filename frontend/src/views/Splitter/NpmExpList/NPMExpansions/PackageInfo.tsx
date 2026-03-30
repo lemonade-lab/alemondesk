@@ -1,13 +1,19 @@
-import { Fragment, MouseEventHandler, useEffect, useState } from 'react'
+import { Fragment, MouseEventHandler, useEffect, useRef, useState } from 'react'
 import logoURL from '@/assets/logo.jpg'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useNotification } from '@/context/Notification'
 import { addPackage, putPackage } from '@/store/expansions'
 import { Select } from '@alemonjs/react-ui'
-import { DownloadOutlined, SyncOutlined, UploadOutlined } from '@ant-design/icons'
+import {
+  DownloadOutlined,
+  LoadingOutlined,
+  SyncOutlined,
+  UploadOutlined
+} from '@ant-design/icons'
 import { AntdIcon } from '@/common/ui/AntdIcon'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
+import { GitPull, GitDelete } from '@wailsjs/window/git/app'
 import { ExpansionsPostMessage } from '@wailsjs/window/expansions/app'
 import { RESOURCE_PROTOCOL_PREFIX } from '@/api/config'
 import { Events } from '@wailsio/runtime'
@@ -19,238 +25,235 @@ const EventsOn = Events.On
 
 export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoType }) {
   const [pkgInfo, setPkgInfo] = useState<PackageInfoType>(packageInfo)
+  const pkgInfoRef = useRef<PackageInfoType>(packageInfo)
   const notification = useNotification()
   const expansions = useSelector((state: RootState) => state.expansions)
   const dispatch = useDispatch()
   const [options, setOptions] = useState<string[]>([])
+  const [operating, setOperating] = useState(false)
 
-  /**
-   * @param name
-   */
+  // 同步 ref
+  useEffect(() => {
+    pkgInfoRef.current = pkgInfo
+  }, [pkgInfo])
+
   const onInstall = (name: string) => {
-    notification(`开始安装${name}`)
+    if (operating) return
+    setOperating(true)
+    notification(`开始安装 ${name}`)
     if (pkgInfo['isLink']) {
-      YarnCommands({
-        type: `link`,
-        args: [name]
-      })
+      YarnCommands({ type: 'link', args: [name] })
     } else {
-      YarnCommands({
-        type: `add`,
-        args: [name, '-W']
-      })
+      YarnCommands({ type: 'add', args: [name, '-W'] })
     }
   }
 
-  /**
-   *
-   * @returns
-   */
   const onClickUpdate = async () => {
-    if (!pkgInfo) return
-    let t = true
-    setTimeout(() => {
-      if (!t) return
-      notification(`开始检查${pkgInfo.name}版本`)
-    }, 1300)
-    // 获取最新版本
+    if (!pkgInfo || operating) return
+    setOperating(true)
+
+    // Git 仓库走 git pull + yarn install
+    if (pkgInfo['isGit']) {
+      notification(`正在拉取 ${pkgInfo.name} 最新代码...`)
+      GitPull('packages', pkgInfo.name)
+      return
+    }
+
+    // NPM 包走 yarn upgrade
+    notification(`正在检查 ${pkgInfo.name} 最新版本...`)
     try {
       const msg = await fetchPackageInfo(pkgInfo.name)
-      t = false
       if (msg['dist-tags']) {
         const version = msg['dist-tags'].latest
         if (pkgInfo['dist-tags'].latest !== version) {
-          notification(`检查到最新版本${version}`, 'default')
-
+          notification(`检查到最新版本 ${version}，开始更新`)
           setPkgInfo({ ...pkgInfo, __version: version })
-
-          //
-          YarnCommands({
-            type: `upgrade`,
-            args: [`${pkgInfo.name}@${version}`, '-W']
-          })
+          YarnCommands({ type: 'upgrade', args: [`${pkgInfo.name}@${version}`, '-W'] })
         } else {
-          notification(`当前已是最新版本`, 'default')
+          notification('当前已是最新版本')
+          setOperating(false)
         }
       } else {
-        notification(`无法从npmjs中获取${pkgInfo.name}最新版本`, 'error')
+        notification(`无法获取 ${pkgInfo.name} 最新版本`, 'error')
+        setOperating(false)
       }
     } catch (err) {
-      t = false
-      notification(`无法从npmjs中获取${pkgInfo.name}最新版本`, 'error')
+      notification(`无法获取 ${pkgInfo.name} 最新版本`, 'error')
+      setOperating(false)
       console.error(err)
     }
   }
 
-  /**
-   *
-   * @param item
-   * @returns
-   */
   const onDelete = (item: { name: string; [key: string]: any }) => {
-    if (!item) return
+    if (!item || operating) return
+    setOperating(true)
+    notification(`开始卸载 ${item.name}`)
     if (item.isLink) {
-      YarnCommands({
-        type: `unlink`,
-        args: [item.name]
-      })
-      notification(`开始卸载${item.name}`)
+      YarnCommands({ type: 'unlink', args: [item.name] })
     } else if (item.isGit) {
-      notification(`待功能更新...`)
+      notification(`正在删除 ${item.name} 仓库...`)
+      GitDelete('packages', item.name)
     } else {
-      notification(`开始卸载${item.name}`)
-      YarnCommands({
-        type: `remove`,
-        args: [item.name, '-W']
-      })
+      YarnCommands({ type: 'remove', args: [item.name, '-W'] })
     }
   }
 
   useEffect(() => {
     setPkgInfo(packageInfo)
+    pkgInfoRef.current = packageInfo
     setOptions([packageInfo['dist-tags'].latest])
+    setOperating(false)
   }, [packageInfo])
 
-  // 控制提交
+  // 监听 yarn 事件 — 带清理
   useEffect(() => {
-    EventsOn('yarn', e => {
+    const cancelYarn = EventsOn('yarn', (e: any) => {
       const args = e.data ?? []
       const data = args[0] ?? null
+      if (!data?.type) return
+
       const type = data.type
       const value = data.value
-      //
-      if (type == 'add') {
-        if (value == 0) {
-          notification(`add ${pkgInfo?.name} 失败`, 'warning')
+      const current = pkgInfoRef.current
+
+      if (type === 'add') {
+        setOperating(false)
+        if (value === 0) {
+          notification(`安装 ${current?.name} 失败`, 'warning')
         } else {
-          notification(`add ${pkgInfo?.name} 完成`)
-          if (!pkgInfo) return
-
-          const __version = pkgInfo['__version']
-
-          setPkgInfo({
-            ...pkgInfo,
-            'dist-tags': { latest: __version }
-          })
-
-          // 更新数据
-          dispatch(
-            putPackage({
-              name: pkgInfo.name,
-              version: __version
-            })
-          )
-
-          // 推送加载。
-          ExpansionsPostMessage({
-            type: 'add-expansions',
-            data: pkgInfo.name
-          })
-        }
-        return
-      } else if (type == `upgrade`) {
-        if (value == 0) {
-          notification(`upgrade ${pkgInfo?.name} 失败`, 'warning')
-        } else {
-          notification(`upgrade ${pkgInfo?.name} 完成`)
-          if (!pkgInfo) return
-
-          // 更新数据
-          dispatch(
-            addPackage({
-              name: pkgInfo.name,
-              version: pkgInfo['dist-tags'].latest
-            })
-          )
-
-          // 推送加载。
-          ExpansionsPostMessage({
-            type: 'add-expansions',
-            data: pkgInfo.name
-          })
-
-          // 推送加载。
-        }
-        return
-      } else if (type == `unlink`) {
-        if (value == 0) {
-          notification(`unlink ${pkgInfo?.name} 失败`, 'warning')
-        } else {
-          notification(`unlink ${pkgInfo?.name} 完成`)
-          if (!pkgInfo) return
-          // 推送加载。
-          ExpansionsPostMessage({
-            type: 'get-expansions',
-            data: ''
-          })
-        }
-        return
-      } else if (type == `remove`) {
-        if (value == 0) {
-          notification(`remove ${pkgInfo?.name} 失败`, 'warning')
-        } else {
-          notification(`remove ${pkgInfo?.name} 完成`)
-          if (!pkgInfo) return
-          // 推送加载。
-          ExpansionsPostMessage({
-            type: 'get-expansions',
-            data: ''
-          })
+          notification(`安装 ${current?.name} 完成`)
+          if (!current) return
+          const __version = current['__version'] || current['dist-tags'].latest
+          setPkgInfo({ ...current, 'dist-tags': { latest: __version } })
+          dispatch(putPackage({ name: current.name, version: __version }))
+          ExpansionsPostMessage({ type: 'add-expansions', data: current.name })
         }
         return
       }
-      if (type == 'link') {
-        if (value == 0) {
-          notification(`link ${pkgInfo?.name} 失败`, 'warning')
+
+      // git pull 后 yarn install 完成
+      if (type === 'install') {
+        if (current?.isGit) {
+          setOperating(false)
+          if (value === 0) {
+            notification(`依赖安装失败`, 'warning')
+          } else {
+            notification(`${current?.name} 更新完成`)
+            ExpansionsPostMessage({ type: 'get-expansions', data: '' })
+          }
+        }
+        return
+      }
+
+      if (type === 'upgrade') {
+        setOperating(false)
+        if (value === 0) {
+          notification(`更新 ${current?.name} 失败`, 'warning')
         } else {
-          notification(`link ${pkgInfo?.name} 完成`)
-          // 推送加载。
-          ExpansionsPostMessage({
-            type: 'get-expansions',
-            data: ''
-          })
+          notification(`更新 ${current?.name} 完成`)
+          if (!current) return
+          dispatch(addPackage({ name: current.name, version: current['dist-tags'].latest }))
+          ExpansionsPostMessage({ type: 'add-expansions', data: current.name })
+        }
+        return
+      }
+
+      if (type === 'unlink') {
+        setOperating(false)
+        if (value === 0) {
+          notification(`取消链接 ${current?.name} 失败`, 'warning')
+        } else {
+          notification(`取消链接 ${current?.name} 完成`)
+          ExpansionsPostMessage({ type: 'get-expansions', data: '' })
+        }
+        return
+      }
+
+      if (type === 'remove') {
+        setOperating(false)
+        if (value === 0) {
+          notification(`卸载 ${current?.name} 失败`, 'warning')
+        } else {
+          notification(`卸载 ${current?.name} 完成`)
+          ExpansionsPostMessage({ type: 'get-expansions', data: '' })
+        }
+        return
+      }
+
+      if (type === 'link') {
+        setOperating(false)
+        if (value === 0) {
+          notification(`链接 ${current?.name} 失败`, 'warning')
+        } else {
+          notification(`链接 ${current?.name} 完成`)
+          ExpansionsPostMessage({ type: 'get-expansions', data: '' })
         }
         return
       }
     })
+
+    // 监听 git 事件
+    const cancelGit = EventsOn('git', (e: any) => {
+      const args = e.data ?? []
+      const data = args[0] ?? null
+      if (!data?.type) return
+
+      if (data.type === 'pull') {
+        const current = pkgInfoRef.current
+        if (data.value === 0) {
+          setOperating(false)
+          notification(`拉取 ${current?.name} 失败`, 'warning')
+        } else {
+          notification(`拉取 ${current?.name} 成功，正在安装依赖...`)
+          // git pull 成功后自动 yarn install
+          YarnCommands({ type: 'install', args: ['--ignore-warnings'] })
+        }
+      }
+
+      if (data.type === 'delete') {
+        setOperating(false)
+        const current = pkgInfoRef.current
+        if (data.value === 0) {
+          notification(`删除 ${current?.name} 失败`, 'warning')
+        } else {
+          notification(`${current?.name} 已删除，正在重新安装依赖...`)
+          YarnCommands({ type: 'install', args: ['--ignore-warnings'] })
+        }
+      }
+    })
+
+    return () => {
+      if (cancelYarn) cancelYarn()
+      if (cancelGit) cancelGit()
+    }
   }, [])
 
   const loadVersion: MouseEventHandler<HTMLSelectElement> = async e => {
     e.stopPropagation()
     if (options.length > 1) return
-    // 获取最新版本
     const info = await fetchPackageInfo(pkgInfo.name)
     setOptions(info.versions)
   }
 
-  /**
-   *
-   * @param e
-   * @returns
-   */
   const onSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (pkgInfo['isLink']) {
-      notification(`link包无法切换版本`)
+      notification('link 包无法切换版本')
       return
     }
-    // 选择版本,立即切换到该版本
+    if (operating) return
     const version = e.target.value
-    // 版本相同不处理
-    if (version == pkgInfo['dist-tags'].latest) return
+    if (version === pkgInfo['dist-tags'].latest) return
 
-    // 切换版本
-    notification(`开始切换${pkgInfo.name}版本到${version}`)
+    // 版本切换需要确认
+    const confirmed = window.confirm(
+      `确定要将 ${pkgInfo.name} 从 v${pkgInfo['dist-tags'].latest} 切换到 v${version} 吗？`
+    )
+    if (!confirmed) return
 
-    setPkgInfo({
-      ...pkgInfo,
-      __version: version
-    })
-
-    //
-    YarnCommands({
-      type: `upgrade`,
-      args: [`${pkgInfo.name}@${version}`, '-W']
-    })
+    setOperating(true)
+    notification(`开始切换 ${pkgInfo.name} 到 v${version}`)
+    setPkgInfo({ ...pkgInfo, __version: version })
+    YarnCommands({ type: 'upgrade', args: [`${pkgInfo.name}@${version}`, '-W'] })
   }
 
   /**
@@ -297,7 +300,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
               {pkgInfo['isGit'] && <div className="text-xs text-secondary-text">git</div>}
             </div>
             <div>
-              {!pkgInfo['isLink'] && (
+              {!pkgInfo['isLink'] && !pkgInfo['isGit'] && (
                 <Select onChange={onSelect} onClick={loadVersion} className="rounded-md">
                   {options.map((item, index) => (
                     <option key={index}>{item}</option>
@@ -332,25 +335,29 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
               {expansions.package.find(item => item.name == pkgInfo.name) ? (
                 <Fragment>
                   {!pkgInfo['isLink'] && (
-                    <div className="flex items-center gap-1 cursor-pointer" onClick={onClickUpdate}>
-                      <SyncOutlined /> 更新
+                    <div
+                      className={`flex items-center gap-1 cursor-pointer ${operating ? 'opacity-50 pointer-events-none' : ''}`}
+                      onClick={onClickUpdate}
+                    >
+                      {operating ? <LoadingOutlined /> : <SyncOutlined />}
+                      {pkgInfo['isGit'] ? '拉取更新' : '更新'}
                     </div>
                   )}
                   {pkgInfo.name != '@alemonjs/process' && (
                     <div
-                      className="flex items-center gap-1 cursor-pointer"
+                      className={`flex items-center gap-1 cursor-pointer ${operating ? 'opacity-50 pointer-events-none' : ''}`}
                       onClick={() => onDelete(pkgInfo)}
                     >
-                      <UploadOutlined /> 卸载
+                      {operating ? <LoadingOutlined /> : <UploadOutlined />} 卸载
                     </div>
                   )}
                 </Fragment>
               ) : (
                 <div
-                  className="flex items-center gap-1 cursor-pointer"
+                  className={`flex items-center gap-1 cursor-pointer ${operating ? 'opacity-50 pointer-events-none' : ''}`}
                   onClick={() => onInstall(pkgInfo.name)}
                 >
-                  <DownloadOutlined /> 下载
+                  {operating ? <LoadingOutlined /> : <DownloadOutlined />} 安装
                 </div>
               )}
             </div>

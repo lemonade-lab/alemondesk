@@ -1,4 +1,4 @@
-import { FileTextOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, FileTextOutlined, LinkOutlined } from '@ant-design/icons'
 import { PrimaryDiv } from '@alemonjs/react-ui'
 
 const ExpansionsCard = ({
@@ -12,19 +12,23 @@ const ExpansionsCard = ({
     <PrimaryDiv
       hover={true}
       onClick={() => handlePackageClick(item.name)}
-      className="cursor-pointer rounded-sm relative flex gap-1  p-1 flex-row h-14 justify-between items-center duration-700 transition-all  "
+      className="cursor-pointer rounded-sm relative flex gap-1 p-2 flex-row justify-between items-center duration-300 transition-all"
     >
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col gap-0.5 overflow-hidden">
         <div className="flex justify-between items-center">
-          <div className="text-md flex gap-1">
+          <div className="text-md flex gap-1 items-center">
             <FileTextOutlined />
-            {item.name}
+            <span className="truncate">{item.name}</span>
+            {item.isLink && <LinkOutlined className="text-xs opacity-50" />}
           </div>
-          <div className="text-sm">{item.version}</div>
+          <div className="text-xs opacity-70 shrink-0 ml-1 flex items-center gap-1">
+            <CheckCircleOutlined className="text-green-500" />
+            {item.version}
+          </div>
         </div>
-        <div className="flex justify-between items-center">
-          <div className="text-sm">{item.description}</div>
-        </div>
+        {item.description && (
+          <div className="text-xs opacity-60 truncate">{item.description}</div>
+        )}
       </div>
     </PrimaryDiv>
   )

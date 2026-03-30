@@ -37,6 +37,49 @@ export const createNPMJSURL = ({
   return `${FILE_URL}/${name}/${version}/${pathName}`
 }
 
+const parseSearchResponse = (data: any) =>
+  (data.objects || []).map((obj: any) => ({
+    name: obj.package?.name || '',
+    version: obj.package?.version || '',
+    description: obj.package?.description || '',
+    author: obj.package?.author || null
+  }))
+
+/**
+ * 搜索 npm 扩展包
+ * @param keyword 搜索关键词
+ * @returns 搜索结果列表
+ */
+export const searchPackages = async (keyword: string) => {
+  const text = encodeURIComponent(keyword)
+  const response = await axios
+    .get(`${BASE_URL}/-/v1/search?text=${text}+keywords:alemonjs&size=20`)
+    .then(res => res.data)
+  return parseSearchResponse(response)
+}
+
+/**
+ * 搜索默认推荐扩展（@alemonjs + alemonjs-）
+ * @returns 去重后的搜索结果
+ */
+export const searchDefaultPackages = async () => {
+  const [res1, res2] = await Promise.all([
+    axios.get(`${BASE_URL}/-/v1/search?text=@alemonjs&size=20`).then(r => r.data),
+    axios.get(`${BASE_URL}/-/v1/search?text=alemonjs-&size=20`).then(r => r.data)
+  ])
+  const items1 = parseSearchResponse(res1)
+  const items2 = parseSearchResponse(res2)
+  const seen = new Set<string>()
+  const merged: typeof items1 = []
+  for (const item of [...items1, ...items2]) {
+    if (!seen.has(item.name)) {
+      seen.add(item.name)
+      merged.push(item)
+    }
+  }
+  return merged
+}
+
 /**
  * 获取包信息
  * @param packageName

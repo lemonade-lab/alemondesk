@@ -61,7 +61,8 @@ const defaultState: FormState = {
 const EVENT_TYPES = [
   { key: 'private.message.create', label: '私聊消息' },
   { key: 'message.create', label: '群组消息' },
-  { key: 'interaction.create', label: '交互事件' }
+  { key: 'interaction.create', label: '交互事件' },
+  { key: 'private.interaction.create', label: '私聊交互事件' },
 ]
 
 // ====== 工具函数 ======
@@ -347,14 +348,14 @@ export default function ConfigForm({ dir }: Props) {
             label="登录平台"
             value={form.login}
             onChange={v => update('login', v)}
-            placeholder="例: discord / qq / telegram"
+            placeholder="例: discord / qq-bot / telegram / onebot"
             hint="选择机器人连接的平台"
           />
           <Field
             label="CBP 端口"
             value={form.port}
             onChange={v => update('port', v)}
-            placeholder="可选，默认 17117"
+            placeholder="可选，默认0不启动，推荐17117"
             type="number"
             hint="与平台协议通信的端口"
           />
@@ -362,7 +363,7 @@ export default function ConfigForm({ dir }: Props) {
             label="应用端口"
             value={form.serverPort}
             onChange={v => update('serverPort', v)}
-            placeholder="可选，默认不启动"
+            placeholder="可选，默认0不启动，推荐18118"
             type="number"
             hint="启动 Web 服务时使用的端口"
           />
@@ -373,18 +374,6 @@ export default function ConfigForm({ dir }: Props) {
             placeholder="可选，默认 ws://127.0.0.1:17117"
             hint="CBP 服务器连接地址"
           />
-          <div className="flex items-center gap-2">
-            <div className="w-40 text-sm shrink-0">全量接收消息</div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.is_full_receive}
-                onChange={e => update('is_full_receive', e.target.checked)}
-                className="w-4 h-4"
-              />
-              <span className="text-sm text-secondary-text">开启后将接收所有消息（用于分流处理）</span>
-            </label>
-          </div>
         </Section>
 
         {/* ===== 权限管理 ===== */}

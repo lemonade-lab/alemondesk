@@ -341,7 +341,6 @@ export default (function App() {
         // 前往页面
         const viewMap = {
           'view.home': '/',
-          'view.git-exp-manage': '/git-exp-list',
           'view.npm-exp-manage': '/npm-exp-list',
           'view.webview': '/pkg-app-list',
           'view.settings': '/settings',
