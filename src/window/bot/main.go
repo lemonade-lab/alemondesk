@@ -72,14 +72,14 @@ func (a *App) BotClose() {
 				"value": 0,
 			})
 		}
-		logger.Error("机器人路径不存在:", botPath)
+		logger.Error("机器人路径不存在: %v", botPath)
 		return
 	}
 	// 停止机器人
 	_, err := logicbot.Stop(config.BotName)
 	if err != nil {
 		// 无变化。
-		logger.Error("停止机器人失败:", err)
+		logger.Error("停止机器人失败: %v", err)
 		return
 	}
 	// context有效性
@@ -96,7 +96,7 @@ func (a *App) BotResetBot() {
 
 	// 删除现有机器人目录
 	if err := os.RemoveAll(botPath); err != nil {
-		logger.Error("删除机器人目录失败:", err)
+		logger.Error("删除机器人目录失败: %v", err)
 		return
 	}
 

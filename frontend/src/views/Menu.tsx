@@ -17,13 +17,14 @@ import { useMemo } from 'react'
 import { CommandItem } from './types'
 import { setCommand } from '@/store/command'
 import ExpansionIcon from '@/common/ExpansionIcon'
-import { useNotification } from '@/context/Notification'
+import { usePop } from '@/context/Pop'
+import { ExpansionsRun } from '@wailsjs/window/expansions/app'
 
 const MenuButton = () => {
   const navigate = useNavigate()
   const expansions = useSelector((state: RootState) => state.expansions)
   const dispatch = useDispatch()
-  const notification = useNotification()
+  const { setPopValue } = usePop()
 
   // 导航列表
   const navList: {
@@ -45,7 +46,18 @@ const MenuButton = () => {
       }),
       onClick: () => {
         if (!expansions.runStatus) {
-          notification('请先启动机器人')
+          setPopValue({
+            open: true,
+            title: '扩展器未启动',
+            description: '扩展器尚未运行，是否立即启动扩展器？',
+            buttonText: '启动',
+            buttonCancelText: '取消',
+            data: {},
+            code: 0,
+            onConfirm: () => {
+              ExpansionsRun([])
+            }
+          })
           return
         }
         navigate('/pkg-app-list')

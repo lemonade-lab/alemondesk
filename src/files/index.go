@@ -86,7 +86,7 @@ func Create(ResourcesFiles fs.FS) {
 	})
 
 	if err != nil {
-		logger.Error("资源初始化失败:", err)
+		logger.Error("资源初始化失败: %v", err)
 		return
 	}
 }
@@ -134,7 +134,7 @@ func Reset(curTargetPath string) error {
 		return nil
 	})
 	if err != nil {
-		logger.Error("资源初始化失败:", err)
+		logger.Error("资源初始化失败: %v", err)
 		return err
 	}
 	return nil

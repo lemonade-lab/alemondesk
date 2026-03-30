@@ -58,7 +58,7 @@ func (a *App) AppGetPathsState() PathsState {
 func (a *App) AppReadFiles(dir string) (string, error) {
 	data, err := os.ReadFile(dir)
 	if err != nil {
-		logger.Error("读取文件失败:", err)
+		logger.Error("读取文件失败: %v", err)
 		return "", err
 	}
 	return string(data), nil
@@ -70,13 +70,13 @@ func (a *App) AppWriteFiles(dir string, data string) bool {
 	dirPath := filepath.Dir(dir)
 	err := os.MkdirAll(dirPath, 0755)
 	if err != nil {
-		logger.Error("创建目录失败:", err)
+		logger.Error("创建目录失败: %v", err)
 		return false
 	}
 
 	err = os.WriteFile(dir, []byte(data), 0644)
 	if err != nil {
-		logger.Error("写入文件失败:", err)
+		logger.Error("写入文件失败: %v", err)
 		return false
 	}
 
@@ -130,7 +130,7 @@ func (a *App) registerEventHandlers() {
 				return
 			}
 		default:
-			logger.Error("未知的 App 事件类型:", eventType)
+			logger.Error("未知的 App 事件类型: %v", eventType)
 		}
 	})
 }

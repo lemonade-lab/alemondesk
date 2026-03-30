@@ -6,6 +6,7 @@ import { Fragment, useEffect, useState, useRef } from 'react'
 import RunForm, { Config, getRunConfig, initialRunConfig, setRunConfig } from './RunForm'
 import { BotClose, BotRun } from '@wailsjs/window/bot/app'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
+import { ExpansionsClose, ExpansionsRun } from '@wailsjs/window/expansions/app'
 import { FeatModal } from '@/context/Pop'
 import { delMessage, clearMessages } from '@/store/log'
 import ParseLogMessage from '@/common/BotTerminalText'
@@ -19,10 +20,12 @@ function Terminal() {
   const bot = useSelector((state: RootState) => state.bot)
   const modules = useSelector((state: RootState) => state.modules)
   const app = useSelector((state: RootState) => state.app)
+  const expansions = useSelector((state: RootState) => state.expansions)
   const [fromValue, setFromValue] = useState<Config>(initialRunConfig)
   const [open, setOpen] = useState(false)
   const [isAtBottom, setIsAtBottom] = useState(true)
   const [installing, setInstalling] = useState(false)
+  const [restarting, setRestarting] = useState(false)
   const logContainerRef = useRef<HTMLDivElement>(null)
   /**
    * @returns
@@ -72,6 +75,21 @@ function Terminal() {
     if (installing || bot.runStatus) return
     setInstalling(true)
     YarnCommands({ type: 'install', args: ['--ignore-warnings'] })
+  }
+
+  const onRestartExpansions = () => {
+    if (restarting) return
+    setRestarting(true)
+    if (expansions.runStatus) {
+      ExpansionsClose()
+      setTimeout(() => {
+        ExpansionsRun([])
+        setRestarting(false)
+      }, 1000)
+    } else {
+      ExpansionsRun([])
+      setRestarting(false)
+    }
   }
 
   // 监听 yarn install 完成
@@ -171,6 +189,14 @@ function Terminal() {
                 onClick={onReloadDeps}
               >
                 <span>{installing ? '安装中...' : '重载依赖'}</span>
+              </Button>
+              <Button
+                type="button"
+                className="px-2 rounded-md duration-700 transition-all"
+                disabled={restarting}
+                onClick={onRestartExpansions}
+              >
+                <span>{restarting ? '重启中...' : '重启扩展'}</span>
               </Button>
               {modules.nodeModulesStatus &&
                 (bot.runStatus ? (

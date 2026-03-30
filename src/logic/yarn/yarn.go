@@ -68,7 +68,7 @@ func Install(name string) (bool, error) {
 	nodeDir, err := manager.GetNodeExePath()
 	// 检查系统是否安装了 Node.js
 	if err != nil {
-		logger.Error("unable to find node:", err)
+		logger.Error("unable to find node: %v", err)
 		return false, err
 	}
 	if logicbot.IsRunning(name) {
@@ -104,7 +104,7 @@ func Install(name string) (bool, error) {
 			logger.Error("依赖安装完成，存在警告信息")
 			return false, nil
 		}
-		logger.Error("依赖安装失败:", err)
+		logger.Error("依赖安装失败: %v", err)
 		return false, err
 	}
 	return true, nil
