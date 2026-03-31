@@ -1,15 +1,12 @@
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'url'
 import react from '@vitejs/plugin-react-swc'
-// import viteCompression from 'vite-plugin-compression'
 
 // https://vite.dev/config/
 const NODE_ENV = process.env.NODE_ENV === 'development'
 export default defineConfig({
   plugins: [
     react(),
-    // viteCompression({ algorithm: 'gzip', ext: '.gz' }),
-    // viteCompression({ algorithm: 'brotliCompress', ext: '.br' })
   ],
   resolve: {
     alias: [
@@ -25,7 +22,7 @@ export default defineConfig({
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
   optimizeDeps: {
-    include: ['slate', 'slate-dom', 'slate-react', 'slate-history', 'is-hotkey']
+    include: ['slate', 'slate-dom', 'slate-react', 'slate-history']
   },
   esbuild: {
     drop: NODE_ENV ? [] : ['console', 'debugger']
