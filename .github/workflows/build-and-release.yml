@@ -115,12 +115,22 @@ jobs:
           cd ..
       - name: Install NSIS
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          choco install nsis -y --no-progress || (
-            Invoke-WebRequest -Uri "https://sourceforge.net/projects/nsis/files/NSIS%203/3.10/nsis-3.10-setup.exe/download" -OutFile nsis-setup.exe -UseBasicParsing
-            Start-Process -FilePath .\nsis-setup.exe -ArgumentList '/S' -Wait
-            Remove-Item .\nsis-setup.exe
-          )
+          $installed = $false
+          choco install nsis -y --no-progress
+          if ($LASTEXITCODE -eq 0) {
+            $installed = $true
+          } else {
+            Write-Host "Chocolatey install failed, fallback to direct NSIS installer."
+          }
+
+          if (-not $installed) {
+            Invoke-WebRequest -Uri "https://sourceforge.net/projects/nsis/files/NSIS%203/3.10/nsis-3.10-setup.exe/download" -OutFile "nsis-setup.exe" -UseBasicParsing
+            Start-Process -FilePath ".\nsis-setup.exe" -ArgumentList '/S' -Wait
+            Remove-Item ".\nsis-setup.exe" -Force
+          }
+
           $env:PATH = "C:\Program Files (x86)\NSIS;" + $env:PATH
           makensis -VERSION
       - name: Build with Wails v3 (Windows)
