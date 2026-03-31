@@ -81,9 +81,9 @@ export default function CloneForm() {
   return (
     <div className="p-2">
       <Spin spinning={gitExp.isAddLoading} tip="克隆中...">
-        <div className="text-xs opacity-50 px-4 pb-2">输入 Git 仓库地址克隆扩展源码到本地，支持 GitHub 代理加速。克隆完成后自动安装依赖</div>
+        <div className="text-xs opacity-50 px-2 pb-2">输入 Git 仓库地址克隆扩展源码到本地，支持 GitHub 代理加速。克隆完成后自动安装依赖</div>
         <form
-          className="px-4 py-2 flex flex-col gap-4"
+          className="px-2 py-2 flex flex-col gap-4"
           onSubmit={e => {
             e.preventDefault()
             e.stopPropagation()

@@ -11,7 +11,7 @@ export interface SearchResultItem {
 interface State {
     packageInfo: PackageInfoType | null
     select: string
-    tab: 'installed' | 'search' | 'clone'
+    tab: 'installed' | 'search' | 'clone' | 'tool'
     searchKeyword: string
     searchResults: SearchResultItem[]
     searchLoading: boolean
@@ -36,7 +36,7 @@ const npmExpansions = createSlice({
         setSelect(state, action: PayloadAction<string>) {
             state.select = action.payload
         },
-        setTab(state, action: PayloadAction<'installed' | 'search' | 'clone'>) {
+        setTab(state, action: PayloadAction<'installed' | 'search' | 'clone' | 'tool'>) {
             state.tab = action.payload
         },
         setSearchKeyword(state, action: PayloadAction<string>) {

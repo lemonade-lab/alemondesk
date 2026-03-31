@@ -24,6 +24,8 @@ import Box from '@/common/layout/Box'
 import { usePop } from '@/context/Pop'
 const EventsOn = Events.On
 
+const SystemPackage = ['alemonjs', '@alemonjs/process', '@alemonjs/db', 'jsxp', 'npm', 'yarn']
+
 export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoType }) {
   const [pkgInfo, setPkgInfo] = useState<PackageInfoType>(packageInfo)
   const pkgInfoRef = useRef<PackageInfoType>(packageInfo)
@@ -386,7 +388,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
                     {operating ? <LoadingOutlined /> : <SyncOutlined />}
                     {(pkgInfo['isPkg'] && pkgInfo['isGit']) || pkgInfo['isGit'] ? '拉取更新' : '更新'}
                   </div>
-                  {pkgInfo.name != '@alemonjs/process' && (
+                  {!SystemPackage.includes(pkgInfo.name) && (
                     <div
                       className={`flex items-center gap-1 cursor-pointer ${operating ? 'opacity-50 pointer-events-none' : ''}`}
                       onClick={() => onDelete(pkgInfo)}

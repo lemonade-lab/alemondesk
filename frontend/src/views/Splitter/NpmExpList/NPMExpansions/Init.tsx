@@ -2,7 +2,7 @@ import { AppstoreAddOutlined, SearchOutlined, ThunderboltOutlined } from '@ant-d
 
 export const Init = () => {
   return (
-    <div className="flex flex-col flex-1 justify-center items-center p-6 gap-6">
+    <div className="flex flex-col overflow-hidden flex-1 justify-center items-center p-6 gap-6">
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <div className="flex items-start gap-3 p-3 rounded-md opacity-70">
           <SearchOutlined className="text-lg mt-0.5 shrink-0" />

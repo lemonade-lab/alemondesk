@@ -28,6 +28,7 @@ import { searchPackages, searchDefaultPackages, fetchPackageInfo } from '@/api'
 import Tabs from '@/common/ui/Tabs'
 import Box from '@/common/layout/Box'
 import CloneForm from './CloneForm'
+import PackageTool from './PackageTool'
 const EventsOn = Events.On
 
 const SEARCH_CACHE_KEY = 'ALemonDesk_npm_search_cache'
@@ -380,14 +381,16 @@ export default function NpmExpList() {
           value={tab}
           options={[
             { key: 'installed', label: '已安装', className: 'steps-tab-installed' },
-            { key: 'search', label: '搜索扩展', className: 'steps-tab-search' },
-            { key: 'clone', label: '克隆仓库', className: 'steps-tab-clone' }
+            { key: 'search', label: '搜索', className: 'steps-tab-search' },
+            { key: 'clone', label: '克隆', className: 'steps-tab-clone' },
+            { key: 'tool', label: '工具' }
           ]}
-          onChange={value => dispatch(setTab(value as 'installed' | 'search' | 'clone'))}
+          onChange={value => dispatch(setTab(value as 'installed' | 'search' | 'clone' | 'tool'))}
         />
         {/* 搜索模式下显示搜索框 */}
         {tab === 'search' && (
           <div className="flex flex-col gap-2">
+            <div className="text-xs opacity-50 px-1">在 npm 仓库搜索 alemonjs 扩展，点击卡片查看详情，点击安装按钮添加到项目</div>
             <div className="flex items-center gap-1">
               <Input
                 type="text"
@@ -403,13 +406,12 @@ export default function NpmExpList() {
                 className="w-full px-2 py-1 rounded-sm"
               />
               <Button
-                className="px-2 rounded-full"
+                className="px-2 py-1"
                 onClick={() => doSearch(searchInput)}
               >
                 {searchLoading ? <LoadingOutlined /> : <SearchOutlined />}
               </Button>
             </div>
-            <div className="text-xs opacity-50 px-1">在 npm 仓库搜索 alemonjs 扩展，点击卡片查看详情，点击安装按钮添加到项目</div>
           </div>
         )}
       </div>
@@ -438,7 +440,9 @@ export default function NpmExpList() {
 
       {/* 内容区域 */}
       <Box className="steps-npm-content flex-1 flex flex-col gap-1 border-t py-2">
-        {tab === 'clone' ? (
+        {tab === 'tool' ? (
+          <PackageTool />
+        ) : tab === 'clone' ? (
           <CloneForm />
         ) : tab === 'installed' ? (
           // 已安装列表
