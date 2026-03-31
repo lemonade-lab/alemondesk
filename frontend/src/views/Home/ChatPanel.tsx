@@ -145,14 +145,54 @@ const ChatPanel: React.FC = () => {
     }
   }, [dispatch])
 
-  const quickStarts = useMemo(
+  const quickCategories = useMemo(
     () => [
-      { icon: '🤖', label: '启动机器人', text: '帮我启动机器人' },
-      { icon: '🤚', label: '停止机器人', text: '帮我停止机器人' },
-      { icon: '📦', label: '加载依赖', text: '帮我重新安装依赖' },
-      { icon: '🧩', label: '插件列表', text: '现在有多少个插件' },
-      { icon: '⚙️', label: '机器人配置', text: '机器人现在的配置是什么' },
-      { icon: '🎨', label: '随机主题', text: '根据配置说明随机生成主题' }
+      {
+        title: '🤖 机器人',
+        items: [
+          { label: '启动', text: '帮我启动机器人' },
+          { label: '停止', text: '帮我停止机器人' },
+          { label: '重启', text: '帮我重启机器人' },
+          { label: '查看配置', text: '机器人现在的配置是什么' },
+          { label: '查看状态', text: '查看机器人运行状态' }
+        ]
+      },
+      {
+        title: '📦 包管理',
+        items: [
+          { label: '安装依赖', text: '帮我重新安装依赖' },
+          { label: '已装列表', text: '列出所有已安装的包' },
+          { label: '安装新包', text: '帮我安装一个包' },
+          { label: '升级包', text: '帮我升级一个包' }
+        ]
+      },
+      {
+        title: '🎨 主题',
+        items: [
+          { label: '切换明暗', text: '帮我切换主题' },
+          { label: '随机主题', text: '根据配置说明随机生成主题' },
+          { label: '重置主题', text: '帮我重置主题' },
+          { label: '导出主题', text: '帮我导出当前主题' }
+        ]
+      },
+      {
+        title: '🧩 扩展 & 仓库',
+        items: [
+          { label: '启动扩展', text: '帮我启动扩展服务' },
+          { label: '停止扩展', text: '帮我停止扩展服务' },
+          { label: '仓库列表', text: '列出所有仓库' },
+          { label: '克隆仓库', text: '帮我克隆一个仓库' }
+        ]
+      },
+      {
+        title: '🔧 信息 & 导航',
+        items: [
+          { label: '版本信息', text: '查看版本信息' },
+          { label: '查看路径', text: '获取应用所有路径' },
+          { label: '去配置页', text: '帮我导航到配置页面' },
+          { label: '去设置页', text: '帮我导航到设置页面' }
+        ]
+      }
     ],
     []
   )
@@ -162,17 +202,23 @@ const ChatPanel: React.FC = () => {
       {/* 消息列表 */}
       <div className="flex-1 min-h-0 overflow-y-auto chat-messages-scroll">
         {activeMessages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full select-none px-6">
-            <div className="flex flex-wrap gap-3 justify-center max-w-md">
-              {quickStarts.map(q => (
-                <button
-                  key={q.label}
-                  className="chat-quick-btn"
-                  onClick={() => handleSend(q.text)}
-                >
-                  <span className="text-lg">{q.icon}</span>
-                  <span className="text-xs opacity-70">{q.label}</span>
-                </button>
+          <div className="flex flex-col items-center justify-center h-full select-none px-6 overflow-y-auto">
+            <div className="flex flex-col gap-4 max-w-lg w-full py-6">
+              {quickCategories.map(cat => (
+                <div key={cat.title} className="flex flex-col gap-2">
+                  <div className="text-xs font-medium opacity-50 pl-1">{cat.title}</div>
+                  <div className="flex flex-wrap gap-2">
+                    {cat.items.map(q => (
+                      <button
+                        key={q.label}
+                        className="chat-quick-btn"
+                        onClick={() => handleSend(q.text)}
+                      >
+                        <span className="text-xs">{q.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>

@@ -62,6 +62,30 @@ func (te *ToolExecutor) SetServices(refs ServiceRefs) {
 	te.services = refs
 }
 
+// checkRepoExists 检查仓库是否存在，不存在时返回可用仓库列表
+func (te *ToolExecutor) checkRepoExists(repoName string) (bool, string) {
+	pkgPath := paths.GetBotPackagesPath(config.BotName)
+	repoPath := filepath.Join(pkgPath, repoName)
+	if _, err := os.Stat(repoPath); err == nil {
+		return true, ""
+	}
+	// 列出实际存在的仓库
+	entries, err := os.ReadDir(pkgPath)
+	if err != nil {
+		return false, fmt.Sprintf("仓库 %s 不存在，且无法读取仓库目录", repoName)
+	}
+	var names []string
+	for _, e := range entries {
+		if e.IsDir() {
+			names = append(names, e.Name())
+		}
+	}
+	if len(names) == 0 {
+		return false, fmt.Sprintf("仓库 %s 不存在，当前没有任何已安装的仓库", repoName)
+	}
+	return false, fmt.Sprintf("仓库 %s 不存在，当前可用的仓库有: %s", repoName, strings.Join(names, ", "))
+}
+
 // ExecuteTool 执行工具调用，返回结果字符串
 func (te *ToolExecutor) ExecuteTool(name string, argsJSON string) (string, error) {
 	var args map[string]interface{}
@@ -103,11 +127,7 @@ func (te *ToolExecutor) ExecuteTool(name string, argsJSON string) (string, error
 		return string(data), nil
 
 	case "list_repos":
-		space, _ := args["space"].(string)
-		if space == "" {
-			space = "packages"
-		}
-		repos := te.services.Git.GitReposList(space)
+		repos := te.services.Git.GitReposList("packages")
 		data, _ := json.Marshal(repos)
 		return string(data), nil
 
@@ -176,30 +196,32 @@ func (te *ToolExecutor) ExecuteTool(name string, argsJSON string) (string, error
 
 	case "clone_repo":
 		url, _ := args["url"].(string)
-		space, _ := args["space"].(string)
 		te.services.Git.GitClone(windowgit.GitCloneOptions{
-			Space:   space,
+			Space:   "packages",
 			RepoURL: url,
 		})
-		return fmt.Sprintf("已开始克隆 %s 到 %s", url, space), nil
+		return fmt.Sprintf("已开始克隆 %s", url), nil
 
 	case "delete_repo":
 		repoName, _ := args["name"].(string)
-		space, _ := args["space"].(string)
-		te.services.Git.GitDelete(space, repoName)
-		return fmt.Sprintf("已删除 %s/%s", space, repoName), nil
+		if ok, msg := te.checkRepoExists(repoName); !ok {
+			return msg, nil
+		}
+		te.services.Git.GitDelete("packages", repoName)
+		return fmt.Sprintf("已删除 %s", repoName), nil
 
 	case "git_checkout":
-		space, _ := args["space"].(string)
 		repoName, _ := args["name"].(string)
 		branch, _ := args["branch"].(string)
-		te.services.Git.GitCheckout(space, repoName, branch)
-		return fmt.Sprintf("已切换 %s/%s 到分支 %s", space, repoName, branch), nil
+		if ok, msg := te.checkRepoExists(repoName); !ok {
+			return msg, nil
+		}
+		te.services.Git.GitCheckout("packages", repoName, branch)
+		return fmt.Sprintf("已切换 %s 到分支 %s", repoName, branch), nil
 
 	case "git_fetch":
-		space, _ := args["space"].(string)
 		url, _ := args["url"].(string)
-		te.services.Git.GitFetch(space, url)
+		te.services.Git.GitFetch("packages", url)
 		return fmt.Sprintf("已开始拉取 %s 的远程更新", url), nil
 
 	case "start_expansions":
@@ -211,13 +233,15 @@ func (te *ToolExecutor) ExecuteTool(name string, argsJSON string) (string, error
 		return "已发送停止扩展服务指令", nil
 
 	case "git_pull":
-		space, _ := args["space"].(string)
 		repoName, _ := args["name"].(string)
-		if space == "" || repoName == "" {
-			return "请指定 space 和仓库名称", nil
+		if repoName == "" {
+			return "请指定仓库名称", nil
 		}
-		te.services.Git.GitPull(space, repoName)
-		return fmt.Sprintf("已开始拉取 %s/%s 最新代码", space, repoName), nil
+		if ok, msg := te.checkRepoExists(repoName); !ok {
+			return msg, nil
+		}
+		te.services.Git.GitPull("packages", repoName)
+		return fmt.Sprintf("已开始拉取 %s 最新代码", repoName), nil
 
 	case "link_package":
 		name, _ := args["name"].(string)

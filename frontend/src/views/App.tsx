@@ -295,6 +295,27 @@ export default (function App() {
         closePop()
       }
     })
+    // 监听 AI navigate 工具的页面跳转事件
+    EventsOn('view', e => {
+      const args = e.data ?? []
+      const page = args[0] ?? ''
+      if (!page) return
+      const viewMap: Record<string, string> = {
+        home: '/',
+        config: '/config',
+        settings: '/settings',
+        'settings/common': '/settings/common',
+        'settings/ai': '/settings/ai',
+        'settings/theme': '/settings/theme',
+        'settings/about': '/settings/about',
+        'settings/notice': '/settings/notice',
+        'npm-exp-list': '/npm-exp-list',
+        'git-exp-list': '/git-exp-list',
+        'pkg-app-list': '/pkg-app-list'
+      }
+      const path = viewMap[page]
+      if (path) navigate(path)
+    })
 
     const onGlobalStatus = async () => {
       try {

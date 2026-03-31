@@ -50,18 +50,11 @@ func getAllTools() []ToolDef {
 		},
 		{
 			Name:           "list_repos",
-			Description:    "列出已安装的功能包或插件仓库",
+			Description:    "列出已安装的功能包仓库",
 			RequireConfirm: false,
 			Parameters: map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
-					"space": map[string]interface{}{
-						"type":        "string",
-						"enum":        []string{"packages", "plugins"},
-						"description": "查看 packages(功能包) 还是 plugins(插件)",
-					},
-				},
-				"required": []string{"space"},
+				"type":       "object",
+				"properties": map[string]interface{}{},
 			},
 		},
 		// ===== 导航类（无需确认）=====
@@ -192,7 +185,7 @@ func getAllTools() []ToolDef {
 		// ===== Git 操作 =====
 		{
 			Name:           "clone_repo",
-			Description:    "克隆一个 git 仓库到本地",
+			Description:    "克隆一个 git 仓库到本地功能包目录",
 			RequireConfirm: true,
 			Parameters: map[string]interface{}{
 				"type": "object",
@@ -201,13 +194,8 @@ func getAllTools() []ToolDef {
 						"type":        "string",
 						"description": "git 仓库地址",
 					},
-					"space": map[string]interface{}{
-						"type":        "string",
-						"enum":        []string{"packages", "plugins"},
-						"description": "安装到 packages 还是 plugins",
-					},
 				},
-				"required": []string{"url", "space"},
+				"required": []string{"url"},
 			},
 		},
 		{
@@ -221,13 +209,8 @@ func getAllTools() []ToolDef {
 						"type":        "string",
 						"description": "仓库名称",
 					},
-					"space": map[string]interface{}{
-						"type":        "string",
-						"enum":        []string{"packages", "plugins"},
-						"description": "packages 还是 plugins",
-					},
 				},
-				"required": []string{"name", "space"},
+				"required": []string{"name"},
 			},
 		},
 		{
@@ -237,11 +220,6 @@ func getAllTools() []ToolDef {
 			Parameters: map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
-					"space": map[string]interface{}{
-						"type":        "string",
-						"enum":        []string{"packages", "plugins"},
-						"description": "packages 还是 plugins",
-					},
 					"name": map[string]interface{}{
 						"type":        "string",
 						"description": "仓库名称",
@@ -251,7 +229,7 @@ func getAllTools() []ToolDef {
 						"description": "目标分支名",
 					},
 				},
-				"required": []string{"space", "name", "branch"},
+				"required": []string{"name", "branch"},
 			},
 		},
 		{
@@ -261,17 +239,12 @@ func getAllTools() []ToolDef {
 			Parameters: map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
-					"space": map[string]interface{}{
-						"type":        "string",
-						"enum":        []string{"packages", "plugins"},
-						"description": "packages 还是 plugins",
-					},
 					"url": map[string]interface{}{
 						"type":        "string",
 						"description": "仓库远程地址",
 					},
 				},
-				"required": []string{"space", "url"},
+				"required": []string{"url"},
 			},
 		},
 		// ===== 扩展服务 =====
@@ -301,17 +274,12 @@ func getAllTools() []ToolDef {
 			Parameters: map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
-					"space": map[string]interface{}{
-						"type":        "string",
-						"enum":        []string{"packages", "plugins"},
-						"description": "packages 还是 plugins",
-					},
 					"name": map[string]interface{}{
 						"type":        "string",
 						"description": "仓库名称",
 					},
 				},
-				"required": []string{"space", "name"},
+				"required": []string{"name"},
 			},
 		},
 		// ===== 包链接操作 =====

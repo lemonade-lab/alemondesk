@@ -306,18 +306,17 @@ img {
 }
 
 .chat-quick-btn {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 14px 18px;
-  border-radius: 12px;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 16px;
   border: 1px solid var(--alemonjs-button-border);
   background: var(--alemonjs-secondary-bg);
   color: var(--alemonjs-secondary-text);
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 110px;
+  white-space: nowrap;
 
   &:hover {
     border-color: var(--alemonjs-button-border-hover);
