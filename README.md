@@ -57,3 +57,34 @@ http://localhost:11434/api/chat
 ## 关于扩展开发
 
 阅读[扩展开发指南🔗https://alemonjs.com/docs/alemonjsDocs/open/desktop](https://alemonjs.com/docs/alemonjsDocs/open/desktop)
+
+## 存储目录
+
+应用数据存储在用户目录下，不同系统路径如下：
+
+| 系统 | 路径 |
+| --- | --- |
+| macOS | `~/Library/Application Support/ALemonDesk/` |
+| Windows | `%APPDATA%/ALemonDesk/` |
+| Linux | `~/.config/ALemonDesk/` |
+
+目录结构：
+
+```
+ALemonDesk/
+└── work/
+    ├── logs/                # 日志目录
+    └── resources/
+        ├── storage/         # 存储目录（主题、AI配置等）
+        ├── template/        # 机器人模板
+        ├── yarn/            # Yarn 工具
+        └── bots/            # 机器人存储目录
+            └── <botName>/
+                ├── package.json
+                ├── alemon.config.yaml
+                ├── yarn.lock
+                ├── node_modules/
+                └── alemonjs/
+                    ├── index.js
+                    └── desktop.js
+```
