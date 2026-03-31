@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 
 	application "github.com/wailsapp/wails/v3/pkg/application"
@@ -153,7 +154,12 @@ type LogWriter struct {
 
 func (lw *LogWriter) Write(p []byte) (n int, err error) {
 	msg := string(p)
-	switch lw.Level {
+	level := lw.Level
+	// stderr 中的 warning 消息降级为 warn
+	if level == "error" && strings.Contains(msg, "warning ") {
+		level = "warn"
+	}
+	switch level {
 	case "info":
 		Info("%s", msg)
 	case "error":

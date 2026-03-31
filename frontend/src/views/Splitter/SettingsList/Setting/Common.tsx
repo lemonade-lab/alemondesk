@@ -85,6 +85,23 @@ const Common = () => {
                       重置
                     </Button>
                   )
+                },
+                {
+                  title: '新手引导',
+                  description: '重新触发所有新手引导提示',
+                  children: (
+                    <Button
+                      className="px-2 rounded-md border"
+                      onClick={() => {
+                        const guideKeys = ['FIRST_GUIDE_v3', 'FIRST_GUIDE_HOME_v1', 'FIRST_GUIDE_COMMON_v1', 'FIRST_GUIDE_PKGAPP_v1', 'FIRST_GUIDE_CONFIG_v1', 'FIRST_GUIDE_AISETTINGS_v1']
+                        guideKeys.forEach(k => localStorage.removeItem(k))
+                        notification('已重置，刷新页面后将重新显示引导')
+                        setTimeout(() => location.reload(), 800)
+                      }}
+                    >
+                      重置
+                    </Button>
+                  )
                 }
               ].map((item, index) => (
                 <div key={index} className="flex items-center gap-2">

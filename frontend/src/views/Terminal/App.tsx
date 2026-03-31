@@ -160,7 +160,7 @@ function Terminal() {
 
   return (
     <Fragment>
-      <div className="animate__animated animate__fadeIn duration-500 flex-1 size-full flex flex-col shadow-md">
+      <div className="steps-home-terminal animate__animated animate__fadeIn duration-500 flex-1 size-full flex flex-col shadow-md">
         <PrimaryDiv className="border-b px-2 py-1 flex gap-4 justify-center items-center">
           <div className="flex gap-2">
             {/* 删除按钮示例 */}

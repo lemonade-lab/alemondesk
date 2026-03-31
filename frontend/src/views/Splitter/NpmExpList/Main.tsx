@@ -1,43 +1,48 @@
-import React, { useState, useCallback } from 'react'
+import React, { useCallback, Fragment } from 'react'
 import { Splitter } from 'antd'
 import Terminal from '@/views/Terminal/App'
 import NpmExpList from './App'
 import NPMExpansions from './NPMExpansions/App'
+import GuideCommon from '@/views/Guide/Common'
 
-const TERMINAL_SIZES_KEY = 'ALemonDesk_terminal_panel_sizes'
+const TERMINAL_COLLAPSED_KEY = 'ALemonDesk_npm_terminal_collapsed'
 
-const readSizes = (): number[] | undefined => {
+const wasTerminalCollapsed = (): boolean => {
   try {
-    const raw = localStorage.getItem(TERMINAL_SIZES_KEY)
-    if (raw) return JSON.parse(raw)
+    return localStorage.getItem(TERMINAL_COLLAPSED_KEY) === '1'
   } catch {}
-  return undefined
+  return false
 }
 
 const NpmExpListMain: React.FC = () => {
-  const [sizes, setSizes] = useState<number[] | undefined>(readSizes)
+  const collapsed = wasTerminalCollapsed()
 
   const onResizeEnd = useCallback((newSizes: number[]) => {
-    setSizes(newSizes)
-    try { localStorage.setItem(TERMINAL_SIZES_KEY, JSON.stringify(newSizes)) } catch {}
+    try {
+      const isCollapsed = (newSizes[1] ?? 0) < 1
+      localStorage.setItem(TERMINAL_COLLAPSED_KEY, isCollapsed ? '1' : '0')
+    } catch {}
   }, [])
 
   return (
-    <Splitter className="h-[calc(100vh-29.8px)] max-w-[calc(100vw-48px)]">
-      <Splitter.Panel>
-        <Splitter layout="vertical" onResizeEnd={onResizeEnd}>
-          <Splitter.Panel size={sizes?.[0]} defaultSize="70%" min="40%" collapsible>
-            <NPMExpansions />
-          </Splitter.Panel>
-          <Splitter.Panel size={sizes?.[1]} defaultSize="30%" min="20%" collapsible>
-            <Terminal />
-          </Splitter.Panel>
-        </Splitter>
-      </Splitter.Panel>
-      <Splitter.Panel style={{overflow: 'hidden'}} collapsible defaultSize="30%" min="30%" max="45%">
-        <NpmExpList />
-      </Splitter.Panel>
-    </Splitter>
+    <Fragment>
+      <Splitter className="h-[calc(100vh-29.8px)] max-w-[calc(100vw-48px)]">
+        <Splitter.Panel>
+          <Splitter layout="vertical" onResizeEnd={onResizeEnd}>
+            <Splitter.Panel defaultSize={collapsed ? '100%' : '70%'} min="40%" collapsible>
+              <NPMExpansions />
+            </Splitter.Panel>
+            <Splitter.Panel defaultSize={collapsed ? '0%' : '30%'} min="20%" collapsible>
+              <Terminal />
+            </Splitter.Panel>
+          </Splitter>
+        </Splitter.Panel>
+        <Splitter.Panel style={{overflow: 'hidden'}} collapsible defaultSize="30%" min="30%" max="45%">
+          <NpmExpList />
+        </Splitter.Panel>
+      </Splitter>
+      <GuideCommon />
+    </Fragment>
   )
 }
 

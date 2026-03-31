@@ -158,7 +158,7 @@ const ChatPanel: React.FC = () => {
   )
 
   return (
-    <div className="flex flex-col size-full chat-container">
+    <div className="steps-home-chat flex flex-col size-full chat-container">
       {/* 消息列表 */}
       <div className="flex-1 min-h-0 overflow-y-auto chat-messages-scroll">
         {activeMessages.length === 0 ? (

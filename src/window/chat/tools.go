@@ -293,6 +293,106 @@ func getAllTools() []ToolDef {
 				"properties": map[string]interface{}{},
 			},
 		},
+		// ===== Git 扩展操作 =====
+		{
+			Name:           "git_pull",
+			Description:    "拉取仓库最新代码并同步到本地（git pull + 重新安装依赖）",
+			RequireConfirm: true,
+			Parameters: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"space": map[string]interface{}{
+						"type":        "string",
+						"enum":        []string{"packages", "plugins"},
+						"description": "packages 还是 plugins",
+					},
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "仓库名称",
+					},
+				},
+				"required": []string{"space", "name"},
+			},
+		},
+		// ===== 包链接操作 =====
+		{
+			Name:           "link_package",
+			Description:    "链接本地开发的包（yarn link）",
+			RequireConfirm: true,
+			Parameters: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "要链接的包名",
+					},
+				},
+				"required": []string{"name"},
+			},
+		},
+		{
+			Name:           "unlink_package",
+			Description:    "取消链接本地包（yarn unlink）",
+			RequireConfirm: true,
+			Parameters: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "要取消链接的包名",
+					},
+				},
+				"required": []string{"name"},
+			},
+		},
+		// ===== 信息查询 =====
+		{
+			Name:           "get_paths",
+			Description:    "获取应用重要路径信息（机器人目录、依赖目录、配置文件路径等）",
+			RequireConfirm: false,
+			Parameters: map[string]interface{}{
+				"type":       "object",
+				"properties": map[string]interface{}{},
+			},
+		},
+		{
+			Name:           "get_logs_path",
+			Description:    "获取应用日志文件的路径",
+			RequireConfirm: false,
+			Parameters: map[string]interface{}{
+				"type":       "object",
+				"properties": map[string]interface{}{},
+			},
+		},
+		{
+			Name:           "list_installed_packages",
+			Description:    "列出机器人已安装的所有依赖包（从 package.json 读取）",
+			RequireConfirm: false,
+			Parameters: map[string]interface{}{
+				"type":       "object",
+				"properties": map[string]interface{}{},
+			},
+		},
+		// ===== 主题导出 =====
+		{
+			Name:           "export_theme",
+			Description:    "导出/下载当前主题配置文件到本地",
+			RequireConfirm: false,
+			Parameters: map[string]interface{}{
+				"type":       "object",
+				"properties": map[string]interface{}{},
+			},
+		},
+		// ===== 机器人重启 =====
+		{
+			Name:           "restart_bot",
+			Description:    "重启机器人（先停止再启动）",
+			RequireConfirm: true,
+			Parameters: map[string]interface{}{
+				"type":       "object",
+				"properties": map[string]interface{}{},
+			},
+		},
 		// ===== 主题变量 =====
 		{
 			Name:           "get_theme_variables",

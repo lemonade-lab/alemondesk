@@ -26,7 +26,7 @@ export default function Webviews() {
   }, [expansions.package])
 
   return (
-    <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1 size-full">
+    <SecondaryDiv className="steps-pkg-webview animate__animated animate__fadeIn flex flex-col flex-1 size-full">
       <Box>
         {command.view && (
           <WebView

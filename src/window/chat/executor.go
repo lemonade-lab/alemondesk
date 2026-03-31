@@ -13,6 +13,7 @@ import (
 	"alemonapp/src/logger"
 	logictheme "alemonapp/src/logic/theme"
 	"alemonapp/src/paths"
+	windowapp "alemonapp/src/window/app"
 	windowbot "alemonapp/src/window/bot"
 	windowcontroller "alemonapp/src/window/controller"
 	windowexpansions "alemonapp/src/window/expansions"
@@ -31,6 +32,7 @@ type ServiceRefs struct {
 	Expansions *windowexpansions.App
 	Git        *windowgit.App
 	Yarn       *windowyarn.App
+	App        *windowapp.App
 }
 
 // PendingConfirm 待确认的工具调用
@@ -207,6 +209,88 @@ func (te *ToolExecutor) ExecuteTool(name string, argsJSON string) (string, error
 	case "stop_expansions":
 		te.services.Expansions.ExpansionsClose()
 		return "已发送停止扩展服务指令", nil
+
+	case "git_pull":
+		space, _ := args["space"].(string)
+		repoName, _ := args["name"].(string)
+		if space == "" || repoName == "" {
+			return "请指定 space 和仓库名称", nil
+		}
+		te.services.Git.GitPull(space, repoName)
+		return fmt.Sprintf("已开始拉取 %s/%s 最新代码", space, repoName), nil
+
+	case "link_package":
+		name, _ := args["name"].(string)
+		if name == "" {
+			return "请指定要链接的包名", nil
+		}
+		te.services.Yarn.YarnCommands(windowyarn.YarnCommandsParams{
+			Type: "link",
+			Args: []string{name},
+		})
+		return fmt.Sprintf("已开始链接 %s", name), nil
+
+	case "unlink_package":
+		name, _ := args["name"].(string)
+		if name == "" {
+			return "请指定要取消链接的包名", nil
+		}
+		te.services.Yarn.YarnCommands(windowyarn.YarnCommandsParams{
+			Type: "unlink",
+			Args: []string{name},
+		})
+		return fmt.Sprintf("已开始取消链接 %s", name), nil
+
+	case "get_paths":
+		pathsState := te.services.App.AppGetPathsState()
+		var sb strings.Builder
+		sb.WriteString("应用路径信息：\n")
+		sb.WriteString(fmt.Sprintf("- 机器人工作目录: %s\n", pathsState.UserDataTemplatePath))
+		sb.WriteString(fmt.Sprintf("- 依赖目录(node_modules): %s\n", pathsState.UserDataNodeModulesPath))
+		sb.WriteString(fmt.Sprintf("- 配置文件(package.json): %s\n", pathsState.UserDataPackagePath))
+		sb.WriteString(fmt.Sprintf("- 资源目录: %s\n", pathsState.ResourcePath))
+		return sb.String(), nil
+
+	case "get_logs_path":
+		logPath, err := te.services.App.GetAppLogsFilePath()
+		if err != nil {
+			return "", fmt.Errorf("获取日志路径失败: %v", err)
+		}
+		return fmt.Sprintf("应用日志文件路径: %s", logPath), nil
+
+	case "export_theme":
+		err := te.services.Theme.ThemeDownloadFiles()
+		if err != nil {
+			return "", fmt.Errorf("导出主题失败: %v", err)
+		}
+		return "已导出当前主题配置文件", nil
+
+	case "restart_bot":
+		te.services.Bot.BotClose()
+		te.services.Bot.BotRun([]string{})
+		return "已发送重启机器人指令（先停止再启动）", nil
+
+	case "list_installed_packages":
+		pathsState := te.services.App.AppGetPathsState()
+		pkgPath := pathsState.UserDataPackagePath
+		data, err := os.ReadFile(pkgPath)
+		if err != nil {
+			return "无法读取 package.json", nil
+		}
+		var pkgJSON map[string]interface{}
+		if err := json.Unmarshal(data, &pkgJSON); err != nil {
+			return "解析 package.json 失败", nil
+		}
+		deps, _ := pkgJSON["dependencies"].(map[string]interface{})
+		if len(deps) == 0 {
+			return "当前没有已安装的依赖包", nil
+		}
+		var sb strings.Builder
+		sb.WriteString(fmt.Sprintf("已安装的依赖包（共 %d 个）：\n", len(deps)))
+		for name, ver := range deps {
+			sb.WriteString(fmt.Sprintf("- %s: %v\n", name, ver))
+		}
+		return sb.String(), nil
 
 	case "get_theme_variables":
 		category, _ := args["category"].(string)

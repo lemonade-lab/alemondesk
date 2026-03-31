@@ -9,6 +9,7 @@ const Tabs = ({
   options: {
     key: string
     label: string
+    className?: string
   }[]
   value: string
   onChange: (key: string) => void
@@ -17,7 +18,7 @@ const Tabs = ({
     <div className="flex gap-2">
       {options.map((item, index) => (
         <Button
-          className={classNames('rounded-md px-2', {
+          className={classNames('rounded-md px-2', item.className, {
             ['opacity-50']: value !== item.key
           })}
           onClick={() => onChange(item.key)}

@@ -93,7 +93,13 @@ export const fetchPackageInfo = async (packageName: string) => {
     version: version,
     path: 'package.json'
   })
-  const pkg = await axios.get(pkgURL).then(res => res.data)
+  let pkg: any = {}
+  try {
+    pkg = await axios.get(pkgURL).then(res => res.data)
+  } catch {
+    // CDN 可能返回 405 等错误，回退到 registry 中已有的版本信息
+    pkg = response.versions?.[version] || {}
+  }
   let __logo_url: string | null = null
   let __icon = null
   if (pkg?.alemonjs?.desktop?.logo) {

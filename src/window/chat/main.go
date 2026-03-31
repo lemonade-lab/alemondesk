@@ -98,6 +98,14 @@ const systemPrompt = `你的身份：你是阿柠檬框架桌面版的助手，�
 - git_fetch: 拉取更新（参数: space, url）
 - start_expansions: 启动扩展服务（无参数）
 - stop_expansions: 停止扩展服务（无参数）
+- git_pull: 拉取仓库最新代码（参数: space="packages"或"plugins", name="仓库名"）
+- link_package: 链接本地包到项目（参数: name="包名"）
+- unlink_package: 取消链接本地包（参数: name="包名"）
+- get_paths: 获取应用所有路径信息（无参数）
+- get_logs_path: 获取日志文件路径（无参数）
+- list_installed_packages: 列出已安装的所有包（无参数）
+- export_theme: 导出当前主题到文件（无参数）
+- restart_bot: 重启机器人（先停止再启动，无参数）
 - get_bot_config: 查看机器人配置信息（无参数）
 - edit_bot_config: 编辑机器人配置（参数: field=字段名, value=值）
   内置字段: login(平台), port(端口), serverPort(HTTP端口), url(连接地址), input(输入参数), is_full_receive(全量接收true/false), add_master_id/remove_master_id(管理员), add_bot_id/remove_bot_id(机器人ID), add_disabled_user_id/remove_disabled_user_id(屏蔽用户), enable_event/disable_event(事件开关), disabled_text_regular(禁用正则), redirect_text_regular/redirect_text_target(URL重定向), repeated_event_time/repeated_user_time(过滤时间ms)
@@ -139,8 +147,8 @@ processor:                       # 处理器配置
 func NewApp() *App {
 	return &App{
 		config: ChatConfig{
-			APIEndpoint: "http://localhost:11434/v1/chat/completions",
-			Model:       "qwen2.5",
+			APIEndpoint: "https://api.deepseek.com/chat/completions",
+			Model:       "deepseek-chat",
 			MaxTokens:   2048,
 			Temperature: 0.7,
 		},
@@ -1106,6 +1114,8 @@ func friendlyError(raw string) string {
 		return "没有访问权限，请检查 API Key 是否正确"
 	case strings.Contains(lower, "404") || strings.Contains(lower, "not found"):
 		return "找不到 AI 模型，请检查模型名称和 API 地址是否正确"
+	case strings.Contains(lower, "405") || strings.Contains(lower, "methodnotallowed"):
+		return "API 地址不支持该请求方式，请检查 API 地址是否正确（应为 chat/completions 接口地址）"
 	case strings.Contains(lower, "429") || strings.Contains(lower, "rate limit"):
 		return "请求太频繁了，请稍等一会再试"
 	case strings.Contains(lower, "500") || strings.Contains(lower, "internal server error"):

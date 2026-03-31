@@ -38,7 +38,7 @@ export default function PkgAppList() {
   }
 
   return (
-    <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col border-l size-full">
+    <SidebarDiv className="steps-pkg-sidebar animate__animated animate__fadeInRight duration-500 flex flex-col border-l size-full">
       <div className="flex flex-wrap gap-1 p-1">
         {viewSidebars
           .sort(item => {

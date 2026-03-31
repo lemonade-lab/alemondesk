@@ -205,6 +205,7 @@ func main() {
 		Expansions: wExpansions,
 		Git:        wGit,
 		Yarn:       wYarn,
+		App:        wApp,
 	})
 
 	// set logger application

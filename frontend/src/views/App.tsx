@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import useGoNavigate from '@/hook/useGoNavigate'
@@ -23,6 +23,7 @@ import { useNotification } from '@/context/Notification'
 import { HeaderDiv, PrimaryDiv } from '@alemonjs/react-ui'
 import Menu from '@/views/Menu'
 import GuideMain from '@/views/Guide/Main'
+import Welcome from '@/views/Guide/Welcome'
 import Header from '@/views/Header'
 import { SettingOutlined } from '@ant-design/icons'
 import {
@@ -30,7 +31,7 @@ import {
   ExpansionsRun,
   ExpansionsStatus
 } from '@wailsjs/window/expansions/app'
-import { AppGetPathsState } from '@wailsjs/window/app/app'
+import { AppGetPathsState, AppReadFiles, AppExists } from '@wailsjs/window/app/app'
 import { ThemeLoadVariables, ThemeMode } from '@wailsjs/window/theme/app'
 import { Events } from '@wailsio/runtime'
 import { BotStatus } from '@wailsjs/window/bot/app'
@@ -47,6 +48,7 @@ export default (function App() {
   const expansions = useSelector((state: RootState) => state.expansions)
   const modulesRef = useRef(modules)
   const { setPopValue, closePop } = usePop()
+  const [guideReady, setGuideReady] = useState(false)
   const [_theme, themeController] = useTheme()
 
   // watch
@@ -166,9 +168,42 @@ export default (function App() {
           dispatch(setCommand(data.data))
           return
         } else if (data.type === 'get-expansions') {
-          const db = data.data
+          const db: any[] = data.data || []
           console.log('get-expansions', db)
-          dispatch(initPackage(db))
+          // 补充后端可能遗漏的 alemonjs / @alemonjs/* 包
+          AppGetPathsState().then(async paths => {
+            const nodeModulesPath = paths.userDataNodeModulesPath
+            const pkgJsonPath = paths.userDataPackagePath
+            const existingNames = new Set(db.map((p: any) => p.name))
+            const supplemented = [...db]
+            try {
+              const pkgRaw = await AppReadFiles(pkgJsonPath)
+              const pkgJson = JSON.parse(pkgRaw)
+              const allDeps = {
+                ...(pkgJson.dependencies || {}),
+                ...(pkgJson.devDependencies || {})
+              }
+              // 找出所有 alemonjs 或 @alemonjs/* 的依赖
+              const alemonDeps = Object.keys(allDeps).filter(
+                name => name === 'alemonjs' || name.startsWith('alemonjs-') || name.startsWith('@alemonjs/')
+              )
+              for (const depName of alemonDeps) {
+                if (existingNames.has(depName)) continue
+                try {
+                  const depPkgPath = nodeModulesPath + '/' + depName + '/package.json'
+                  const exists = await AppExists(depPkgPath)
+                  if (exists) {
+                    const depRaw = await AppReadFiles(depPkgPath)
+                    const depPkg = JSON.parse(depRaw)
+                    supplemented.push(depPkg)
+                  }
+                } catch {}
+              }
+            } catch {}
+            dispatch(initPackage(supplemented))
+          }).catch(() => {
+            dispatch(initPackage(db))
+          })
         }
       } catch {
         console.error('HomeApp 解析消息失败')
@@ -391,7 +426,8 @@ export default (function App() {
           </div>
         </PrimaryDiv>
       </div>
-      <GuideMain />
+      <Welcome onFinish={() => setGuideReady(true)} />
+      <GuideMain stepIndex={guideReady ? 1 : -1} />
     </Fragment>
   )
 })

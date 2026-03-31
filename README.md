@@ -24,19 +24,19 @@ AI智能桌面，你的机器人桌面何必仅是一个启动器。
 
 ## 配置AI
 
-在应用的设置-AI+中，进行以下示例配置
+在AI设置中，进行以下示例配置
 
 ### DeepSeek
 
 - api_url
 
 ```
-https://www.deepseek.com/chat/completions
+https://api.deepseek.com/chat/completions
 ```
 
 - api_key
 
-访问 https://www.deepseek.com/ 打开API开放平台创建 API Key
+> 访问 https://www.deepseek.com/ 打开API开放平台创建 API Key
 
 - model
 
@@ -56,4 +56,4 @@ http://localhost:11434/api/chat
 
 ## 关于扩展开发
 
-阅读[开放扩展开发指南🔗](https://alemonjs.com/docs/alemonjsDocs/open/desktop)
+阅读[扩展开发指南🔗https://alemonjs.com/docs/alemonjsDocs/open/desktop](https://alemonjs.com/docs/alemonjsDocs/open/desktop)

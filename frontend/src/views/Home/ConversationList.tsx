@@ -65,7 +65,7 @@ const ConversationList: React.FC = () => {
   )
 
   return (
-    <SidebarDiv className="flex flex-col size-full border-l">
+    <SidebarDiv className="steps-home-conversations flex flex-col size-full border-l">
       {/* 标题栏 */}
       <div className="flex items-center justify-between px-3 py-2 border-b">
         <span className="text-sm font-medium">对话列表</span>

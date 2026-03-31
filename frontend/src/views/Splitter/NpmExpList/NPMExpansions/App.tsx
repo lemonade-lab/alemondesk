@@ -9,7 +9,7 @@ export default function NPMExpansions() {
   const packageInfo = npmExpansions.packageInfo
   const select = npmExpansions.select
   return (
-    <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1 size-full">
+    <SecondaryDiv className="steps-npm-detail animate__animated animate__fadeIn flex flex-col flex-1 size-full">
       {select == 'shopping' && packageInfo ? <PackageInfo packageInfo={packageInfo} /> : <Init />}
     </SecondaryDiv>
   )

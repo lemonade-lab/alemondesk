@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Button, PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
 import { Input } from '@alemonjs/react-ui'
 import { ChatGetConfig, ChatSetConfig } from '@wailsjs/window/chat/app'
+import GuideAISettings from '@/views/Guide/AISettings'
 
 interface AIConfig {
   apiEndpoint: string
@@ -88,7 +89,7 @@ const AISettings = () => {
 
   return (
     <section className="flex flex-row h-[calc(100vh-29.8px)] w-full shadow-md overflow-hidden">
-      <SecondaryDiv className="animate__animated animate__fadeIn flex flex-col flex-1 overflow-hidden">
+      <SecondaryDiv className="steps-ai-panel animate__animated animate__fadeIn flex flex-col flex-1 overflow-hidden">
         <div className="flex flex-col h-full p-4 gap-4 overflow-auto">
           <PrimaryDiv className="flex flex-col p-6 rounded-lg shadow-inner gap-5">
             {/* 标题栏 */}
@@ -147,6 +148,7 @@ const AISettings = () => {
           </PrimaryDiv>
         </div>
       </SecondaryDiv>
+      <GuideAISettings />
     </section>
   )
 }

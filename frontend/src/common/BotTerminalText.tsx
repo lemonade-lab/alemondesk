@@ -7,6 +7,7 @@ const ClipboardSetText = Clipboard.SetText
 const ParseLogMessage = ({ message }: { message: string }) => {
   const notification = useNotification()
 
+  const warningRegex = /\[WARN\]|\[ERROR\]\s*warning\b/i
   const errorRegex = /\[ERROR\]/i
   // 改进的链接正则表达式，确保不会匹配数字和方括号
   const urlRegex =
@@ -57,7 +58,11 @@ const ParseLogMessage = ({ message }: { message: string }) => {
       if (urlStartIndex > lastIndex) {
         const textBefore = message.slice(lastIndex, urlStartIndex)
         parts.push(
-          errorRegex.test(textBefore) ? (
+          warningRegex.test(textBefore) ? (
+            <span className="text-yellow-500" key={`text-${index}`}>
+              {textBefore}
+            </span>
+          ) : errorRegex.test(textBefore) ? (
             <span className="text-red-500" key={`text-${index}`}>
               {textBefore}
             </span>
@@ -88,7 +93,11 @@ const ParseLogMessage = ({ message }: { message: string }) => {
     if (lastIndex < message.length) {
       const remainingText = message.slice(lastIndex)
       parts.push(
-        errorRegex.test(remainingText) ? (
+        warningRegex.test(remainingText) ? (
+          <span className="text-yellow-500" key="remaining">
+            {remainingText}
+          </span>
+        ) : errorRegex.test(remainingText) ? (
           <span className="text-red-500" key="remaining">
             {remainingText}
           </span>
@@ -99,6 +108,11 @@ const ParseLogMessage = ({ message }: { message: string }) => {
     }
 
     return <span>{parts}</span>
+  }
+
+  // 警告消息
+  if (warningRegex.test(message)) {
+    return <span className="text-yellow-500">{message}</span>
   }
 
   // 普通错误消息
