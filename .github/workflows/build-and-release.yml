@@ -113,12 +113,20 @@ jobs:
           zip -r ${{env.APP_NAME}}-macOS.zip ${{env.APP_NAME}}.app
           rm -rf ${{env.APP_NAME}}.app
           cd ..
+      - name: Install NSIS
+        if: runner.os == 'Windows'
+        run: |
+          choco install nsis -y --no-progress || (
+            Invoke-WebRequest -Uri "https://sourceforge.net/projects/nsis/files/NSIS%203/3.10/nsis-3.10-setup.exe/download" -OutFile nsis-setup.exe -UseBasicParsing
+            Start-Process -FilePath .\nsis-setup.exe -ArgumentList '/S' -Wait
+            Remove-Item .\nsis-setup.exe
+          )
+          $env:PATH = "C:\Program Files (x86)\NSIS;" + $env:PATH
+          makensis -VERSION
       - name: Build with Wails v3 (Windows)
         if: runner.os == 'Windows'
         run: |
-          choco install nsis -y
           $env:PATH = "C:\Program Files (x86)\NSIS;" + $env:PATH
-          makensis -VERSION
           wails3 task package
           Set-Location -Path ".\bin"
           Rename-Item -Path "${{env.APP_NAME}}.exe" -NewName "${{env.APP_NAME}}-Win.exe"
