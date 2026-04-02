@@ -5,6 +5,8 @@ go 1.24.0
 toolchain go1.24.2
 
 require (
+	github.com/alicebob/miniredis/v2 v2.37.0
+	github.com/kardianos/service v1.2.4
 	github.com/wailsapp/wails/v3 v3.0.0-alpha.36
 	go.yaml.in/yaml/v3 v3.0.4
 )
@@ -19,6 +21,7 @@ require (
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/yuin/gopher-lua v1.1.1 // indirect
 )
 
 require (
@@ -61,7 +64,7 @@ require (
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.37.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

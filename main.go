@@ -6,6 +6,8 @@ import (
 	files "alemonapp/src/files"
 	logger "alemonapp/src/logger"
 	paths "alemonapp/src/paths"
+	embedredis "alemonapp/src/redis"
+	svc "alemonapp/src/service"
 	utils "alemonapp/src/utils"
 	windowapp "alemonapp/src/window/app"
 	windowbot "alemonapp/src/window/bot"
@@ -13,6 +15,7 @@ import (
 	windowcontroller "alemonapp/src/window/controller"
 	windowexpansions "alemonapp/src/window/expansions"
 	windowgit "alemonapp/src/window/git"
+	windowservice "alemonapp/src/window/service"
 	windowtheme "alemonapp/src/window/theme"
 	windowyarn "alemonapp/src/window/yarn"
 	"embed"
@@ -54,14 +57,35 @@ func main() {
 	// 加载.env
 	_ = godotenv.Load()
 
+	// 解析命令行参数
+	serviceCmd, loginArg := parseArgs()
+
 	// 初始化日志
 	if err := logger.Init(); err != nil {
-		// logger 未初始化，直接输出到标准错误并退出
 		log.Printf("[FATAL] 初始化日志失败: %v\n", err)
 		os.Exit(1)
 	}
-	// 程序退出时关闭日志
 	defer logger.Close()
+
+	// 注入资源给 service 模块
+	svc.SetResourcesFS(&ResourcesFiles)
+
+	// 处理服务命令
+	if serviceCmd != "" {
+		handleServiceCommand(serviceCmd, loginArg)
+		return
+	}
+
+	// --- 以下为正常 GUI 模式 ---
+
+	// 按需启动内置 Redis（系统已有则跳过）
+	redisAddr, redisErr := embedredis.Start()
+	if redisErr != nil {
+		logger.Error("启动内置 Redis 失败: %v", redisErr)
+	} else {
+		logger.Info("Redis 可用地址: %s", redisAddr)
+	}
+	defer embedredis.Close()
 
 	// 从嵌入里解出文件
 	files.Create(ResourcesFiles)
@@ -108,6 +132,7 @@ func main() {
 	wYarn := windowyarn.NewApp()
 	wGit := windowgit.NewApp()
 	wChat := windowchat.NewApp()
+	wService := windowservice.NewApp()
 
 	// 创建应用
 	app := application.New(application.Options{
@@ -122,6 +147,7 @@ func main() {
 			application.NewService(wYarn),
 			application.NewService(wGit),
 			application.NewService(wChat),
+			application.NewService(wService),
 		},
 		Assets: assetServer.CreateAssetServer(&assets),
 		Mac: application.MacOptions{
@@ -198,6 +224,8 @@ func main() {
 	wYarn.SetApplication(app.Event)
 	wChat.Startup(ctx)
 	wChat.SetApplication(app.Event)
+	wService.Startup(ctx)
+	wService.SetApplication(app.Event)
 	wChat.SetServices(windowchat.ServiceRefs{
 		Bot:        wBot,
 		Theme:      wTheme,
@@ -215,5 +243,93 @@ func main() {
 	if err := app.Run(); err != nil {
 		logger.Error("应用程序运行错误: %v", err)
 		return
+	}
+}
+
+// parseArgs 解析命令行参数
+// --up              前台服务模式运行
+// --up --d          后台守护进程（安装并启动系统服务）
+// --up --login xxx  指定启动平台
+// --down            停止并卸载系统服务
+func parseArgs() (serviceCmd string, login string) {
+	args := os.Args[1:]
+	up := false
+	down := false
+	daemon := false
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "--up":
+			up = true
+		case "--down":
+			down = true
+		case "--d":
+			daemon = true
+		case "--login":
+			if i+1 < len(args) {
+				i++
+				login = args[i]
+			}
+		case "--service-run":
+			// 内部参数：由系统服务管理器调用
+			serviceCmd = "run"
+		}
+	}
+	if down {
+		serviceCmd = "down"
+	} else if up && daemon {
+		serviceCmd = "up-daemon"
+	} else if up {
+		serviceCmd = "up"
+	}
+	return
+}
+
+// handleServiceCommand 处理服务相关命令
+func handleServiceCommand(cmd string, login string) {
+	switch cmd {
+	case "up":
+		// 前台服务模式运行（Ctrl+C 退出）
+		fmt.Println("以前台模式启动服务...")
+		if login != "" {
+			fmt.Printf("启动平台: %s\n", login)
+		}
+		if err := svc.RunAsService(svc.ServiceConfig{Login: login}); err != nil {
+			logger.Error("服务运行失败: %v", err)
+			os.Exit(1)
+		}
+	case "up-daemon":
+		// 安装并启动系统后台服务
+		if err := svc.Install(login); err != nil {
+			logger.Error("安装服务失败: %v", err)
+			fmt.Fprintf(os.Stderr, "安装服务失败: %v\n", err)
+			os.Exit(1)
+		}
+		if err := svc.Start(); err != nil {
+			logger.Error("启动服务失败: %v", err)
+			fmt.Fprintf(os.Stderr, "启动服务失败: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("后台服务已安装并启动")
+		if login != "" {
+			fmt.Printf("启动平台: %s\n", login)
+		}
+	case "down":
+		// 停止并卸载系统服务
+		_ = svc.Stop()
+		if err := svc.Uninstall(); err != nil {
+			logger.Error("卸载服务失败: %v", err)
+			fmt.Fprintf(os.Stderr, "卸载服务失败: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("服务已停止并卸载")
+	case "run":
+		// 内部参数：由系统服务管理器调用
+		if err := svc.RunAsService(svc.ServiceConfig{Login: login}); err != nil {
+			logger.Error("服务运行失败: %v", err)
+			os.Exit(1)
+		}
+	default:
+		fmt.Fprintf(os.Stderr, "未知的命令: %s\n", cmd)
+		os.Exit(1)
 	}
 }

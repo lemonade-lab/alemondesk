@@ -33,6 +33,13 @@ const SettingsList = () => {
       onClick: () => {
         navigate('/settings/about')
       }
+    },
+    {
+      children: '数据',
+      path: '/settings/redis',
+      onClick: () => {
+        navigate('/settings/redis')
+      }
     }
   ]
 

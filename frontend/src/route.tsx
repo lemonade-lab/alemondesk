@@ -10,6 +10,7 @@ import Theme from './views/Splitter/SettingsList/Setting/Theme'
 import Files from './views/Splitter/SettingsList/Setting/Files/App'
 import About from './views/Splitter/SettingsList/Setting/About'
 import AISettings from './views/Splitter/SettingsList/Setting/AISettings'
+import Redis from './views/Splitter/SettingsList/Setting/Redis'
 
 const router = createHashRouter([
   {
@@ -60,6 +61,10 @@ const router = createHashRouter([
           {
             path: 'about',
             element: <About />
+          },
+          {
+            path: 'redis',
+            element: <Redis />
           }
         ]
       },
