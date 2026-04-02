@@ -101,7 +101,9 @@ function Terminal() {
         setInstalling(false)
       }
     })
-    return () => { if (cancel) cancel() }
+    return () => {
+      if (cancel) cancel()
+    }
   }, [])
 
   // 删除日志
@@ -161,67 +163,51 @@ function Terminal() {
   return (
     <Fragment>
       <div className="steps-home-terminal animate__animated animate__fadeIn duration-500 flex-1 size-full flex flex-col shadow-md">
-        <PrimaryDiv className="border-b px-2 py-1 flex gap-4 justify-center items-center">
-          <div className="flex gap-2">
-            {/* 删除按钮示例 */}
-            {[20].map((item, index) => (
-              <Button
-                key={index}
-                className="px-2 text-sm rounded-md"
-                onClick={() => onClickDeleteLog(item)}
-              >
-                删除{item}条
+        <PrimaryDiv className="border-b px-2 py-1 flex gap-2 justify-center items-center">
+          <div className="flex-1 justify-center">机器人操控台</div>
+          {/* 删除按钮示例 */}
+          {[20].map((item, index) => (
+            <Button
+              key={index}
+              className="px-2 text-sm rounded-md"
+              onClick={() => onClickDeleteLog(item)}
+            >
+              删除{item}条日志
+            </Button>
+          ))}
+          <Button className="px-2 text-sm rounded-md" onClick={() => dispatch(clearMessages())}>
+            清空全部日志
+          </Button>
+          <Button
+            type="button"
+            className="px-2 text-sm rounded-md"
+            disabled={installing || bot.runStatus}
+            onClick={onReloadDeps}
+          >
+            <span>{installing ? '安装中...' : '重载依赖'}</span>
+          </Button>
+          <Button
+            type="button"
+            className="px-2 text-sm rounded-md"
+            disabled={restarting}
+            onClick={onRestartExpansions}
+          >
+            <span>{restarting ? '重启中...' : '重启扩展'}</span>
+          </Button>
+          {modules.nodeModulesStatus &&
+            (bot.runStatus ? (
+              <Button type="button" className="px-2 text-sm rounded-md" onClick={onClose}>
+                <span>停止机器人</span>
+              </Button>
+            ) : (
+              <Button type="button" className="px-2 text-sm rounded-md" onClick={onStart}>
+                <span>运行机器人</span>
               </Button>
             ))}
-            <Button
-              className="px-2 text-sm rounded-md"
-              onClick={() => dispatch(clearMessages())}
-            >
-              清空全部
-            </Button>
-          </div>
-          <div className="flex-1 items-center gap-2">
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                className="px-2 rounded-md duration-700 transition-all"
-                disabled={installing || bot.runStatus}
-                onClick={onReloadDeps}
-              >
-                <span>{installing ? '安装中...' : '重载依赖'}</span>
-              </Button>
-              <Button
-                type="button"
-                className="px-2 rounded-md duration-700 transition-all"
-                disabled={restarting}
-                onClick={onRestartExpansions}
-              >
-                <span>{restarting ? '重启中...' : '重启扩展'}</span>
-              </Button>
-              {modules.nodeModulesStatus &&
-                (bot.runStatus ? (
-                  <Button
-                    type="button"
-                    className="  px-2 rounded-md  duration-700 transition-all  "
-                    onClick={onClose}
-                  >
-                    <span>关闭</span>
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    className="  px-2 rounded-md  duration-700 transition-all  "
-                    onClick={onStart}
-                  >
-                    <span>启动</span>
-                  </Button>
-                ))}
-            </div>
-          </div>
         </PrimaryDiv>
         <SecondaryDiv className="border-t" />
         <div className="relative flex-1 size-full overflow-hidden">
-          <Box 
+          <Box
             boxRef={logContainerRef}
             className="p-1 h-full overflow-y-auto"
             onBoxScroll={handleScroll}

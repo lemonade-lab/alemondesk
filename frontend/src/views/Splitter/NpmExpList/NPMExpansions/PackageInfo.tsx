@@ -14,8 +14,8 @@ import {
 import { AntdIcon } from '@/common/ui/AntdIcon'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
 import { GitPull, GitDelete } from '@wailsjs/window/git/app'
-import { ExpansionsPostMessage } from '@wailsjs/window/expansions/app'
-import { RESOURCE_PROTOCOL_PREFIX } from '@/api/config'
+import { ExpansionsPostMessage, ExpansionsClose, ExpansionsRun } from '@wailsjs/window/expansions/app'
+import { RESOURCE_PROTOCOL_PREFIX, SystemPackage } from '@/api/config'
 import { Events } from '@wailsio/runtime'
 import { fetchPackageInfo } from '@/api'
 import Markdown from '@/common/Markdown'
@@ -23,9 +23,7 @@ import { PackageInfoType } from '@/views/types'
 import Box from '@/common/layout/Box'
 import { usePop } from '@/context/Pop'
 const EventsOn = Events.On
-
-const SystemPackage = ['alemonjs', '@alemonjs/process', '@alemonjs/db', 'jsxp', 'npm', 'yarn']
-
+ 
 export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoType }) {
   const [pkgInfo, setPkgInfo] = useState<PackageInfoType>(packageInfo)
   const pkgInfoRef = useRef<PackageInfoType>(packageInfo)
@@ -179,8 +177,11 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
           if (value === 0) {
             notification(`依赖安装失败`, 'warning')
           } else {
-            notification(`${current?.name} 更新完成`)
+            notification(`${current?.name} 更新完成，正在重启扩展...`)
             ExpansionsPostMessage({ type: 'get-expansions', data: '' })
+            // 自动重启扩展
+            ExpansionsClose()
+            setTimeout(() => ExpansionsRun([]), 1000)
           }
         }
         return
@@ -191,10 +192,13 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
         if (value === 0) {
           notification(`更新 ${current?.name} 失败`, 'warning')
         } else {
-          notification(`更新 ${current?.name} 完成`)
+          notification(`更新 ${current?.name} 完成，正在重启扩展...`)
           if (!current) return
           dispatch(addPackage({ name: current.name, version: current['dist-tags'].latest }))
           ExpansionsPostMessage({ type: 'add-expansions', data: current.name })
+          // 自动重启扩展
+          ExpansionsClose()
+          setTimeout(() => ExpansionsRun([]), 1000)
         }
         return
       }

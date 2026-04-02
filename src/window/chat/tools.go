@@ -402,6 +402,71 @@ func getAllTools() []ToolDef {
 			},
 		},
 		{
+			Name:           "search_plugins",
+			Description:    "搜索推荐的 alemonjs 开源插件/扩展。当用户询问有哪些插件、推荐什么插件、想要某类功能的插件时调用。支持按关键词搜索（如 AI、游戏、米哈游等），也可不传关键词获取全部列表。",
+			RequireConfirm: false,
+			Parameters: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"keyword": map[string]interface{}{
+						"type":        "string",
+						"description": "搜索关键词，如 AI、游戏、米哈游、原神、语音等。留空则返回全部插件。",
+					},
+				},
+			},
+		},
+		{
+			Name:           "search_docs",
+			Description:    "搜索 alemonjs 官方文档。当用户想了解 alemonjs、问开发/使用问题、问如何配置/部署/开发插件等问题时调用。支持按关键词搜索（如 路由、消息、配置、平台、hook 等），留空则返回文档目录。",
+			RequireConfirm: false,
+			Parameters: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"keyword": map[string]interface{}{
+						"type":        "string",
+						"description": "搜索关键词，如 路由、hook、消息类型、配置、平台、桌面、中间件等。留空则返回文档目录。",
+					},
+				},
+			},
+		},
+		{
+			Name:           "search_source",
+			Description:    "搜索 alemonjs 框架源码相关知识。当用户问框架源码、架构设计、核心实现、Hook系统源码、事件处理管线、CBP协议、平台适配器等框架底层问题时调用。",
+			RequireConfirm: false,
+			Parameters: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"keyword": map[string]interface{}{
+						"type":        "string",
+						"description": "搜索关键词，如 hook、事件处理、CBP、Format、路由匹配、平台适配器等。留空则返回全部源码知识。",
+					},
+				},
+			},
+		},
+		{
+			Name:           "search_dev_skill",
+			Description:    "搜索 alemonjs 插件/扩展/功能的快速开发指南。当用户问如何开发插件、写handler、写路由、消息格式、中间件写法、项目结构标准等开发实践问题时调用。",
+			RequireConfirm: false,
+			Parameters: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"keyword": map[string]interface{}{
+						"type":        "string",
+						"description": "搜索关键词，如 handler、路由、消息格式、中间件、生命周期、jsxp、lvyjs等。留空则返回完整开发指南。",
+					},
+				},
+			},
+		},
+		{
+			Name:           "sync_knowledge",
+			Description:    "同步知识库仓库。当用户要求同步/更新/拉取知识库，或搜索知识时提示未同步时调用。会从 GitHub 克隆或更新官方文档、插件列表、框架源码、开发指南等仓库到本地。",
+			RequireConfirm: true,
+			Parameters: map[string]interface{}{
+				"type":       "object",
+				"properties": map[string]interface{}{},
+			},
+		},
+		{
 			Name:           "edit_bot_config",
 			Description:    "编辑机器人配置。可修改平台(login)、端口(port)、连接地址(url)、管理员ID(master_id)、屏蔽用户(disabled_user_id)、消息事件开关(disabled_selects)、全量消息接收(is_full_receive)等，也可设置任意自定义字段（如插件配置，用点号分隔嵌套路径，如 mysql.port）",
 			RequireConfirm: true,

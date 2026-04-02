@@ -71,7 +71,6 @@ img {
   border-radius: 16px;
   background: var(--alemonjs-input-bg);
   color: var(--alemonjs-input-text);
-  overflow: hidden;
   transition: border-color 0.2s, box-shadow 0.2s;
 
   &:focus-within {
@@ -309,7 +308,7 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 14px;
+  padding: 4px 12px;
   border-radius: 16px;
   border: 1px solid var(--alemonjs-button-border);
   background: var(--alemonjs-secondary-bg);
@@ -317,6 +316,8 @@ img {
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  font-size: 12px;
+  flex-shrink: 0;
 
   &:hover {
     border-color: var(--alemonjs-button-border-hover);
@@ -326,6 +327,11 @@ img {
   }
   &:active {
     transform: translateY(0);
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
   }
 }
 

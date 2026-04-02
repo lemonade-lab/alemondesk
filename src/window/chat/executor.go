@@ -294,6 +294,31 @@ func (te *ToolExecutor) ExecuteTool(name string, argsJSON string) (string, error
 		te.services.Bot.BotRun([]string{})
 		return "已发送重启机器人指令（先停止再启动）", nil
 
+	case "search_plugins":
+		keyword, _ := args["keyword"].(string)
+		if keyword == "" {
+			return GetPluginKnowledge(), nil
+		}
+		return GetPluginsByKeyword(keyword), nil
+
+	case "search_docs":
+		keyword, _ := args["keyword"].(string)
+		if keyword == "" {
+			return GetDocsIndex(), nil
+		}
+		return SearchDocs(keyword), nil
+
+	case "search_source":
+		keyword, _ := args["keyword"].(string)
+		return SearchSource(keyword), nil
+
+	case "search_dev_skill":
+		keyword, _ := args["keyword"].(string)
+		return SearchSkill(keyword), nil
+
+	case "sync_knowledge":
+		return SyncKnowledgeRepos(), nil
+
 	case "list_installed_packages":
 		pathsState := te.services.App.AppGetPathsState()
 		pkgPath := pathsState.UserDataPackagePath

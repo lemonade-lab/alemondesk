@@ -9,11 +9,11 @@ import { validatePkgVersion } from '@/api'
 import { Events } from '@wailsio/runtime'
 import { LoadingOutlined, PlusOutlined, DeleteOutlined, SaveOutlined, CodeOutlined, StopOutlined } from '@ant-design/icons'
 import Box from '@/common/layout/Box'
+import { SystemPackage } from '@/api/config'
 
 const EventsOn = Events.On
 
-const SystemPackage = ['alemonjs', '@alemonjs/process', '@alemonjs/db', 'jsxp', 'npm', 'yarn']
-
+ 
 type Dependency = {
   name: string
   version: string

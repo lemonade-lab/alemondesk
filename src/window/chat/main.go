@@ -57,10 +57,13 @@ const systemPrompt = `你的身份：你是阿柠檬框架桌面版的助手，�
 - 不要编造、不要乱承诺、遇到敏感问题时回答"无法理解"。
 - 如果不确定该用哪个工具，先询问用户，不要猜测。
 
-核心概念（回答用户时请基于这些定义）：
-1. 应用扩展/包扩展/包/插件/npm包：指 alemonjs 机器人的插件。插件可自定义 webview 让桌面渲染，实现可视化编辑插件级配置。
-2. 依赖：alemonjs 通过 yarn 工具管理依赖，安装/卸载/升级包都是依赖操作。
-3. 主题：桌面的 UI 样式 JSON 配置文件。用户想改主题风格时（如"猛男粉""赛博朋克""淡蓝色"），必须直接调用 edit_theme_variables 工具，不需要先查，不要只用文字描述"已应用"——必须实际调用工具才能生效。只改需要的变量，不要改全部。
+核心概念（回答用户时请严格基于这些定义，不要混淆）：
+1. 插件/扩展/包/功能/仓库：指开发者提供的**机器人功能插件**（npm 包），用于给机器人添加各种功能。插件通过 @alemonjs/ 或 alemonjs- 开头的包名被识别。
+2. 扩展器/桌面扩展：指**桌面渲染进程**。扩展器是一个独立进程，能识别插件并通过 webview 通讯渲染开发者自定义的 UI 界面（App 管理器）。扩展器不仅管理插件，还能加载开发者自定义的 webview 应用。
+3. 插件列表/应用中心：一般指开发者提供的**机器人功能插件的仓库列表**。但如果用户提到"桌面应用中心"，则指桌面加载后才出现的**桌面扩展应用列表**，两者不同。
+4. 机器人 vs 扩展器：这是**两个独立进程**。机器人进程运行 alemonjs 框架处理消息；扩展器进程负责插件管理和 webview 渲染。两者独立启动/停止，互不影响。
+5. 依赖：alemonjs 通过 yarn 工具管理依赖，安装/卸载/升级包都是依赖操作。
+6. 主题：桌面的 UI 样式 JSON 配置文件。用户想改主题风格时（如"猛男粉""赛博朋克""淡蓝色"），必须直接调用 edit_theme_variables 工具，不需要先查，不要只用文字描述"已应用"——必须实际调用工具才能生效。只改需要的变量，不要改全部。
    关键变量名（不含alemonjs-前缀，深色模式加dark-前缀）：
    背景: primary-bg, secondary-bg, header-bg, nav-bg, bar-bg, sidebar-bg
    边框: primary-border, header-border, nav-border, bar-border, sidebar-border
@@ -69,10 +72,13 @@ const systemPrompt = `你的身份：你是阿柠檬框架桌面版的助手，�
    输入框: input-bg, input-border, input-text
    悬停: primary-bg-hover, bar-bg-hover, tag-bg-hover, tag-text-hover
    改风格时只需修改上述 20-30 个核心变量即可。
-4. 扩展器：插件被应用识别后，通过 webview 通讯渲染出来的 App 管理器。
-5. 扩展管理：识别 @alemonjs/ 和 alemonjs- 开头的 npm 包，进行依赖管理。
-6. 仓库管理：本地用 git 管理源码，重新拉取依赖后变成 npm 依赖包，被 alemonjs 框架进程识别。
-7. 平台与启动：机器人通过配置文件中的 login 字段指定运行平台。例如用户说"启动QQ机器人"，意思是将 login 设为对应平台值后启动。常见平台值：qq-bot(QQ机器人)、discord(Discord)、telegram(Telegram)、kook(KOOK)、one-bot(OneBot协议)。如果当前 login 已是目标平台则直接启动；否则需先用 edit_bot_config 修改 login，再用 start_bot 启动。
+7. 仓库管理：本地用 git 管理源码，重新拉取依赖后变成 npm 依赖包，被 alemonjs 框架进程识别。
+8. 平台与启动：机器人通过配置文件中的 login 字段指定运行平台。例如用户说"启动QQ机器人"，意思是将 login 设为对应平台值后启动。常见平台值：qq-bot(QQ机器人)、discord(Discord)、telegram(Telegram)、kook(KOOK)、one-bot(OneBot协议)。如果当前 login 已是目标平台则直接启动；否则需先用 edit_bot_config 修改 login，再用 start_bot 启动。
+9. 插件推荐：当用户问"有什么插件""推荐插件""可以装哪些插件"等问题时，必须调用 search_plugins 工具获取最新的开源插件列表，不要凭记忆回答。
+10. 文档查询：当用户想了解 alemonjs（如"alemonjs 是什么""怎么开发插件""怎么配置""路由怎么写"等），必须调用 search_docs 工具从官方文档中获取内容来回答，不要凭记忆编造。
+11. 源码查询：当用户问框架源码相关问题（如"alemonjs 架构""Hook 怎么实现""事件处理管线""CBP协议"等），必须调用 search_source 工具获取框架源码知识来回答。
+12. 开发指南：当用户问如何快速开发一个扩展/功能/插件（如"怎么写handler""路由标准""消息格式怎么用""项目结构"等），必须调用 search_dev_skill 工具获取开发技能指南来回答。
+13. 知识库同步：当调用 search_plugins/search_docs/search_source/search_dev_skill 返回"知识库尚未同步"时，你必须立即调用 sync_knowledge 工具来同步知识库，不要让用户手动操作。同步完成后再重新调用之前的搜索工具回答问题。
 
 配置文件说明（alemon.config.yaml）：
 机器人的配置文件是 YAML 格式，关键字段：login(平台)、port(WS端口)、serverPort(HTTP端口)、url(连接地址)、is_full_receive(全量消息)、master_id(管理员)、bot_id(机器人ID)、disabled_selects(禁用事件)、processor.repeated_event_time/repeated_user_time(过滤时间ms)。
@@ -80,6 +86,8 @@ const systemPrompt = `你的身份：你是阿柠檬框架桌面版的助手，�
 
 // NewApp 创建聊天服务实例
 func NewApp() *App {
+	// 启动后台知识库预加载
+	StartKnowledgePreload()
 	return &App{
 		config: ChatConfig{
 			APIEndpoint: "https://api.deepseek.com/chat/completions",
@@ -671,7 +679,15 @@ func (a *App) detectToolFromText(text string) *ToolCall {
 		// Git
 		{[]string{"拉取更新", "git fetch", "同步仓库", "更新仓库"}, "git_fetch", "{}"},
 		{[]string{"切换分支", "git checkout", "换分支"}, "git_checkout", "{}"},
-		{[]string{"查看仓库", "列出仓库", "功能包", "插件列表", "list repos"}, "list_repos", `{"space":"packages"}`},
+		{[]string{"查看仓库", "列出仓库", "功能包", "list repos"}, "list_repos", `{"space":"packages"}`},
+		// 插件推荐
+		{[]string{"插件列表", "推荐插件", "有什么插件", "哪些插件", "推荐扩展", "有什么扩展", "哪些扩展", "安装什么插件", "有哪些包", "推荐什么包"}, "search_plugins", "{}"},
+		// 文档查询
+		{[]string{"alemonjs是什么", "了解alemonjs", "alemonjs文档", "怎么配置", "路由怎么写", "hook怎么用", "中间件", "消息类型", "数据类型", "怎么部署", "怎么用alemonjs", "教程", "入门", "文档"}, "search_docs", "{}"},
+		// 源码查询
+		{[]string{"源码", "架构设计", "框架源码", "底层实现", "核心实现", "cbp协议", "事件处理管线", "alemonjs源码", "hook实现", "平台适配器源码"}, "search_source", "{}"},
+		// 开发指南
+		{[]string{"怎么开发", "开发插件", "开发扩展", "开发功能", "快速开发", "写handler", "写路由", "项目结构", "开发指南", "handler怎么写", "消息格式怎么用", "格式化消息"}, "search_dev_skill", "{}"},
 		// 系统
 		{[]string{"版本信息", "版本号", "version", "查看版本", "查询版本"}, "get_versions", "{}"},
 		// 导航

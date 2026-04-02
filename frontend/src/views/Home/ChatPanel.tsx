@@ -183,15 +183,6 @@ const ChatPanel: React.FC = () => {
           { label: '仓库列表', text: '列出所有仓库' },
           { label: '克隆仓库', text: '帮我克隆一个仓库' }
         ]
-      },
-      {
-        title: '🔧 信息 & 导航',
-        items: [
-          { label: '版本信息', text: '查看版本信息' },
-          { label: '查看路径', text: '获取应用所有路径' },
-          { label: '去配置页', text: '帮我导航到配置页面' },
-          { label: '去设置页', text: '帮我导航到设置页面' }
-        ]
       }
     ],
     []
@@ -202,25 +193,8 @@ const ChatPanel: React.FC = () => {
       {/* 消息列表 */}
       <div className="flex-1 min-h-0 overflow-y-auto chat-messages-scroll">
         {activeMessages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full select-none px-6 overflow-y-auto">
-            <div className="flex flex-col gap-4 max-w-lg w-full py-6">
-              {quickCategories.map(cat => (
-                <div key={cat.title} className="flex flex-col gap-2">
-                  <div className="text-xs font-medium opacity-50 pl-1">{cat.title}</div>
-                  <div className="flex flex-wrap gap-2">
-                    {cat.items.map(q => (
-                      <button
-                        key={q.label}
-                        className="chat-quick-btn"
-                        onClick={() => handleSend(q.text)}
-                      >
-                        <span className="text-xs">{q.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="flex flex-col items-center justify-center h-full select-none px-6 opacity-40">
+            <div className="text-sm">输入消息或点击工具栏 <span className="font-mono bg-secondary-bg dark:bg-dark-secondary-bg px-1 rounded">/</span> 快捷指令开始对话</div>
           </div>
         ) : (
           <div className="py-4">
@@ -253,6 +227,7 @@ const ChatPanel: React.FC = () => {
         onClear={handleClear}
         editingContent={editingContent}
         onEditingConsumed={handleEditingConsumed}
+        quickCategories={quickCategories}
       />
     </div>
   )
