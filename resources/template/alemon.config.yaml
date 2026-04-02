@@ -1,3 +1,4 @@
+# https://alemonjs.com/docs/config
 # alemonjs 配置文件
 # websocket 服务端口（可选，留空使用默认值）
 # port:

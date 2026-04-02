@@ -1,4 +1,4 @@
-import { extractRepoInfo, isGitRepositoryFormat } from '@/api'
+import { extractRepoInfo, isGitRepositoryFormat, normalizeGitUrl } from '@/api'
 import { useNotification } from '@/context/Notification'
 import { RootState } from '@/store'
 import { Button, Input, Switch } from '@alemonjs/react-ui'
@@ -39,17 +39,18 @@ export default function CloneForm() {
   }
 
   const onClone = async () => {
-    const value = gitExp.addValues?.repoUrl.trim()
-    if (value === '') {
+    const raw = gitExp.addValues?.repoUrl.trim()
+    if (raw === '') {
       notification('请输入仓库地址', 'warning')
       return
     }
     if (gitExp.isAddLoading) return
 
     dispatch(setAddLoading(true))
+    const value = normalizeGitUrl(raw)
     try {
       if (!isGitRepositoryFormat(value)) {
-        notification('格式错误', 'warning')
+        notification('格式错误，示例: user/repo 或 https://github.com/user/repo.git', 'warning')
         dispatch(setAddLoading(false))
         return
       }

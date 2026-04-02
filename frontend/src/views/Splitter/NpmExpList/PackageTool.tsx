@@ -5,6 +5,7 @@ import { useNotification } from '@/context/Notification'
 import { Button, Input, PrimaryDiv, SecondaryDiv, Select } from '@alemonjs/react-ui'
 import { AppExists, AppReadFiles, AppWriteFiles } from '@wailsjs/window/app/app'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
+import { validatePkgVersion } from '@/api'
 import { Events } from '@wailsio/runtime'
 import { LoadingOutlined, PlusOutlined, DeleteOutlined, SaveOutlined, CodeOutlined, StopOutlined } from '@ant-design/icons'
 import Box from '@/common/layout/Box'
@@ -142,6 +143,7 @@ export default function PackageTool() {
       notification(`系统包 ${missing.join(', ')} 不可移除`, 'warning')
       return
     }
+
     const newJson = { ...rawJson, dependencies }
     const content = JSON.stringify(newJson, null, 2)
     const ok = await AppWriteFiles(pkgPath, content)
@@ -149,6 +151,19 @@ export default function PackageTool() {
       setSaved(true)
       setRawJson(newJson)
       notification('保存成功')
+      // 后台校验包版本，不阻塞保存
+      const entries = Object.entries(dependencies)
+      Promise.all(
+        entries.map(([name, ver]) => validatePkgVersion(name, ver))
+      ).then(results => {
+        const warnings: string[] = []
+        results.forEach((r, i) => {
+          if (!r.valid) warnings.push(r.error || `${entries[i][0]}@${entries[i][1]} 无效`)
+        })
+        if (warnings.length > 0) {
+          notification('部分依赖版本异常：' + warnings.join('；'), 'warning')
+        }
+      })
     } else {
       notification('保存失败', 'error')
     }

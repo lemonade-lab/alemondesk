@@ -13,6 +13,53 @@ const FILE_URL = 'https://cdn.npmmirror.com/packages'
 
 const HUB_URL = 'https://api.github.com/repos'
 
+/**
+ * 智能补全 Git 仓库地址
+ * 支持输入格式：
+ *   user/repo
+ *   github.com/user/repo
+ *   github.com:user/repo
+ *   https://github.com/user/repo
+ *   https://github.com/user/repo.git
+ *   git@github.com:user/repo.git
+ * 统一输出为完整的 https://.../xxx.git 格式
+ */
+export function normalizeGitUrl(input: string): string {
+  let url = input.trim()
+  if (!url) return url
+
+  // 已经是 SSH 格式，直接返回（补 .git）
+  if (/^git@/.test(url)) {
+    return url.endsWith('.git') ? url : url + '.git'
+  }
+
+  // 处理 domain:user/repo 格式（无 git@ 前缀的冒号分隔），转为 domain/user/repo
+  url = url.replace(/^([^/:]+):([^/])/, '$1/$2')
+
+  // 去掉协议头，统一处理
+  const stripped = url.replace(/^https?:\/\//, '').replace(/^www\./, '')
+
+  // 拆分路径段
+  const parts = stripped.split('/').filter(Boolean)
+
+  if (parts.length === 2) {
+    // 只有 user/repo，默认补全为 github.com
+    url = 'https://github.com/' + parts.join('/')
+  } else if (parts.length >= 3) {
+    // 有域名/user/repo，补全协议
+    url = 'https://' + parts.join('/')
+  } else {
+    // 只有一个段或为空，无法识别
+    return url
+  }
+
+  // 补全 .git 后缀
+  if (!url.endsWith('.git')) {
+    url += '.git'
+  }
+  return url
+}
+
 // 判断一个 URL 是否是 Git 仓库 格式
 export function isGitRepositoryFormat(url: string) {
   if (!/^(https:\/\/|git@).*\.git$/.test(url)) {
@@ -127,6 +174,65 @@ export const fetchPackageInfo = async (packageName: string) => {
   }
   console.log('response', response)
   return data
+}
+
+// 包版本校验缓存: key = "name@version" -> true(有效) / false(无效)
+const pkgVersionCache = new Map<string, boolean>()
+
+/**
+ * 校验 npm 包版本是否存在
+ * 支持 latest / ^x.x.x / ~x.x.x / x.x.x / >=x.x.x 等格式
+ * 带缓存，相同 name@version 不会重复请求
+ * @returns { valid: boolean, resolved?: string, error?: string }
+ */
+export const validatePkgVersion = async (
+  name: string,
+  version: string
+): Promise<{ valid: boolean; resolved?: string; error?: string }> => {
+  const cacheKey = `${name}@${version}`
+  if (pkgVersionCache.has(cacheKey)) {
+    return pkgVersionCache.get(cacheKey)!
+      ? { valid: true, resolved: version }
+      : { valid: false, error: `${cacheKey} 不存在` }
+  }
+  try {
+    const res = await axios.get(`${BASE_URL}/${encodeURIComponent(name)}`)
+    const data = res.data
+    const distTags = data['dist-tags'] || {}
+    const versions = Object.keys(data.versions || {})
+
+    // latest / next 等 dist-tag
+    if (version in distTags) {
+      pkgVersionCache.set(cacheKey, true)
+      return { valid: true, resolved: distTags[version] }
+    }
+
+    // 精确版本号
+    const bare = version.replace(/^[\^~>=<]+/, '')
+    if (versions.includes(bare)) {
+      pkgVersionCache.set(cacheKey, true)
+      return { valid: true, resolved: bare }
+    }
+
+    // 带范围前缀（^1.0.0 等），只要裸版本存在就视为合法
+    if (bare !== version && versions.includes(bare)) {
+      pkgVersionCache.set(cacheKey, true)
+      return { valid: true, resolved: bare }
+    }
+
+    // 通配符 * 始终合法
+    if (version === '*') {
+      pkgVersionCache.set(cacheKey, true)
+      return { valid: true, resolved: distTags['latest'] || versions[versions.length - 1] }
+    }
+
+    pkgVersionCache.set(cacheKey, false)
+    return { valid: false, error: `${name}@${version} 版本不存在` }
+  } catch {
+    // 包本身不存在
+    pkgVersionCache.set(cacheKey, false)
+    return { valid: false, error: `包 ${name} 不存在或网络异常` }
+  }
 }
 
 // 获取包的版本信息
