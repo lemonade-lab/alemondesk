@@ -5,13 +5,15 @@ import {
   RedisGetStatus,
   RedisStart,
   RedisStop,
-  RedisRestart
+  RedisRestart,
+  RedisSetAddr
 } from '@wailsjs/window/service/app'
 
 interface RedisStatus {
   running: boolean
   addr: string
   builtin: boolean
+  listenAddr: string
 }
 
 const Redis = () => {
@@ -19,13 +21,16 @@ const Redis = () => {
   const [status, setStatus] = useState<RedisStatus>({
     running: false,
     addr: '',
-    builtin: false
+    builtin: false,
+    listenAddr: '127.0.0.1:6379'
   })
   const [loading, setLoading] = useState(false)
+  const [editAddr, setEditAddr] = useState('')
 
   const fetchStatus = useCallback(async () => {
     const res = await RedisGetStatus()
     setStatus(res)
+    setEditAddr(res.listenAddr)
   }, [])
 
   useEffect(() => {
@@ -34,6 +39,15 @@ const Redis = () => {
 
   const handleStart = async () => {
     setLoading(true)
+    // 先保存地址设置
+    if (editAddr && editAddr !== status.listenAddr) {
+      const setErr = await RedisSetAddr(editAddr)
+      if (setErr) {
+        notification(`设置地址失败: ${setErr}`)
+        setLoading(false)
+        return
+      }
+    }
     const err = await RedisStart()
     if (err) {
       notification(`启动失败: ${err}`)
@@ -92,8 +106,20 @@ const Redis = () => {
 
               <div className="flex items-center gap-2">
                 <div className="w-40 text-sm shrink-0">监听地址</div>
-                <div className="flex-1 text-xs text-secondary-text font-mono">
-                  {status.addr || '-'}
+                <div className="flex-1">
+                  {status.running ? (
+                    <span className="text-xs text-secondary-text font-mono">
+                      {status.addr || '-'}
+                    </span>
+                  ) : (
+                    <input
+                      type="text"
+                      className="w-full px-2 py-1 text-xs font-mono rounded border border-secondary-border dark:border-dark-secondary-border bg-transparent"
+                      value={editAddr}
+                      onChange={e => setEditAddr(e.target.value)}
+                      placeholder="127.0.0.1:6379"
+                    />
+                  )}
                 </div>
               </div>
 

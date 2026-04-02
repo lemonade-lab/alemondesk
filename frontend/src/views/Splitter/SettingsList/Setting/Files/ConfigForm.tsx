@@ -379,13 +379,6 @@ export default function ConfigForm({ dir }: Props) {
         {/* ===== 权限管理 ===== */}
         <Section title="权限管理">
           <StringListField
-            label="管理员 ID"
-            hint="设置拥有管理员权限的用户ID"
-            placeholder="输入用户ID"
-            items={form.master_id}
-            onChange={v => update('master_id', v)}
-          />
-          <StringListField
             label="管理员 Key"
             hint="设置拥有管理员权限的用户Key"
             placeholder="输入用户Key"
@@ -393,18 +386,25 @@ export default function ConfigForm({ dir }: Props) {
             onChange={v => update('master_key', v)}
           />
           <StringListField
-            label="机器人 ID"
-            hint="将指定用户标识为机器人"
-            placeholder="输入用户ID"
-            items={form.bot_id}
-            onChange={v => update('bot_id', v)}
-          />
-          <StringListField
             label="机器人 Key"
             hint="将指定用户标识为机器人"
             placeholder="输入用户Key"
             items={form.bot_key}
             onChange={v => update('bot_key', v)}
+          />
+          <StringListField
+            label="管理员 ID"
+            hint="设置拥有管理员权限的用户ID"
+            placeholder="输入用户ID"
+            items={form.master_id}
+            onChange={v => update('master_id', v)}
+          />
+          <StringListField
+            label="机器人 ID"
+            hint="将指定用户标识为机器人"
+            placeholder="输入用户ID"
+            items={form.bot_id}
+            onChange={v => update('bot_id', v)}
           />
         </Section>
 

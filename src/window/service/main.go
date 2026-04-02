@@ -89,18 +89,20 @@ func (a *App) ServiceStatus() string {
 // --- Redis 管理 ---
 
 type RedisStatusInfo struct {
-	Running bool   `json:"running"`
-	Addr    string `json:"addr"`
-	Builtin bool   `json:"builtin"`
+	Running    bool   `json:"running"`
+	Addr       string `json:"addr"`
+	Builtin    bool   `json:"builtin"`
+	ListenAddr string `json:"listenAddr"`
 }
 
 // RedisGetStatus 获取 Redis 状态
 func (a *App) RedisGetStatus() RedisStatusInfo {
 	s := embedredis.GetStatus()
 	return RedisStatusInfo{
-		Running: s.Running,
-		Addr:    s.Addr,
-		Builtin: s.Builtin,
+		Running:    s.Running,
+		Addr:       s.Addr,
+		Builtin:    s.Builtin,
+		ListenAddr: s.ListenAddr,
 	}
 }
 
@@ -130,5 +132,15 @@ func (a *App) RedisRestart() string {
 		return err.Error()
 	}
 	logger.Info("Redis 已重启")
+	return ""
+}
+
+// RedisSetAddr 设置监听地址（仅停止时可修改）
+func (a *App) RedisSetAddr(newAddr string) string {
+	err := embedredis.SetListenAddr(newAddr)
+	if err != nil {
+		logger.Error("设置 Redis 地址失败: %v", err)
+		return err.Error()
+	}
 	return ""
 }
