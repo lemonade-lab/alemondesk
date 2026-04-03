@@ -5,6 +5,7 @@ import { RootState } from '@/store'
 import { useDispatch, useSelector } from 'react-redux'
 import { setAbout } from '@/store/about'
 import { PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
+import { Browser } from '@wailsio/runtime'
 
 const About = () => {
   const about = useSelector((state: RootState) => state.about)
@@ -40,14 +41,14 @@ const About = () => {
                   {about.platform}-{about.arch}-{about.node}
                 </div>
                 <div>Copyright © 2024-present Lemonade-Lab</div>
-                <a
-                  href="https://alemonjs.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <div
+                  onClick={() => {
+                    Browser.OpenURL('https://alemonjs.com')
+                  }}
                   className="select-text text-blue-500 hover:underline cursor-pointer"
                 >
                   https://alemonjs.com
-                </a>
+                </div>
               </div>
             </div>
           </PrimaryDiv>

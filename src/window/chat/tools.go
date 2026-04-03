@@ -138,6 +138,15 @@ func getAllTools() []ToolDef {
 			},
 		},
 		{
+			Name:           "yarn_reinstall",
+			Description:    "删除 yarn.lock 后重新安装所有依赖",
+			RequireConfirm: true,
+			Parameters: map[string]interface{}{
+				"type":       "object",
+				"properties": map[string]interface{}{},
+			},
+		},
+		{
 			Name:           "install_package",
 			Description:    "使用 yarn 安装一个 npm 包",
 			RequireConfirm: true,

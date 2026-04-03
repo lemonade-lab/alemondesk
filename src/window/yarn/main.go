@@ -246,6 +246,38 @@ func (a *App) YarnCommands(p1 YarnCommandsParams) {
 				"error": error,
 			})
 		}
+	case "reinstall":
+		// 先删除 yarn.lock
+		lockPath := paths.GetBotYarnLockFilePath(config.BotName)
+		if _, err := os.Stat(lockPath); err == nil {
+			if err := os.Remove(lockPath); err != nil {
+				logger.Error("删除 yarn.lock 失败: %v", err)
+			}
+		}
+
+		// 不存在，则尝试从已有的压缩文件中解压
+		destPath := paths.GetBotDependencyPath(config.BotName)
+		alemonjsPath := filepath.Join(destPath, "alemonjs")
+		if _, err := os.Stat(alemonjsPath); os.IsNotExist(err) {
+			dependenciesArchivePath := files.GetDependenciesArchivePath()
+			if err := utils.ExtractFileTo(dependenciesArchivePath, destPath); err != nil {
+				logger.Error("缓存读取失败: %v", err)
+			}
+		}
+
+		// 重新安装依赖
+		res, error := logicyarn.Install(config.BotName)
+		data := 0
+		if res {
+			data = 1
+		}
+		if a.ctx != nil {
+			a.application.Emit("yarn", map[string]interface{}{
+				"type":  "reinstall",
+				"data":  data,
+				"error": error,
+			})
+		}
 	default:
 		// 未知命令类型
 		logger.Error("未知的Yarn命令类型: %s", p1.Type)

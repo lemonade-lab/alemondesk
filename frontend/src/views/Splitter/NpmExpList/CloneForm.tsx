@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { GitClone, GitReposList } from '@wailsjs/window/git/app'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
 import { setAddLoading, setAddValues, setExpData, setProxy } from '@/store/gitExp'
+import { CodeOutlined, LoadingOutlined } from '@ant-design/icons'
 
 const PROXY_OPTIONS = [
   { label: 'ghfast.top', value: 'https://ghfast.top/' },
@@ -154,7 +155,7 @@ export default function CloneForm() {
             />
           </div>
           <Button className="px-2 rounded-md" onClick={onClone}>
-            Clone
+ {gitExp.isAddLoading ? <LoadingOutlined /> : <CodeOutlined />} 克隆
           </Button>
         </form>
       </Spin>

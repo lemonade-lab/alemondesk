@@ -7,13 +7,15 @@ import classNames from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { GitClone, GitReposList } from '@wailsjs/window/git/app'
 import { setAddLoading, setAddValues, setExpData } from '@/store/gitExp'
+import { CodeOutlined, LoadingOutlined } from '@ant-design/icons'
 
 export type PackageCloneProps = {
   space: string
   show: boolean
+  className?: string
 }
 
-const PackageClone = ({ space, show }: PackageCloneProps) => {
+const PackageClone = ({ space, show, className }: PackageCloneProps) => {
   const notification = useNotification()
   const gitExp = useSelector((state: RootState) => state.gitExp)
   const dispatch = useDispatch()
@@ -91,7 +93,7 @@ const PackageClone = ({ space, show }: PackageCloneProps) => {
   }
 
   return (
-    <SecondaryDiv className={classNames('p-4', !show && 'hidden')}>
+    <SecondaryDiv className={classNames('p-4', className, !show && 'hidden')}>
       <Spin spinning={gitExp.isAddLoading} tip="操作中...">
         <form
           className="px-4 py-2 flex flex-col gap-4"
@@ -153,7 +155,7 @@ const PackageClone = ({ space, show }: PackageCloneProps) => {
             />
           </div>
           <Button className="px-2 rounded-md" onClick={onAdd}>
-            Clone
+            {gitExp.isAddLoading ? <LoadingOutlined /> : <CodeOutlined />} 克隆
           </Button>
         </form>
       </Spin>

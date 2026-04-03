@@ -5,6 +5,7 @@ import { Button, PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import GuideCommon from '@/views/Guide/Common'
+import { resetAllGuides } from '@/views/Guide/keys'
 import {
   AppDownloadFiles,
   AppExists,
@@ -93,8 +94,7 @@ const Common = () => {
                     <Button
                       className="px-2 rounded-md border"
                       onClick={() => {
-                        const guideKeys = ['FIRST_GUIDE_v3', 'FIRST_GUIDE_HOME_v1', 'FIRST_GUIDE_COMMON_v1', 'FIRST_GUIDE_PKGAPP_v1', 'FIRST_GUIDE_CONFIG_v1', 'FIRST_GUIDE_AISETTINGS_v1']
-                        guideKeys.forEach(k => localStorage.removeItem(k))
+                        resetAllGuides()
                         notification('已重置，刷新页面后将重新显示引导')
                         setTimeout(() => location.reload(), 800)
                       }}

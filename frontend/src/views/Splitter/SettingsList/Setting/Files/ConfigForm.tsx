@@ -216,15 +216,17 @@ function StringListField({
 function Section({
   title,
   defaultOpen = true,
+  className,
   children
 }: {
   title: string
   defaultOpen?: boolean
+  className?: string
   children: React.ReactNode
 }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
-    <div className="border border-secondary-border dark:border-dark-secondary-border rounded-lg overflow-hidden">
+    <div className={`border border-secondary-border dark:border-dark-secondary-border rounded-lg overflow-hidden${className ? ` ${className}` : ''}`}>
       <div
         className="flex items-center justify-between px-4 py-2 cursor-pointer select-none bg-secondary-bg dark:bg-dark-secondary-bg"
         onClick={() => setOpen(!open)}
@@ -338,12 +340,8 @@ export default function ConfigForm({ dir }: Props) {
             保存
           </Button>
         </div>
-        <div className="text-sm text-secondary-text -mt-2">
-          配置机器人的运行参数，保存后重启机器人生效
-        </div>
-
         {/* ===== 基础配置 ===== */}
-        <Section title="基础配置">
+        <Section title="基础配置" className="steps-config-basic">
           <Field
             label="登录平台"
             value={form.login}
@@ -377,7 +375,7 @@ export default function ConfigForm({ dir }: Props) {
         </Section>
 
         {/* ===== 权限管理 ===== */}
-        <Section title="权限管理">
+        <Section title="权限管理" className="steps-config-permission" defaultOpen={false}>
           <StringListField
             label="管理员 Key"
             hint="设置拥有管理员权限的用户Key"
@@ -409,7 +407,7 @@ export default function ConfigForm({ dir }: Props) {
         </Section>
 
         {/* ===== 消息过滤 ===== */}
-        <Section title="消息过滤" defaultOpen={false}>
+        <Section title="消息过滤" className="steps-config-filter" defaultOpen={false}>
           <Field
             label="禁用文本正则"
             value={form.disabled_text_regular}

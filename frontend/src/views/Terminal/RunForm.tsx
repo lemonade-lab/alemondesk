@@ -79,7 +79,7 @@ const RunForm = ({
             e.stopPropagation()
     }}>
       <div className="flex items-center gap-2">
-        <div className=" w-24">登录名</div>
+        <div className=" w-24">平台名</div>
         <Input
           autoCapitalize="off"
           autoCorrect="off"
@@ -87,7 +87,7 @@ const RunForm = ({
           value={fromValue.login}
           onChange={e => onChange({ ...fromValue, login: e.target.value })}
           className="w-full px-2 rounded-md"
-          placeholder="例: qq-bot"
+          placeholder="输入qq-bot或onebot或..."
         />
       </div>
       <div className="flex items-center gap-2">

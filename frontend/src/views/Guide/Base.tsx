@@ -97,6 +97,7 @@ export default function BaseGuide(props: {
   steps: {
     target: string
     content: string
+    placement?: 'top' | 'bottom' | 'left' | 'right' | 'center' | 'auto'
   }[]
   stepIndex?: number
   stepStoreKey?: string
@@ -123,17 +124,17 @@ export default function BaseGuide(props: {
     // 检查本地存储，是否已经显示过引导
     const openKey = localStorage.getItem(stepStoreKey)
     if (!openKey || (openKey && openKey != stepSessionKey)) {
-      // 延迟等待 DOM 渲染完成，再过滤掉不存在的目标元素
+      // 延迟等待 DOM 渲染完成（含动画），再过滤掉不存在的目标元素
       const timer = setTimeout(() => {
         const available = steps.filter(s => document.querySelector(s.target))
         if (available.length > 0) {
           setFilteredSteps(available)
           setStep(1)
         }
-      }, 500)
+      }, 800)
       return () => clearTimeout(timer)
     }
-  }, [stepIndex])
+  }, [stepIndex, stepStoreKey])
 
   return (
     <Joyride

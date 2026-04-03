@@ -99,11 +99,8 @@ const AISettings = () => {
                 保存
               </Button>
             </div>
-            <div className="text-sm text-secondary-text -mt-2">
-              配置 AI 对话模型接口，保存后立即生效
-            </div>
-
             {/* 接口配置 */}
+            <div className="steps-ai-endpoint flex flex-col gap-5">
             <Field
               label="API 地址"
               value={config.apiEndpoint}
@@ -119,6 +116,8 @@ const AISettings = () => {
               type="password"
               hint="本地服务（Ollama 等）无需填写，仅远程 API 需要"
             />
+            </div>
+            <div className="steps-ai-model">
             <Field
               label="模型"
               value={config.model}
@@ -126,6 +125,7 @@ const AISettings = () => {
               placeholder="qwen2.5"
               hint="如 qwen2.5、llama3、deepseek-r1、gpt-4o 等"
             />
+            </div>
             <Field
               label="最大 Tokens"
               value={String(config.maxTokens)}

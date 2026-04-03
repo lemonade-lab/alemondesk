@@ -675,7 +675,8 @@ func (a *App) detectToolFromText(text string) *ToolCall {
 		{[]string{"当前主题", "什么主题", "查看主题", "查询主题", "theme mode"}, "get_theme_mode", "{}"},
 		{[]string{"重置主题", "恢复默认主题", "reset theme"}, "reset_theme", "{}"},
 		// 依赖管理
-		{[]string{"安装依赖", "加载依赖", "拉取依赖", "重新安装依赖", "重装依赖", "install dependencies", "yarn install"}, "yarn_install", "{}"},
+		{[]string{"安装依赖", "加载依赖", "拉取依赖", "install dependencies", "yarn install"}, "yarn_install", "{}"},
+		{[]string{"重新安装依赖", "重装依赖", "删除锁", "删除yarn.lock", "清除锁", "reinstall", "yarn reinstall"}, "yarn_reinstall", "{}"},
 		// Git
 		{[]string{"拉取更新", "git fetch", "同步仓库", "更新仓库"}, "git_fetch", "{}"},
 		{[]string{"切换分支", "git checkout", "换分支"}, "git_checkout", "{}"},
@@ -738,6 +739,11 @@ func getSuggestionsForTool(toolName string) []map[string]string {
 		return []map[string]string{
 			{"label": "启动机器人", "text": "帮我启动机器人"},
 			{"label": "查看版本信息", "text": "查看一下版本信息"},
+		}
+	case "yarn_reinstall":
+		return []map[string]string{
+			{"label": "启动机器人", "text": "帮我启动机器人"},
+			{"label": "安装依赖", "text": "帮我安装依赖"},
 		}
 	case "install_package", "remove_package", "upgrade_package":
 		return []map[string]string{

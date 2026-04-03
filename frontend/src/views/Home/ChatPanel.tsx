@@ -193,8 +193,48 @@ const ChatPanel: React.FC = () => {
       {/* 消息列表 */}
       <div className="flex-1 min-h-0 overflow-y-auto chat-messages-scroll">
         {activeMessages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full select-none px-6 opacity-40">
-            <div className="text-sm">输入消息或点击工具栏 <span className="font-mono bg-secondary-bg dark:bg-dark-secondary-bg px-1 rounded">/</span> 快捷指令开始对话</div>
+          <div className="flex flex-col items-center justify-center h-full select-none px-6 gap-4 max-w-lg mx-auto">
+            <div className="text-base font-semibold opacity-70 mb-1">快速上手</div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full">
+              {/* 启动机器人 */}
+              <div className="flex-1 rounded-lg border border-secondary-border dark:border-dark-secondary-border bg-secondary-bg dark:bg-dark-secondary-bg p-4">
+                <div className="font-semibold text-sm mb-2 flex items-center gap-1.5">
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-500/15 text-blue-500 text-xs font-bold">1</span>
+                  启动机器人
+                </div>
+                <div className="flex flex-col gap-1.5 text-xs opacity-70 pl-6">
+                  <div className="flex items-start gap-1.5">
+                    <span className="shrink-0 mt-0.5 w-1 h-1 rounded-full bg-current opacity-50" />
+                    打开应用中心，输入对应平台配置信息
+                  </div>
+                  <div className="flex items-start gap-1.5">
+                    <span className="shrink-0 mt-0.5 w-1 h-1 rounded-full bg-current opacity-50" />
+                    操控台启动时输入平台名后启动
+                  </div>
+                </div>
+              </div>
+              {/* 加载扩展 */}
+              <div className="flex-1 rounded-lg border border-secondary-border dark:border-dark-secondary-border bg-secondary-bg dark:bg-dark-secondary-bg p-4">
+                <div className="font-semibold text-sm mb-2 flex items-center gap-1.5">
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-500/15 text-green-500 text-xs font-bold">2</span>
+                  加载扩展
+                </div>
+                <div className="flex flex-col gap-1.5 text-xs opacity-70 pl-6">
+                  <div className="flex items-start gap-1.5">
+                    <span className="shrink-0 mt-0.5 w-1 h-1 rounded-full bg-current opacity-50" />
+                    打开扩展中心，进行 添加/克隆
+                  </div>
+                  <div className="flex items-start gap-1.5">
+                    <span className="shrink-0 mt-0.5 w-1 h-1 rounded-full bg-current opacity-50" />
+                    控制台 重启扩展
+                  </div>
+                  <div className="flex items-start gap-1.5">
+                    <span className="shrink-0 mt-0.5 w-1 h-1 rounded-full bg-current opacity-50" />
+                    打开应用中心操作扩展
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="py-4">

@@ -135,7 +135,7 @@ export default function GitExpList() {
 
   return (
     <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col border-l size-full">
-      <div className="flex px-2 py-1 gap-2">
+      <div className="steps-git-tabs flex px-2 py-1 gap-2">
         <Tabs
           value={gitExp.tabValue}
           options={[
@@ -172,12 +172,13 @@ export default function GitExpList() {
         </div>
       </div>
       <PackageList
+        className="steps-git-list"
         show={gitExp.tabValue === '1'}
         data={gitExp.data}
         onDelete={onDelete}
         onSelect={loadRepositoryInfo}
       />
-      <PackageClone show={gitExp.tabValue === '2'} space={gitExp.space} />
+      <PackageClone className="steps-git-clone" show={gitExp.tabValue === '2'} space={gitExp.space} />
     </SidebarDiv>
   )
 }

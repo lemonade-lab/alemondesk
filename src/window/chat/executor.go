@@ -167,6 +167,13 @@ func (te *ToolExecutor) ExecuteTool(name string, argsJSON string) (string, error
 		})
 		return "已开始安装所有依赖", nil
 
+	case "yarn_reinstall":
+		te.services.Yarn.YarnCommands(windowyarn.YarnCommandsParams{
+			Type: "reinstall",
+			Args: []string{},
+		})
+		return "已删除 yarn.lock 并开始重新安装所有依赖", nil
+
 	case "install_package":
 		name, _ := args["name"].(string)
 		te.services.Yarn.YarnCommands(windowyarn.YarnCommandsParams{

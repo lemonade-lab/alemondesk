@@ -163,7 +163,7 @@ function Terminal() {
   return (
     <Fragment>
       <div className="steps-home-terminal animate__animated animate__fadeIn duration-500 flex-1 size-full flex flex-col shadow-md">
-        <PrimaryDiv className="border-b px-2 py-1 flex gap-2 justify-center items-center">
+        <PrimaryDiv className="steps-home-terminal-toolbar border-b px-2 py-1 flex gap-2 justify-center items-center">
           <div className="flex-1 justify-center">机器人操控台</div>
           {/* 删除按钮示例 */}
           {[20].map((item, index) => (

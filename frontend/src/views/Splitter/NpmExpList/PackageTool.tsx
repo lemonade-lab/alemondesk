@@ -100,6 +100,17 @@ export default function PackageTool() {
         }
         return
       }
+
+      if (type === 'reinstall') {
+        setYarnRunning(false)
+        yarnRunningRef.current = false
+        if (value === 0) {
+          notification('重新安装依赖失败', 'warning')
+        } else {
+          notification('重新安装依赖完成')
+        }
+        return
+      }
     })
 
     return () => {
@@ -169,12 +180,12 @@ export default function PackageTool() {
     }
   }
 
-  const runYarnInstall = () => {
+  const runYarnReinstall = () => {
     if (yarnRunning) return
     setYarnRunning(true)
     yarnRunningRef.current = true
-    notification('开始安装依赖...')
-    YarnCommands({ type: 'install', args: ['--ignore-warnings'] })
+    notification('删除 yarn.lock 并重新安装依赖...')
+    YarnCommands({ type: 'reinstall', args: ['--ignore-warnings'] })
   }
 
   const runYarnCmd = () => {
@@ -214,10 +225,10 @@ export default function PackageTool() {
         <div className="flex gap-1 flex-wrap">
           <Button
             className="px-2 py-0.5 text-xs rounded-sm flex items-center gap-1"
-            onClick={runYarnInstall}
+            onClick={runYarnReinstall}
             disabled={yarnRunning}
           >
-            {yarnRunning ? <LoadingOutlined /> : <CodeOutlined />} Install
+            {yarnRunning ? <LoadingOutlined /> : <CodeOutlined />} ReInstall
           </Button>
         </div>
         </div>

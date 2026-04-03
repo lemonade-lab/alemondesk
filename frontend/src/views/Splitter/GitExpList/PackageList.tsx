@@ -7,18 +7,20 @@ import { GitRepoInfo } from '@wailsjs/window/git'
 export default function PackageList({
   data,
   show,
+  className,
   onDelete,
   onSelect
 }: {
   data: GitRepoInfo[]
   show: boolean
+  className?: string
   onSelect: (item: GitRepoInfo) => void
   onDelete: (name: string) => void
 }) {
   const notification = useNotification()
   return (
     <SecondaryDiv
-      className={classNames({
+      className={classNames(className, {
         'hidden': !show,
         'flex flex-col gap-1 px-2 border-t py-2 overflow-y-auto scrollbar size-full': show
       })}

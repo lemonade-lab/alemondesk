@@ -3,9 +3,11 @@ import { Splitter } from 'antd'
 import Terminal from '@/views/Terminal/App'
 import GitExpList from './App'
 import GitWarehouse from './GitWarehouse/App'
+import GuideGitExp from '@/views/Guide/GitExp'
 
 const GitExpListMain: React.FC = () => {
   return (
+    <>
     <Splitter className="h-[calc(100vh-29.8px)] max-w-[calc(100vw-48px)]">
       <Splitter.Panel>
         <Splitter layout="vertical">
@@ -21,6 +23,8 @@ const GitExpListMain: React.FC = () => {
         <GitExpList />
       </Splitter.Panel>
     </Splitter>
+    <GuideGitExp />
+    </>
   )
 }
 
