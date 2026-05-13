@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import useGoNavigate from '@/hook/useGoNavigate'
 import { setBotStatus } from '@/store/bot'
-import { setCommand, setWebview } from '@/store/command'
+import { clearWebviewCache, setCommand, setWebview, setWebviewCache } from '@/store/command'
 import { setModulesStatus } from '@/store/modules'
 import { initPackage, setExpansionsStatus } from '@/store/expansions'
 import { RootState } from '@/store'
@@ -38,8 +38,14 @@ import { BotStatus } from '@wailsjs/window/bot/app'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
 import { setViews } from '@/store/views'
 import { useTheme } from '@/hook/useTheme'
+import { getDesktopSidebars } from '@/common/expansionPackage'
 import { getWailsEventArg, parseWailsJson } from '@/common/wailsEvent'
 const EventsOn = Events.On
+
+type PendingWebviewRequest = {
+  command: string
+  mode: 'interactive' | 'preload'
+}
 
 export default (function App() {
   const navigate = useGoNavigate()
@@ -47,10 +53,51 @@ export default (function App() {
   const notification = useNotification()
   const modules = useSelector((state: RootState) => state.modules)
   const expansions = useSelector((state: RootState) => state.expansions)
+  const command = useSelector((state: RootState) => state.command)
   const modulesRef = useRef(modules)
+  const webviewCacheRef = useRef(command.webviewCache)
+  const inflightWebviewRef = useRef<PendingWebviewRequest | null>(null)
+  const queuedInteractiveCommandRef = useRef<string | null>(null)
+  const preloadQueueRef = useRef<string[]>([])
+  const preloadTimerRef = useRef<number | null>(null)
   const { setPopValue, closePop } = usePop()
   const [guideReady, setGuideReady] = useState(false)
   const [_theme, themeController] = useTheme()
+
+  const clearPreloadTimer = () => {
+    const timerId = preloadTimerRef.current
+    if (timerId != null) {
+      window.clearTimeout(timerId)
+      preloadTimerRef.current = null
+    }
+  }
+
+  const sendWebviewCommand = (commandName: string, mode: PendingWebviewRequest['mode']) => {
+    inflightWebviewRef.current = {
+      command: commandName,
+      mode
+    }
+    ExpansionsPostMessage({ type: 'command', data: commandName })
+  }
+
+  const schedulePreload = () => {
+    clearPreloadTimer()
+    preloadTimerRef.current = window.setTimeout(() => {
+      preloadTimerRef.current = null
+      if (inflightWebviewRef.current || queuedInteractiveCommandRef.current) return
+      const nextCommand = preloadQueueRef.current.shift()
+      if (!nextCommand) return
+      if (webviewCacheRef.current[nextCommand]) {
+        schedulePreload()
+        return
+      }
+      sendWebviewCommand(nextCommand, 'preload')
+    }, 600)
+  }
+
+  useEffect(() => {
+    webviewCacheRef.current = command.webviewCache
+  }, [command.webviewCache])
 
   // watch
   useEffect(() => {
@@ -163,14 +210,35 @@ export default (function App() {
         if (!data?.type) return
         try {
           if (/^action:/.test(data.type)) {
-            const actions = data.type.split(':')
-            const db = data.data
-            if (actions[1] === 'application' && actions[2] === 'sidebar' && actions[3] === 'load') {
-              dispatch(setWebview(db))
-              dispatch(setViews({ key: 'application' }))
-              navigate('/pkg-app-list')
+          const actions = data.type.split(':')
+          const db = data.data
+          if (actions[1] === 'application' && actions[2] === 'sidebar' && actions[3] === 'load') {
+            const inflightRequest = inflightWebviewRef.current
+            if (inflightRequest && typeof db === 'string') {
+              dispatch(
+                setWebviewCache({
+                  command: inflightRequest.command,
+                  view: db
+                })
+              )
             }
-          } else if (data.type === 'notification') {
+            inflightWebviewRef.current = null
+            if (inflightRequest?.mode === 'preload') {
+              const nextInteractiveCommand = queuedInteractiveCommandRef.current
+              if (nextInteractiveCommand) {
+                queuedInteractiveCommandRef.current = null
+                sendWebviewCommand(nextInteractiveCommand, 'interactive')
+              } else {
+                schedulePreload()
+              }
+              return
+            }
+            dispatch(setWebview(db))
+            dispatch(setViews({ key: 'application' }))
+            navigate('/pkg-app-list')
+            schedulePreload()
+          }
+        } else if (data.type === 'notification') {
             const db = data.data
             notification(db.value, db.typing)
             return
@@ -336,6 +404,7 @@ export default (function App() {
     document.addEventListener('keydown', handleKeyPress)
 
     return () => {
+      clearPreloadTimer()
       clearInterval(intervalId)
       document.removeEventListener('keydown', handleKeyPress)
       unsubs.forEach(unsub => unsub?.())
@@ -366,15 +435,34 @@ export default (function App() {
       console.log('扩展器已启动，获取扩展器列表')
       // 获取扩展器列表
       ExpansionsPostMessage({ type: 'get-expansions' })
+    } else {
+      inflightWebviewRef.current = null
+      queuedInteractiveCommandRef.current = null
+      preloadQueueRef.current = []
+      clearPreloadTimer()
+      dispatch(clearWebviewCache())
     }
   }, [expansions.runStatus])
+
+  useEffect(() => {
+    if (!expansions.runStatus || expansions.package.length === 0) return
+    const commands = Array.from(
+      new Set(
+        expansions.package
+          .flatMap(item => getDesktopSidebars(item))
+          .map(item => item.command)
+          .filter(Boolean)
+      )
+    ).filter(commandName => !webviewCacheRef.current[commandName])
+    preloadQueueRef.current = commands
+    schedulePreload()
+  }, [expansions.package, expansions.runStatus])
 
   /**
    * 感知命令变化
    1. view. 开头的，前往对应页面
    2. 其他命令，发送给扩展器
    */
-  const command = useSelector((state: RootState) => state.command)
   useEffect(() => {
     if (command.name) {
       // view
@@ -402,12 +490,23 @@ export default (function App() {
         Events.Emit('app', { type: 'command', data: command.name })
         dispatch(setCommand(''))
       } else {
-        ExpansionsPostMessage({ type: 'command', data: command.name })
+        const cachedView = command.webviewCache[command.name]
+        if (cachedView) {
+          dispatch(setWebview(cachedView))
+          dispatch(setViews({ key: 'application' }))
+          navigate('/pkg-app-list')
+        }
+        if (inflightWebviewRef.current?.mode === 'preload') {
+          queuedInteractiveCommandRef.current = command.name
+        } else {
+          queuedInteractiveCommandRef.current = null
+          sendWebviewCommand(command.name, 'interactive')
+        }
         // 发送之后。重新设置为空
         dispatch(setCommand(''))
       }
     }
-  }, [command.name])
+  }, [command.name, command.webviewCache])
 
   return (
     <Fragment>

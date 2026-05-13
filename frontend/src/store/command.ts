@@ -12,6 +12,7 @@ interface State {
     }
   ],
   view: string
+  webviewCache: Record<string, string>
 }
 
 // 初始状态
@@ -23,7 +24,8 @@ const initialState: State = {
       isMainProcess: true
     }
   ],
-  view: ''
+  view: '',
+  webviewCache: {}
 }
 
 const notificationSlice = createSlice({
@@ -35,9 +37,23 @@ const notificationSlice = createSlice({
     },
     setWebview(state, action: PayloadAction<string>) {
       state.view = action.payload
+    },
+    setWebviewCache(
+      state,
+      action: PayloadAction<{
+        command: string
+        view: string
+      }>
+    ) {
+      const { command, view } = action.payload
+      if (!command || !view) return
+      state.webviewCache[command] = view
+    },
+    clearWebviewCache(state) {
+      state.webviewCache = {}
     }
   }
 })
 
-export const { setCommand, setWebview } = notificationSlice.actions
+export const { setCommand, setWebview, setWebviewCache, clearWebviewCache } = notificationSlice.actions
 export default notificationSlice.reducer
