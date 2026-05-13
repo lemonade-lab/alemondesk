@@ -14,11 +14,21 @@ import { RootState } from '@/store'
 import { useNavigate } from 'react-router-dom'
 import Box from '@/common/layout/Box'
 import { useMemo } from 'react'
-import { CommandItem } from './types'
 import { setCommand } from '@/store/command'
 import ExpansionIcon from '@/common/ExpansionIcon'
 import { usePop } from '@/context/Pop'
 import { ExpansionsRun } from '@wailsjs/window/expansions/app'
+import { getDesktopMenus } from '@/common/expansionPackage'
+
+type NavItem = {
+  Icon: React.ReactNode
+  className: string
+  onClick: () => void
+}
+
+type ViewMenuItem = ReturnType<typeof getDesktopMenus>[number]
+
+const isNavItem = (item: NavItem | ViewMenuItem): item is NavItem => 'Icon' in item
 
 const MenuButton = () => {
   const navigate = useNavigate()
@@ -26,73 +36,58 @@ const MenuButton = () => {
   const dispatch = useDispatch()
   const { setPopValue } = usePop()
 
-  // 导航列表
-  const navList: {
-    Icon: React.ReactNode
-    className: string
-    onClick: () => void
-  }[] = [
-    {
-      Icon: <AppstoreAddOutlined size={20} />,
-      className: 'steps-6',
-      onClick: () => {
-        navigate('/npm-exp-list')
-      }
-    },
-    {
-      Icon: <AppstoreOutlined size={20} />,
-      className: classNames('steps-7', {
-        'opacity-50': !expansions.runStatus
-      }),
-      onClick: () => {
-        if (!expansions.runStatus) {
-          setPopValue({
-            open: true,
-            title: '扩展器未启动',
-            description: '扩展器尚未运行，是否立即启动扩展器？',
-            buttonText: '启动',
-            buttonCancelText: '取消',
-            data: {},
-            code: 0,
-            onConfirm: () => {
-              ExpansionsRun([])
-            }
-          })
-          return
-        }
-        navigate('/pkg-app-list')
-      }
-    },
-    {
-      Icon: <ProfileOutlined size={20} />,
-      className: 'steps-config',
-      onClick: () => {
-        navigate('/config')
-      }
-    },
-    {
-      Icon: <RobotOutlined size={20} />,
-      className: 'steps-ai',
-      onClick: () => {
-        navigate('/ai-settings')
-      }
-    }
-  ]
-
   const viewMenus = useMemo(() => {
-    const menus =
-      expansions.package?.flatMap(item => {
-        return (
-          // 读取侧边栏设置
-          item.alemonjs?.desktop?.menus?.map((menu: CommandItem) => ({
-            ...menu,
-            command: menu.command ?? menu.commond ?? '',
-            expansions_name: item.name
-          })) || []
-        )
-      }) || []
-    return menus.concat(navList)
-  }, [expansions.package])
+    const navList: NavItem[] = [
+      {
+        Icon: <AppstoreAddOutlined size={20} />,
+        className: 'steps-6',
+        onClick: () => {
+          navigate('/npm-exp-list')
+        }
+      },
+      {
+        Icon: <AppstoreOutlined size={20} />,
+        className: classNames('steps-7', {
+          'opacity-50': !expansions.runStatus
+        }),
+        onClick: () => {
+          if (!expansions.runStatus) {
+            setPopValue({
+              open: true,
+              title: '扩展器未启动',
+              description: '扩展器尚未运行，是否立即启动扩展器？',
+              buttonText: '启动',
+              buttonCancelText: '取消',
+              data: {},
+              code: 0,
+              onConfirm: () => {
+                ExpansionsRun([])
+              }
+            })
+            return
+          }
+          navigate('/pkg-app-list')
+        }
+      },
+      {
+        Icon: <ProfileOutlined size={20} />,
+        className: 'steps-config',
+        onClick: () => {
+          navigate('/config')
+        }
+      },
+      {
+        Icon: <RobotOutlined size={20} />,
+        className: 'steps-ai',
+        onClick: () => {
+          navigate('/ai-settings')
+        }
+      }
+    ]
+
+    const menus: ViewMenuItem[] = expansions.package?.flatMap(item => getDesktopMenus(item)) || []
+    return [...menus, ...navList]
+  }, [expansions.package, expansions.runStatus, navigate, setPopValue])
 
   const goHome = () => {
     navigate('/')
@@ -116,20 +111,20 @@ const MenuButton = () => {
               key={index}
               className={classNames(
                 'size-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-700',
-                item.className
+                isNavItem(item) ? item.className : undefined
               )}
               onClick={() => {
-                if (item.onClick) {
+                if (isNavItem(item) && item.onClick) {
                   // 内部方法
                   item.onClick()
                 }
-                if (item.command) {
+                if (!isNavItem(item) && item.command) {
                   // 外部方法。执行command
                   dispatch(setCommand(item.command))
                 }
               }}
             >
-              {item?.Icon ?? (
+              {isNavItem(item) ? item.Icon : (
                 <ExpansionIcon
                   name={item.name}
                   icon={item.icon}

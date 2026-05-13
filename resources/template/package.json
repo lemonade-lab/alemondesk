@@ -2,16 +2,16 @@
   "name": "alemonb",
   "type": "module",
   "dependencies": {
-    "@alemonjs/bubble": "^2.1.9",
+    "@alemonjs/bubble": "^2.1.10",
     "@alemonjs/db": "^0.0.16",
-    "@alemonjs/discord": "^2.1.12",
-    "@alemonjs/kook": "^2.1.9",
-    "@alemonjs/onebot": "^2.1.13",
+    "@alemonjs/discord": "^2.1.22",
+    "@alemonjs/kook": "^2.1.10",
+    "@alemonjs/onebot": "^2.1.15",
     "@alemonjs/process": "^0.0.8",
-    "@alemonjs/qq-bot": "^2.1.13",
-    "alemonjs": "^2.1.55",
+    "@alemonjs/qq-bot": "^2.1.19",
+    "alemonjs": "^2.1.77",
     "isomorphic-git": "^1.37.4",
-    "jsxp": "1.3.0"
+    "jsxp": "1.4.0"
   },
   "devDependencies": {
     "npm": "^11.0.0",

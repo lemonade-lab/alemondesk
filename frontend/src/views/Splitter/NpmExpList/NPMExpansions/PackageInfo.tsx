@@ -22,6 +22,7 @@ import Markdown from '@/common/Markdown'
 import { PackageInfoType } from '@/views/types'
 import Box from '@/common/layout/Box'
 import { usePop } from '@/context/Pop'
+import { matchPackageName } from '@/common/expansionPackage'
 const EventsOn = Events.On
  
 export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoType }) {
@@ -383,7 +384,7 @@ export default function PackageInfo({ packageInfo }: { packageInfo: PackageInfoT
           <div className="flex gap-2 items-center justify-between">
             <div className="flex gap-2 items-center">
               <div>Version: {pkgInfo['dist-tags'].latest}</div>
-              {expansions.package.find(item => item.name == pkgInfo.name) ? (
+              {expansions.package.find(item => matchPackageName(item.name, pkgInfo.name)) ? (
                 <Fragment>
                   <div
                     className={`flex items-center gap-1 cursor-pointer ${operating ? 'opacity-50 pointer-events-none' : ''}`}

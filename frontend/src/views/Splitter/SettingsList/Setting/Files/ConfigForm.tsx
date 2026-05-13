@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNotification } from '@/context/Notification'
-import { Button, Input, PrimaryDiv } from '@alemonjs/react-ui'
+import { Button, Input, PrimaryDiv, Select } from '@alemonjs/react-ui'
 import { AppExists, AppReadFiles, AppWriteFiles } from '@wailsjs/window/app/app'
 import YAML from 'js-yaml'
 
@@ -63,6 +63,15 @@ const EVENT_TYPES = [
   { key: 'message.create', label: '群组消息' },
   { key: 'interaction.create', label: '交互事件' },
   { key: 'private.interaction.create', label: '私聊交互事件' },
+]
+
+const LOGIN_PLATFORM_OPTIONS = [
+  { label: '自定义', value: '' },
+  { label: 'QQ Bot', value: 'qq-bot' },
+  { label: 'OneBot', value: 'onebot' },
+  { label: 'Discord', value: 'discord' },
+  { label: 'Telegram', value: 'telegram' },
+  { label: 'KOOK', value: 'kook' }
 ]
 
 // ====== 工具函数 ======
@@ -275,6 +284,55 @@ function Field({
   )
 }
 
+function LoginField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  hint
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  hint?: string
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <div className="w-40 text-sm shrink-0">{label}</div>
+        <div className="flex flex-1 gap-2">
+          <Select
+            className="w-36 rounded-md"
+            value={
+              LOGIN_PLATFORM_OPTIONS.some(item => item.value === value)
+                ? value
+                : ''
+            }
+            onChange={(e: any) => onChange(e.target?.value ?? '')}
+          >
+            {LOGIN_PLATFORM_OPTIONS.map(item => (
+              <option key={item.label} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </Select>
+          <Input
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck="false"
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            className="flex-1 px-2 rounded-md"
+            placeholder={placeholder}
+          />
+        </div>
+      </div>
+      {hint && <div className="text-xs text-secondary-text ml-[168px]">{hint}</div>}
+    </div>
+  )
+}
+
 // ====== 主组件 ======
 
 type Props = { dir: string }
@@ -342,11 +400,11 @@ export default function ConfigForm({ dir }: Props) {
         </div>
         {/* ===== 基础配置 ===== */}
         <Section title="基础配置" className="steps-config-basic">
-          <Field
+          <LoginField
             label="登录平台"
             value={form.login}
             onChange={v => update('login', v)}
-            placeholder="例: discord / qq-bot / telegram / onebot"
+            placeholder="例: discord / qq-bot / telegram / onebot / @alemonjs/qq-bot"
             hint="选择机器人连接的平台"
           />
           <Field

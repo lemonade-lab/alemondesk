@@ -31,7 +31,7 @@ import {
   ExpansionsRun,
   ExpansionsStatus
 } from '@wailsjs/window/expansions/app'
-import { AppGetPathsState, AppReadFiles, AppExists } from '@wailsjs/window/app/app'
+import { AppGetPathsState } from '@wailsjs/window/app/app'
 import { ThemeLoadVariables, ThemeMode } from '@wailsjs/window/theme/app'
 import { Events } from '@wailsio/runtime'
 import { BotStatus } from '@wailsjs/window/bot/app'
@@ -180,40 +180,7 @@ export default (function App() {
           } else if (data.type === 'get-expansions') {
             const db: any[] = data.data || []
             console.log('get-expansions', db)
-            // 补充后端可能遗漏的 alemonjs / @alemonjs/* 包
-            AppGetPathsState().then(async paths => {
-              const nodeModulesPath = paths.userDataNodeModulesPath
-              const pkgJsonPath = paths.userDataPackagePath
-              const existingNames = new Set(db.map((p: any) => p.name))
-              const supplemented = [...db]
-              try {
-                const pkgRaw = await AppReadFiles(pkgJsonPath)
-                const pkgJson = JSON.parse(pkgRaw)
-                const allDeps = {
-                  ...(pkgJson.dependencies || {}),
-                  ...(pkgJson.devDependencies || {})
-                }
-                // 找出所有 alemonjs 或 @alemonjs/* 的依赖
-                const alemonDeps = Object.keys(allDeps).filter(
-                  name => name === 'alemonjs' || name.startsWith('alemonjs-') || name.startsWith('@alemonjs/')
-                )
-                for (const depName of alemonDeps) {
-                  if (existingNames.has(depName)) continue
-                  try {
-                    const depPkgPath = nodeModulesPath + '/' + depName + '/package.json'
-                    const exists = await AppExists(depPkgPath)
-                    if (exists) {
-                      const depRaw = await AppReadFiles(depPkgPath)
-                      const depPkg = JSON.parse(depRaw)
-                      supplemented.push(depPkg)
-                    }
-                  } catch {}
-                }
-              } catch {}
-              dispatch(initPackage(supplemented))
-            }).catch(() => {
-              dispatch(initPackage(db))
-            })
+            dispatch(initPackage(db))
           }
         } catch {
           console.error('HomeApp 解析消息失败')

@@ -42,7 +42,7 @@ export class appDesktopHideAPI {
         EventsOff(eventName)
     }
 
-    #themeVariablesEventName = 'webview-theme-variables'
+    #themeVariablesEventName = 'css-variables'
 
     themeVariables() {
         this.send({
@@ -53,7 +53,7 @@ export class appDesktopHideAPI {
     themeOn(callback: (data: any) => void) {
         this.on((data) => {
             if (data._name === this.name && data.type === this.#themeVariablesEventName) {
-                callback(data.value)
+                callback(data.data)
             }
         })
     }

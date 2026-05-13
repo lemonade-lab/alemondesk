@@ -27,6 +27,15 @@ function Terminal() {
   const [installing, setInstalling] = useState(false)
   const [restarting, setRestarting] = useState(false)
   const logContainerRef = useRef<HTMLDivElement>(null)
+
+  const normalizeLogin = (value: unknown) => {
+    const input = String(value ?? '').trim()
+    if (!input) return ''
+    if (input.startsWith('@alemonjs/')) {
+      return input.replace('@alemonjs/', '')
+    }
+    return input
+  }
   /**
    * @returns
    */
@@ -35,12 +44,7 @@ function Terminal() {
     console.log('启动配置：', config)
     const args = Object.entries(config).flatMap(([key, value]: [string, any]) => {
       if (key === 'login') {
-        value = String(value).trim()
-        if (/@alemonjs\//.test(value)) {
-          value = value.replace('@alemonjs/', '')
-        } else {
-          value = ''
-        }
+        value = normalizeLogin(value)
         if (value) {
           return ['--login', value]
         }

@@ -29,6 +29,18 @@ const WebView = ({ src, name, rules }: WebViewProps) => {
   const lastSrcRef = useRef<string>('') // 记录上次发送的内容
   const initTimestampRef = useRef<number>(0) // 初始化时间戳
 
+  const normalizeRuntimeEventArgs = (payload: unknown) => {
+    const rawArgs = Array.isArray(payload) ? payload : payload == null ? [] : [payload]
+    return rawArgs.map(arg => {
+      if (typeof arg !== 'string') return arg
+      try {
+        return JSON.parse(arg)
+      } catch {
+        return arg
+      }
+    })
+  }
+
   // 初始化和重建 iframe
   useEffect(() => {
     const container = containerRef.current
@@ -145,19 +157,13 @@ const WebView = ({ src, name, rules }: WebViewProps) => {
             observeType[eventName] = data.type
             // 订阅事件
             EventsOn(eventName, e => {
-              const args = e.data ?? []
+              const args = normalizeRuntimeEventArgs(e?.data)
               console.log(`[iframe] runtime.${data.type} 触发事件: ${eventName}`, args)
               iframeRef.current?.contentWindow?.postMessage(
                 {
                   global: 'runtime',
                   type: eventName,
-                  args: args.map(arg => {
-                    try {
-                      return JSON.parse(arg)
-                    } catch {
-                      return arg
-                    }
-                  })
+                  args
                 },
                 '*'
               )
@@ -197,7 +203,7 @@ const WebView = ({ src, name, rules }: WebViewProps) => {
       window.removeEventListener('message', handleMessage)
       // 清理订阅
       Object.keys(observeType).forEach(key => {
-        EventsOff(observeType[key])
+        EventsOff(key)
       })
     }
   }, [src])

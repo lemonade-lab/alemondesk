@@ -1,4 +1,4 @@
-import { Input } from '@alemonjs/react-ui'
+import { Input, Select } from '@alemonjs/react-ui'
 import { AppExists, AppReadFiles, AppWriteFiles } from '@wailsjs/window/app/app'
 import YAML from 'js-yaml'
 
@@ -13,6 +13,15 @@ export const initialRunConfig: Config = {
   port: '',
   serverPort: ''
 }
+
+const LOGIN_PLATFORM_OPTIONS = [
+  { label: '自定义', value: '' },
+  { label: 'QQ Bot', value: 'qq-bot' },
+  { label: 'OneBot', value: 'onebot' },
+  { label: 'Discord', value: 'discord' },
+  { label: 'Telegram', value: 'telegram' },
+  { label: 'KOOK', value: 'kook' }
+]
 
 /** 从 alemon.config.yaml 读取启动配置 */
 export const getRunConfig = async (configPath: string): Promise<Config> => {
@@ -74,21 +83,43 @@ const RunForm = ({
   onChange: (value: Config) => void
 }) => {
   return (
-    <form className="flex flex-col gap-4" onSubmit={e => {
-            e.preventDefault()
-            e.stopPropagation()
-    }}>
+    <form
+      className="flex flex-col gap-4"
+      onSubmit={e => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+    >
       <div className="flex items-center gap-2">
         <div className=" w-24">平台名</div>
-        <Input
-          autoCapitalize="off"
-          autoCorrect="off"
-          spellCheck="false"
-          value={fromValue.login}
-          onChange={e => onChange({ ...fromValue, login: e.target.value })}
-          className="w-full px-2 rounded-md"
-          placeholder="输入qq-bot或onebot或..."
-        />
+        <div className="flex w-full gap-2">
+          <Select
+            className="w-36 rounded-md"
+            value={
+              LOGIN_PLATFORM_OPTIONS.some(item => item.value === fromValue.login)
+                ? fromValue.login
+                : ''
+            }
+            onChange={(e: any) => {
+              onChange({ ...fromValue, login: e.target?.value ?? '' })
+            }}
+          >
+            {LOGIN_PLATFORM_OPTIONS.map(item => (
+              <option key={item.label} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </Select>
+          <Input
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck="false"
+            value={fromValue.login}
+            onChange={e => onChange({ ...fromValue, login: e.target.value })}
+            className="w-full px-2 rounded-md"
+            placeholder="输入 qq-bot / onebot / @alemonjs/qq-bot"
+          />
+        </div>
       </div>
       <div className="flex items-center gap-2">
         <div className=" w-24">协议端口</div>

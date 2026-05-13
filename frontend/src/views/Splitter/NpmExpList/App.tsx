@@ -29,6 +29,7 @@ import Tabs from '@/common/ui/Tabs'
 import Box from '@/common/layout/Box'
 import CloneForm from './CloneForm'
 import PackageTool from './PackageTool'
+import { matchPackageName } from '@/common/expansionPackage'
 const EventsOn = Events.On
 
 const SEARCH_CACHE_KEY = 'ALemonDesk_npm_search_cache'
@@ -129,7 +130,7 @@ export default function NpmExpList() {
 
   // 查看已安装扩展详情
   const handlePackageClick = debounce(async (packageName: string) => {
-    const info = expansions.package.find(v => v.name === packageName)
+    const info = expansions.package.find(v => matchPackageName(v.name, packageName))
     if (!info) {
       notification(`本地没有找到 ${packageName} 的数据。`, 'error')
       return
@@ -371,7 +372,7 @@ export default function NpmExpList() {
   }, [])
 
   const isInstalled = (name: string) =>
-    expansions.package.some(item => item.name === name)
+    expansions.package.some(item => matchPackageName(item.name, name))
 
   return (
     <SidebarDiv className="animate__animated animate__fadeInRight duration-500 flex flex-col border-l size-full">
