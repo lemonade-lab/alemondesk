@@ -978,10 +978,10 @@
     "@types/babel__core" "^7.20.5"
     react-refresh "^0.17.0"
 
-"@wailsio/runtime@^3.0.0-alpha.72":
-  version "3.0.0-alpha.72"
-  resolved "https://registry.npmmirror.com/@wailsio/runtime/-/runtime-3.0.0-alpha.72.tgz#0b6736fe2fdede19803c4d22b7e4a8bd77fca2b8"
-  integrity sha512-VJjDa0GBG7tp7WBMlytzLvsZ4gBQVBftIwiJ+dSg2C4e11N6JonJZp9iHT2xgK35rewKdwbX1vMDyrcBcyZYoA==
+"@wailsio/runtime@3.0.0-alpha.79":
+  version "3.0.0-alpha.79"
+  resolved "https://registry.npmmirror.com/@wailsio/runtime/-/runtime-3.0.0-alpha.79.tgz#d43310f5b87dc46142756abf0973ba07277be66e"
+  integrity sha512-NITzxKmJsMEruc39L166lbPJVECxzcbdqpHVqOOF7Cu/7Zqk/e3B/gNpkUjhNyo5rVb3V1wpS8oEgLUmpu1cwA==
 
 acorn@^8.15.0:
   version "8.15.0"

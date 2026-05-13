@@ -8,7 +8,7 @@ on:
 env:
   NODE_VERSION: "22.21.0"
   GO_VERSION: "1.24.0"
-  APP_NAME: "ALemonDesk"
+  APP_NAME: "alemondesk"
 
 jobs:
   build:
@@ -16,17 +16,17 @@ jobs:
       fail-fast: false
       matrix:
         build:
-          - name: 'ALemonDesk-Win'
+          - name: 'alemondesk-win'
             platform: 'windows'
             arch: 'amd64'
             node_arch: 'win-x64'
             os: 'windows-latest'
-          - name: 'ALemonDesk-macOS'
+          - name: 'alemondesk-macos'
             platform: 'darwin'
             arch: 'universal'
             node_arch: 'darwin-arm64'
             os: 'macos-latest'
-          - name: 'ALemonDesk-Linux'
+          - name: 'alemondesk-linux'
             platform: 'linux'
             arch: 'amd64'
             node_arch: 'linux-x64'
@@ -189,9 +189,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/ALemonDesk-Win/**
-            artifacts/ALemonDesk-macOS/**
-            artifacts/ALemonDesk-Linux/**
+            artifacts/alemondesk-win/**
+            artifacts/alemondesk-macos/**
+            artifacts/alemondesk-linux/**
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           draft: false

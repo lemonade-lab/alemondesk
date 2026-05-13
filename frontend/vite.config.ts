@@ -5,6 +5,11 @@ import react from '@vitejs/plugin-react-swc'
 // https://vite.dev/config/
 const NODE_ENV = process.env.NODE_ENV === 'development'
 export default defineConfig({
+  server: {
+    host: "127.0.0.1",
+    port: Number(process.env.WAILS_VITE_PORT) || 9245,
+    strictPort: true,
+  },
   plugins: [
     react(),
   ],

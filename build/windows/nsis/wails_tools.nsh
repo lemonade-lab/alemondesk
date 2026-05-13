@@ -5,13 +5,13 @@
 !include "FileFunc.nsh"
 
 !ifndef INFO_PROJECTNAME
-    !define INFO_PROJECTNAME "ALemonDesk"
+    !define INFO_PROJECTNAME "alemondesk"
 !endif
 !ifndef INFO_COMPANYNAME
     !define INFO_COMPANYNAME "LEMONADE"
 !endif
 !ifndef INFO_PRODUCTNAME
-    !define INFO_PRODUCTNAME "ALemonDesk"
+    !define INFO_PRODUCTNAME "alemondesk"
 !endif
 !ifndef INFO_PRODUCTVERSION
     !define INFO_PRODUCTVERSION "0.1.0"

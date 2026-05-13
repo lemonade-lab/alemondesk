@@ -5,7 +5,7 @@ go 1.25
 require (
 	github.com/alicebob/miniredis/v2 v2.37.0
 	github.com/kardianos/service v1.2.4
-	github.com/wailsapp/wails/v3 v3.0.0-alpha.74
+	github.com/wailsapp/wails/v3 v3.0.0-alpha.91
 	go.yaml.in/yaml/v3 v3.0.4
 )
 
@@ -21,6 +21,7 @@ require (
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/wailsapp/wails/webview2 v1.0.24 // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
 )
 
@@ -58,7 +59,6 @@ require (
 	github.com/skeema/knownhosts v1.3.2 // indirect
 	github.com/spf13/viper v1.21.0
 	github.com/ulikunitz/xz v0.5.15
-	github.com/wailsapp/go-webview2 v1.0.23 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	golang.org/x/crypto v0.47.0 // indirect
 	golang.org/x/net v0.49.0 // indirect

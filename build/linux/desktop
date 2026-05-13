@@ -1,13 +1,13 @@
 [Desktop Entry]
 Version=1.0
-Name=ALemonDesk
-Comment=A ALemonDesk application
+Name=alemondesk
+Comment=A alemondesk application
 # The Exec line includes %u to pass the URL to the application
-Exec=/usr/local/bin/ALemonDesk %u
+Exec=/usr/local/bin/alemondesk %u
 Terminal=false
 Type=Application
-Icon=ALemonDesk
+Icon=alemondesk
 Categories=Utility;
-StartupWMClass=ALemonDesk
+StartupWMClass=alemondesk
 
  

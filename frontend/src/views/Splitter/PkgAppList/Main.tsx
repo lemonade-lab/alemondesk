@@ -5,7 +5,7 @@ import GitExpList from './App'
 import Application from './Application/App'
 import GuidePkgApp from '@/views/Guide/PkgApp'
 
-const TERMINAL_COLLAPSED_KEY = 'ALemonDesk_pkg_terminal_collapsed'
+const TERMINAL_COLLAPSED_KEY = 'alemondesk_pkg_terminal_collapsed'
 
 const wasTerminalCollapsed = (): boolean => {
   try {

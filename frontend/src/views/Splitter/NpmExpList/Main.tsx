@@ -5,7 +5,7 @@ import NpmExpList from './App'
 import NPMExpansions from './NPMExpansions/App'
 import GuideCommon from '@/views/Guide/Common'
 
-const TERMINAL_COLLAPSED_KEY = 'ALemonDesk_npm_terminal_collapsed'
+const TERMINAL_COLLAPSED_KEY = 'alemondesk_npm_terminal_collapsed'
 
 const wasTerminalCollapsed = (): boolean => {
   try {

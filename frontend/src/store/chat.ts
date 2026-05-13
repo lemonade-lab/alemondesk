@@ -29,7 +29,7 @@ interface ChatState {
   suggestions: { label: string; text: string }[]
 }
 
-const STORAGE_KEY = 'ALemonDesk_chat'
+const STORAGE_KEY = 'alemondesk_chat'
 
 /** 从 localStorage 加载持久化的会话数据 */
 function loadPersistedState(): Partial<ChatState> {

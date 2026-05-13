@@ -4,16 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "description": "AlemonJS Framework Desktop.",
-  "license": "MIT",
-  "author": {
-    "name": "ningmengchongshui",
-    "email": "ningmengchongshui@gmail.com",
-    "url": "https://github.com/ningmengchongshui"
-  },
   "scripts": {
     "dev": "vite",
-    "build:dev": "tsc && vite build --minify false --mode development",
-    "build": "tsc && vite build --mode production",
+    "build:dev": "vite build --minify false --mode development",
+    "build": "vite build --mode production",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -28,7 +22,7 @@
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitejs/plugin-react-swc": "^4.2.0",
-    "@wailsio/runtime": "^3.0.0-alpha.72",
+    "@wailsio/runtime": "3.0.0-alpha.79",
     "animate.css": "^4.1.1",
     "antd": "^5.27.6",
     "autoprefixer": "^10.4.19",
@@ -59,5 +53,11 @@
   "dependencies": {
     "highlight.js": "^11.11.1",
     "markdown-to-jsx": "^9.7.13"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "ningmengchongshui",
+    "email": "ningmengchongshui@gmail.com",
+    "url": "https://github.com/ningmengchongshui"
   }
 }

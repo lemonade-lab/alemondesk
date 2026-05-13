@@ -133,9 +133,9 @@ func SetResourcesFS(fs *embed.FS) {
 
 func getServiceConfig() *service.Config {
 	return &service.Config{
-		Name:        "ALemonDeskService",
-		DisplayName: "ALemonDesk Service",
-		Description: "ALemonDesk 后台服务，用于无 GUI 环境下运行机器人",
+		Name:        "alemondeskService",
+		DisplayName: "alemondesk Service",
+		Description: "alemondesk 后台服务，用于无 GUI 环境下运行机器人",
 	}
 }
 

@@ -8,27 +8,27 @@
         AllowPromptForPassword="false">
     </Settings>
     <Installer
-        Path="ALemonDesk"
+        Path="alemondesk"
         Arguments=""
-        InstallLocation="C:\Program Files\LEMONADE\ALemonDesk">
+        InstallLocation="C:\Program Files\LEMONADE\alemondesk">
     </Installer>
     <PackageInformation
-        PackageName="ALemonDesk"
-        PackageDisplayName="ALemonDesk"
+        PackageName="alemondesk"
+        PackageDisplayName="alemondesk"
         PublisherName="CN=LEMONADE"
         PublisherDisplayName="LEMONADE"
         Version="0.1.0.0"
-        PackageDescription="A ALemonDesk application">
+        PackageDescription="A alemondesk application">
         <Capabilities>
             <Capability Name="runFullTrust" />
             
         </Capabilities>
         <Applications>
             <Application
-                Id="com.example.ALemonDesk"
-                Description="A ALemonDesk application"
-                DisplayName="ALemonDesk"
-                ExecutableName="ALemonDesk"
+                Id="com.example.alemondesk"
+                Description="A alemondesk application"
+                DisplayName="alemondesk"
+                ExecutableName="alemondesk"
                 EntryPoint="Windows.FullTrustApplication">
                 
             </Application>
@@ -41,13 +41,13 @@
         </Dependencies>
         <Properties>
             <Framework>false</Framework>
-            <DisplayName>ALemonDesk</DisplayName>
+            <DisplayName>alemondesk</DisplayName>
             <PublisherDisplayName>LEMONADE</PublisherDisplayName>
-            <Description>A ALemonDesk application</Description>
+            <Description>A alemondesk application</Description>
             <Logo>Assets\AppIcon.png</Logo>
         </Properties>
     </PackageInformation>
-    <SaveLocation PackagePath="ALemonDesk.msix" />
+    <SaveLocation PackagePath="alemondesk.msix" />
     <PackageIntegrity>
         <CertificatePath></CertificatePath>
     </PackageIntegrity>

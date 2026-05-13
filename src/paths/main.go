@@ -9,7 +9,7 @@ import (
 )
 
 func GetUserHomeDir() string {
-	appName := "ALemonDesk"
+	appName := "alemondesk"
 	usr, err := user.Current()
 	if err != nil {
 		// 如果获取用户失败，尝试从环境变量获取

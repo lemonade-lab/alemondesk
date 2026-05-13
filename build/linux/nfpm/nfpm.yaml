@@ -3,26 +3,26 @@
 #
 # The lines below are called `modelines`. See `:help modeline`
 
-name: "ALemonDesk"
+name: "alemondesk"
 arch: ${GOARCH}
 platform: "linux"
 version: "0.1.0"
 section: "default"
 priority: "extra"
 maintainer: ${GIT_COMMITTER_NAME} <${GIT_COMMITTER_EMAIL}>
-description: "A ALemonDesk application"
+description: "A alemondesk application"
 vendor: "LEMONADE"
 homepage: "https://wails.io"
 license: "MIT"
 release: "1"
 
 contents:
-  - src: "./bin/ALemonDesk"
-    dst: "/usr/local/bin/ALemonDesk"
+  - src: "./bin/alemondesk"
+    dst: "/usr/local/bin/alemondesk"
   - src: "./build/appicon.png"
-    dst: "/usr/share/icons/hicolor/128x128/apps/ALemonDesk.png"
-  - src: "./build/linux/ALemonDesk.desktop"
-    dst: "/usr/share/applications/ALemonDesk.desktop"
+    dst: "/usr/share/icons/hicolor/128x128/apps/alemondesk.png"
+  - src: "./build/linux/alemondesk.desktop"
+    dst: "/usr/share/applications/alemondesk.desktop"
 
 # Default dependencies for Debian 12/Ubuntu 22.04+ with WebKit 4.1
 depends:

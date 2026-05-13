@@ -5,7 +5,7 @@ import ChatPanel from './ChatPanel'
 import ConversationList from './ConversationList'
 import GuideHome from '@/views/Guide/Home'
 
-const TERMINAL_COLLAPSED_KEY = 'ALemonDesk_terminal_collapsed'
+const TERMINAL_COLLAPSED_KEY = 'alemondesk_terminal_collapsed'
 
 const wasTerminalCollapsed = (): boolean => {
   try {

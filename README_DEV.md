@@ -31,5 +31,5 @@ make build
 
 ```sh
 # macos 查看日志
-cat ~/Library/Application\ Support/ALemonDesk/logs/alemon-desk.log
+cat ~/Library/Application\ Support/alemondesk/logs/alemon-desk.log
 ```

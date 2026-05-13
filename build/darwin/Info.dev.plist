@@ -4,11 +4,11 @@
         <key>CFBundlePackageType</key>
             <string>APPL</string>
         <key>CFBundleName</key>
-            <string>ALemonDesk</string>
+            <string>alemondesk</string>
         <key>CFBundleExecutable</key>
-            <string>ALemonDesk</string>
+            <string>alemondesk</string>
         <key>CFBundleIdentifier</key>
-            <string>com.example.ALemonDesk</string>
+            <string>com.example.alemondesk</string>
         <key>CFBundleVersion</key>
             <string>0.1.0</string>
         <key>CFBundleGetInfoString</key>
@@ -17,16 +17,14 @@
             <string>0.1.0</string>
         <key>CFBundleIconFile</key>
             <string>icons</string>
+        <key>CFBundleIconName</key>
+            <string>appicon</string>
         <key>LSMinimumSystemVersion</key>
-            <string>10.15.0</string>
+            <string>12.0.0</string>
         <key>NSHighResolutionCapable</key>
             <string>true</string>
         <key>NSHumanReadableCopyright</key>
             <string>© 2026, LEMONADE</string>
-        <key>NSAppleEventsUsageDescription</key>
-            <string>此应用需要使用截屏功能来捕获屏幕内容</string>
-        <key>NSScreenCaptureUsageDescription</key>
-            <string>此应用需要屏幕录制权限以实现截图功能</string>
         <key>NSAppTransportSecurity</key>
         <dict>
             <key>NSAllowsLocalNetworking</key>

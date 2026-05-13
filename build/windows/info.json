@@ -6,9 +6,9 @@
 		"0000": {
 			"ProductVersion": "0.1.0",
 			"CompanyName": "LEMONADE",
-			"FileDescription": "A ALemonDesk application",
+			"FileDescription": "A alemondesk application",
 			"LegalCopyright": "© 2026, LEMONADE",
-			"ProductName": "ALemonDesk",
+			"ProductName": "alemondesk",
 			"Comments": "This is a comment"
 		}
 	}

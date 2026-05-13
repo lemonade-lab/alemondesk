@@ -64,14 +64,14 @@ http://localhost:11434/api/chat
 
 | 系统 | 路径 |
 | --- | --- |
-| macOS | `~/Library/Application Support/ALemonDesk/` |
-| Windows | `%APPDATA%/ALemonDesk/` |
-| Linux | `~/.config/ALemonDesk/` |
+| macOS | `~/Library/Application Support/alemondesk/` |
+| Windows | `%APPDATA%/alemondesk/` |
+| Linux | `~/.config/alemondesk/` |
 
 目录结构：
 
 ```
-ALemonDesk/
+alemondesk/
 └── work/
     ├── logs/                # 日志目录
     └── resources/

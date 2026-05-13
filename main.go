@@ -136,7 +136,7 @@ func main() {
 
 	// 创建应用
 	app := application.New(application.Options{
-		Name:        "ALemonDesk",
+		Name:        "alemondesk",
 		Description: "ALemon Desktop Application",
 		Services: []application.Service{
 			application.NewService(wBot),
@@ -162,7 +162,7 @@ func main() {
 	// })
 
 	windowOptions := application.WebviewWindowOptions{
-		Title:            "ALemonDesk",
+		Title:            "alemondesk",
 		Width:            960,
 		Height:           600,
 		MinWidth:         960,
@@ -187,7 +187,7 @@ func main() {
 	icon, _ := sysImg.GetImg("appicon.png")
 	systray := app.SystemTray.New()
 	systray.SetIcon(icon)
-	systray.SetTooltip("ALemonDesk")
+	systray.SetTooltip("alemondesk")
 	menu := application.NewMenu()
 
 	systray.OnClick(func() {
