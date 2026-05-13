@@ -17,7 +17,7 @@ func DownloadFiles(localURL string) error {
 	Pattern := "*" + filepath.Ext(localURL)
 
 	// 使用应用级别的保存文件对话框
-	dialog := application.SaveFileDialog()
+	dialog := application.Get().Dialog.SaveFile()
 
 	options := &application.SaveFileDialogOptions{
 		Filename: DisplayName,

@@ -38,6 +38,7 @@ import { BotStatus } from '@wailsjs/window/bot/app'
 import { YarnCommands } from '@wailsjs/window/yarn/app'
 import { setViews } from '@/store/views'
 import { useTheme } from '@/hook/useTheme'
+import { getWailsEventArg, parseWailsJson } from '@/common/wailsEvent'
 const EventsOn = Events.On
 
 export default (function App() {
@@ -53,6 +54,8 @@ export default (function App() {
 
   // watch
   useEffect(() => {
+    const unsubs: Array<(() => void) | undefined> = []
+
     // 加载css变量
     ThemeLoadVariables()
 
@@ -85,237 +88,251 @@ export default (function App() {
     })
 
     // 监听 css 变量
-    EventsOn('theme', e => {
-      const args = e.data ?? []
-      const data = args[0] ?? null
-      try {
-        const vars = JSON.parse(data)
+    unsubs.push(
+      EventsOn('theme', e => {
+        const vars = parseWailsJson<Record<string, string>>(getWailsEventArg(e))
+        if (!vars) return
         Object.keys(vars).forEach(key => {
           document.documentElement.style.setProperty(`--${key}`, vars[key])
         })
-      } catch (e) {
-        console.error(e)
-      }
-    })
+      })
+    )
     // 监听依赖安装状态 0 失败 1 成功
-    EventsOn('yarn', e => {
-      const args = e.data ?? []
-      const data = args[0] ?? null
-      const value = data.value
-      // 每一次安装依赖的后，都更新依赖状态
-      if (data.type == 'install') {
-        if (value == 0) {
-          // 失败就让用户重启
-          notification('初始化失败，请重启应用', 'error')
+    unsubs.push(
+      EventsOn('yarn', e => {
+        const data = parseWailsJson<{ type?: string; value?: number }>(getWailsEventArg(e))
+        if (!data?.type) return
+        const value = data.value
+        // 每一次安装依赖的后，都更新依赖状态
+        if (data.type == 'install') {
+          if (value == 0) {
+            // 失败就让用户重启
+            notification('初始化失败，请重启应用', 'error')
+          }
+          dispatch(
+            setModulesStatus({
+              nodeModulesStatus: value == 0 ? false : true
+            })
+          )
         }
+        // 其他的通知
+      })
+    )
+    // 监听 bot 状态
+    unsubs.push(
+      EventsOn('bot', e => {
+        const data = parseWailsJson<{ value?: number }>(getWailsEventArg(e))
+        if (data?.value == null) return
+        const value = data.value
         dispatch(
-          setModulesStatus({
-            nodeModulesStatus: value == 0 ? false : true
+          setBotStatus({
+            runStatus: value == 0 ? false : true
           })
         )
-      }
-      // 其他的通知
-    })
-    // 监听 bot 状态
-    EventsOn('bot', e => {
-      const args = e.data ?? []
-      const data = args[0] ?? null
-      const value = data.value
-      dispatch(
-        setBotStatus({
-          runStatus: value == 0 ? false : true
-        })
-      )
-    })
+      })
+    )
     // 监听 通知消息
-    EventsOn('notification', e => {
-      const args = e.data ?? []
-      const data = args[0] ?? null
-      const value = data.value
-      const type = data.type
-      notification(value, type || 'info')
-    })
+    unsubs.push(
+      EventsOn('notification', e => {
+        const data = parseWailsJson<{
+          value?: string
+          type?: 'default' | 'error' | 'warning'
+        }>(getWailsEventArg(e))
+        if (!data?.value) return
+        notification(data.value, data.type || 'default')
+      })
+    )
     // 监听 expansions状态
-    EventsOn('expansions-status', e => {
-      const args = e.data ?? []
-      const data = args[0] ?? null
-      console.log('expansions-status', data)
-      const value = data.value
-      dispatch(
-        setExpansionsStatus({
-          runStatus: value == 0 ? false : true
-        })
-      )
-    })
-    // 监听 expansions消息
-    EventsOn('expansions', e => {
-      const args = e.data ?? []
-      const data = args[0] ?? null
-      try {
-        if (/^action:/.test(data.type)) {
-          const actions = data.type.split(':')
-          const db = data.data
-          if (actions[1] === 'application' && actions[2] === 'sidebar' && actions[3] === 'load') {
-            dispatch(setWebview(db))
-            dispatch(setViews({ key: 'application' }))
-            navigate('/pkg-app-list')
-          }
-        } else if (data.type === 'notification') {
-          const db = data.data
-          notification(db.value, db.typing)
-          return
-        } else if (data.type === 'command') {
-          dispatch(setCommand(data.data))
-          return
-        } else if (data.type === 'get-expansions') {
-          const db: any[] = data.data || []
-          console.log('get-expansions', db)
-          // 补充后端可能遗漏的 alemonjs / @alemonjs/* 包
-          AppGetPathsState().then(async paths => {
-            const nodeModulesPath = paths.userDataNodeModulesPath
-            const pkgJsonPath = paths.userDataPackagePath
-            const existingNames = new Set(db.map((p: any) => p.name))
-            const supplemented = [...db]
-            try {
-              const pkgRaw = await AppReadFiles(pkgJsonPath)
-              const pkgJson = JSON.parse(pkgRaw)
-              const allDeps = {
-                ...(pkgJson.dependencies || {}),
-                ...(pkgJson.devDependencies || {})
-              }
-              // 找出所有 alemonjs 或 @alemonjs/* 的依赖
-              const alemonDeps = Object.keys(allDeps).filter(
-                name => name === 'alemonjs' || name.startsWith('alemonjs-') || name.startsWith('@alemonjs/')
-              )
-              for (const depName of alemonDeps) {
-                if (existingNames.has(depName)) continue
-                try {
-                  const depPkgPath = nodeModulesPath + '/' + depName + '/package.json'
-                  const exists = await AppExists(depPkgPath)
-                  if (exists) {
-                    const depRaw = await AppReadFiles(depPkgPath)
-                    const depPkg = JSON.parse(depRaw)
-                    supplemented.push(depPkg)
-                  }
-                } catch {}
-              }
-            } catch {}
-            dispatch(initPackage(supplemented))
-          }).catch(() => {
-            dispatch(initPackage(db))
+    unsubs.push(
+      EventsOn('expansions-status', e => {
+        const data = parseWailsJson<{ value?: number }>(getWailsEventArg(e))
+        if (data?.value == null) return
+        console.log('expansions-status', data)
+        const value = data.value
+        dispatch(
+          setExpansionsStatus({
+            runStatus: value == 0 ? false : true
           })
-        }
-      } catch {
-        console.error('HomeApp 解析消息失败')
-      }
-    })
-    // 监听 terminal 消息
-    EventsOn('terminal', e => {
-      const args = e.data ?? []
-      const data = args[0] ?? null
-      dispatch(postMessage(data))
-    })
-    // 监听 AI chat 消息
-    EventsOn('chat', e => {
-      const args = e.data ?? []
-      const data = args[0] ?? null
-      if (!data) return
-      const { messageId, type, content } = data
-      switch (type) {
-        case 'start':
-          dispatch(setMessageLoading({ id: messageId, loading: true }))
-          break
-        case 'chunk':
-          dispatch(setMessageLoading({ id: messageId, loading: false }))
-          dispatch(appendMessageContent({ id: messageId, content }))
-          break
-        case 'done':
-          dispatch(setMessageLoading({ id: messageId, loading: false }))
-          dispatch(setLoading(false))
-          dispatch(setStreamingId(null))
-          if (data.suggestions && Array.isArray(data.suggestions)) {
-            dispatch(setSuggestions(data.suggestions))
+        )
+      })
+    )
+    // 监听 expansions消息
+    unsubs.push(
+      EventsOn('expansions', e => {
+        const data = parseWailsJson<any>(getWailsEventArg(e))
+        if (!data?.type) return
+        try {
+          if (/^action:/.test(data.type)) {
+            const actions = data.type.split(':')
+            const db = data.data
+            if (actions[1] === 'application' && actions[2] === 'sidebar' && actions[3] === 'load') {
+              dispatch(setWebview(db))
+              dispatch(setViews({ key: 'application' }))
+              navigate('/pkg-app-list')
+            }
+          } else if (data.type === 'notification') {
+            const db = data.data
+            notification(db.value, db.typing)
+            return
+          } else if (data.type === 'command') {
+            dispatch(setCommand(data.data))
+            return
+          } else if (data.type === 'get-expansions') {
+            const db: any[] = data.data || []
+            console.log('get-expansions', db)
+            // 补充后端可能遗漏的 alemonjs / @alemonjs/* 包
+            AppGetPathsState().then(async paths => {
+              const nodeModulesPath = paths.userDataNodeModulesPath
+              const pkgJsonPath = paths.userDataPackagePath
+              const existingNames = new Set(db.map((p: any) => p.name))
+              const supplemented = [...db]
+              try {
+                const pkgRaw = await AppReadFiles(pkgJsonPath)
+                const pkgJson = JSON.parse(pkgRaw)
+                const allDeps = {
+                  ...(pkgJson.dependencies || {}),
+                  ...(pkgJson.devDependencies || {})
+                }
+                // 找出所有 alemonjs 或 @alemonjs/* 的依赖
+                const alemonDeps = Object.keys(allDeps).filter(
+                  name => name === 'alemonjs' || name.startsWith('alemonjs-') || name.startsWith('@alemonjs/')
+                )
+                for (const depName of alemonDeps) {
+                  if (existingNames.has(depName)) continue
+                  try {
+                    const depPkgPath = nodeModulesPath + '/' + depName + '/package.json'
+                    const exists = await AppExists(depPkgPath)
+                    if (exists) {
+                      const depRaw = await AppReadFiles(depPkgPath)
+                      const depPkg = JSON.parse(depRaw)
+                      supplemented.push(depPkg)
+                    }
+                  } catch {}
+                }
+              } catch {}
+              dispatch(initPackage(supplemented))
+            }).catch(() => {
+              dispatch(initPackage(db))
+            })
           }
-          break
-        case 'stop':
-          dispatch(setMessageLoading({ id: messageId, loading: false }))
-          dispatch(setLoading(false))
-          dispatch(setStreamingId(null))
-          break
-        case 'error':
-          dispatch(setMessageLoading({ id: messageId, loading: false }))
-          dispatch(appendMessageContent({ id: messageId, content: `⚠️ ${content}` }))
-          dispatch(setLoading(false))
-          dispatch(setStreamingId(null))
-          break
-        case 'tool_confirm': {
-          const { toolCallId, toolName, description, arguments: toolArgs } = data
-          const argsStr = toolArgs ? Object.entries(toolArgs).map(([k, v]) => `${k}: ${v}`).join(', ') : ''
-          dispatch(
-            addToolMessage({
-              id: `tool-${toolCallId}`,
-              toolCallId,
-              toolName,
-              content: `🔧 请求执行: ${description}${argsStr ? `\n参数: ${argsStr}` : ''}`,
-              confirmPending: true
-            })
-          )
-          break
+        } catch {
+          console.error('HomeApp 解析消息失败')
         }
-        case 'tool_result': {
-          const { toolCallId, toolName, result, executed } = data
-          dispatch(
-            resolveToolConfirm({
-              toolCallId,
-              executed,
-              result: executed
-                ? `✅ ${toolName}: ${result}`
-                : `❌ ${toolName}: ${result}`
-            })
-          )
-          break
+      })
+    )
+    // 监听 terminal 消息
+    unsubs.push(
+      EventsOn('terminal', e => {
+        const data = getWailsEventArg(e)
+        if (data == null) return
+        dispatch(postMessage(typeof data === 'string' ? data : String(data)))
+      })
+    )
+    // 监听 AI chat 消息
+    unsubs.push(
+      EventsOn('chat', e => {
+        const data = parseWailsJson<any>(getWailsEventArg(e))
+        if (!data) return
+        const { messageId, type, content } = data
+        switch (type) {
+          case 'start':
+            dispatch(setMessageLoading({ id: messageId, loading: true }))
+            break
+          case 'chunk':
+            dispatch(setMessageLoading({ id: messageId, loading: false }))
+            dispatch(appendMessageContent({ id: messageId, content }))
+            break
+          case 'done':
+            dispatch(setMessageLoading({ id: messageId, loading: false }))
+            dispatch(setLoading(false))
+            dispatch(setStreamingId(null))
+            if (data.suggestions && Array.isArray(data.suggestions)) {
+              dispatch(setSuggestions(data.suggestions))
+            }
+            break
+          case 'stop':
+            dispatch(setMessageLoading({ id: messageId, loading: false }))
+            dispatch(setLoading(false))
+            dispatch(setStreamingId(null))
+            break
+          case 'error':
+            dispatch(setMessageLoading({ id: messageId, loading: false }))
+            dispatch(appendMessageContent({ id: messageId, content: `⚠️ ${content}` }))
+            dispatch(setLoading(false))
+            dispatch(setStreamingId(null))
+            break
+          case 'tool_confirm': {
+            const { toolCallId, toolName, description, arguments: toolArgs } = data
+            const argsStr = toolArgs ? Object.entries(toolArgs).map(([k, v]) => `${k}: ${v}`).join(', ') : ''
+            dispatch(
+              addToolMessage({
+                id: `tool-${toolCallId}`,
+                toolCallId,
+                toolName,
+                content: `🔧 请求执行: ${description}${argsStr ? `\n参数: ${argsStr}` : ''}`,
+                confirmPending: true
+              })
+            )
+            break
+          }
+          case 'tool_result': {
+            const { toolCallId, toolName, result, executed } = data
+            dispatch(
+              resolveToolConfirm({
+                toolCallId,
+                executed,
+                result: executed
+                  ? `✅ ${toolName}: ${result}`
+                  : `❌ ${toolName}: ${result}`
+              })
+            )
+            break
+          }
         }
-      }
-    })
+      })
+    )
     // 监听  modal 弹窗机制
-    EventsOn('controller', e => {
-      const args = e.data ?? []
-      const data = args[0] ?? null
-      if (data.open) {
-        setPopValue({
-          open: true,
-          title: data.title,
-          description: data.description,
-          buttonText: data.buttonText,
-          data: data.data,
-          code: data.code
-        })
-        return
-      } else {
-        closePop()
-      }
-    })
+    unsubs.push(
+      EventsOn('controller', e => {
+        const data = parseWailsJson<any>(getWailsEventArg(e))
+        if (!data) return
+        if (data.open) {
+          setPopValue({
+            open: true,
+            title: data.title,
+            description: data.description,
+            buttonText: data.buttonText,
+            data: data.data,
+            code: data.code
+          })
+          return
+        } else {
+          closePop()
+        }
+      })
+    )
     // 监听 AI navigate 工具的页面跳转事件
-    EventsOn('view', e => {
-      const args = e.data ?? []
-      const page = args[0] ?? ''
-      if (!page) return
-      const viewMap: Record<string, string> = {
-        home: '/',
-        config: '/config',
-        settings: '/settings',
-        'settings/common': '/settings/common',
-        'settings/ai': '/settings/ai',
-        'settings/theme': '/settings/theme',
-        'settings/about': '/settings/about',
-        'settings/notice': '/settings/notice',
-        'npm-exp-list': '/npm-exp-list',
-        'git-exp-list': '/git-exp-list',
-        'pkg-app-list': '/pkg-app-list'
-      }
-      const path = viewMap[page]
-      if (path) navigate(path)
-    })
+    unsubs.push(
+      EventsOn('view', e => {
+        const page = getWailsEventArg<string>(e) ?? ''
+        if (!page) return
+        const viewMap: Record<string, string> = {
+          home: '/',
+          config: '/config',
+          settings: '/settings',
+          'settings/common': '/settings/common',
+          'settings/ai': '/settings/ai',
+          'settings/theme': '/settings/theme',
+          'settings/about': '/settings/about',
+          'settings/notice': '/settings/notice',
+          'npm-exp-list': '/npm-exp-list',
+          'git-exp-list': '/git-exp-list',
+          'pkg-app-list': '/pkg-app-list'
+        }
+        const path = viewMap[page]
+        if (path) navigate(path)
+      })
+    )
 
     const onGlobalStatus = async () => {
       try {
@@ -354,6 +371,7 @@ export default (function App() {
     return () => {
       clearInterval(intervalId)
       document.removeEventListener('keydown', handleKeyPress)
+      unsubs.forEach(unsub => unsub?.())
     }
   }, [])
 

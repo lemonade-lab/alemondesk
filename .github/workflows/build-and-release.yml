@@ -118,17 +118,40 @@ jobs:
         shell: pwsh
         run: |
           $installed = $false
-          choco install nsis -y --no-progress
-          if ($LASTEXITCODE -eq 0) {
-            $installed = $true
-          } else {
-            Write-Host "Chocolatey install failed, fallback to direct NSIS installer."
+
+          # Try Chocolatey with retries
+          for ($i = 1; $i -le 3; $i++) {
+            Write-Host "Chocolatey attempt $i/3..."
+            choco install nsis -y --no-progress
+            if ($LASTEXITCODE -eq 0) {
+              $installed = $true
+              break
+            }
+            Write-Host "Chocolatey attempt $i failed, waiting 10s..."
+            Start-Sleep -Seconds 10
           }
 
+          # Fallback: download NSIS portable zip (no installer needed)
           if (-not $installed) {
-            Invoke-WebRequest -Uri "https://sourceforge.net/projects/nsis/files/NSIS%203/3.10/nsis-3.10-setup.exe/download" -OutFile "nsis-setup.exe" -UseBasicParsing
-            Start-Process -FilePath ".\nsis-setup.exe" -ArgumentList '/S' -Wait
-            Remove-Item ".\nsis-setup.exe" -Force
+            Write-Host "Chocolatey install failed, fallback to NSIS zip download."
+            $nsisUrl = "https://sourceforge.net/projects/nsis/files/NSIS%203/3.10/nsis-3.10.zip/download"
+            $zipPath = "nsis-3.10.zip"
+            $installDir = "C:\Program Files (x86)\NSIS"
+
+            # SourceForge requires following redirects with proper user-agent
+            Invoke-WebRequest -Uri $nsisUrl -OutFile $zipPath -UseBasicParsing -MaximumRedirection 10 -UserAgent "Mozilla/5.0"
+
+            if (-not (Test-Path $zipPath) -or (Get-Item $zipPath).Length -lt 1MB) {
+              throw "NSIS download failed or file is too small"
+            }
+
+            New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+            Expand-Archive -Path $zipPath -DestinationPath "C:\Program Files (x86)" -Force
+            # The zip extracts to nsis-3.10/ subfolder, move contents
+            if (Test-Path "C:\Program Files (x86)\nsis-3.10") {
+              Copy-Item -Path "C:\Program Files (x86)\nsis-3.10\*" -Destination $installDir -Recurse -Force
+            }
+            Remove-Item $zipPath -Force
           }
 
           $env:PATH = "C:\Program Files (x86)\NSIS;" + $env:PATH

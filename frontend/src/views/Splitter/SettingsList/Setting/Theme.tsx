@@ -9,6 +9,7 @@ import Upload from 'antd/es/upload/Upload'
 import { useEffect, useState } from 'react'
 import { Events } from '@wailsio/runtime'
 import { useTheme } from '@/hook/useTheme'
+import { getWailsEventArg, parseWailsJson } from '@/common/wailsEvent'
 const EventsOn = Events.On
 
 type ThemeVariable = {
@@ -53,24 +54,23 @@ const Theme = () => {
   }
 
   useEffect(() => {
-        // 加载css变量
+    // 加载css变量
     ThemeLoadVariables()
 
     // 监听 css 变量
-    EventsOn('theme', e => {
-      try {
-        const args = e.data ?? []
-        const data = args[0] ?? null
-        const vars = JSON.parse(data)
-        const arr = Object.keys(vars).map(key => ({
-          name: key.replace(/^alemonjs-/g, ''),
-          color: vars[key]
-        }))
-        setData(arr)
-      } catch (e) {
-        console.error(e)
-      }
+    const cancel = EventsOn('theme', e => {
+      const vars = parseWailsJson<Record<string, string>>(getWailsEventArg(e))
+      if (!vars) return
+      const arr = Object.keys(vars).map(key => ({
+        name: key.replace(/^alemonjs-/g, ''),
+        color: vars[key]
+      }))
+      setData(arr)
     })
+
+    return () => {
+      if (cancel) cancel()
+    }
   }, [])
 
   const customRequest = (options: any) => {
