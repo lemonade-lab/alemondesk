@@ -4,6 +4,8 @@ import classNames from 'classnames'
 import {
   AppstoreAddOutlined,
   AppstoreOutlined,
+  CaretLeftOutlined,
+  CaretRightOutlined,
   HomeFilled,
   ProfileOutlined,
   RobotOutlined,
@@ -13,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useNavigate } from 'react-router-dom'
 import Box from '@/common/layout/Box'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { setCommand } from '@/store/command'
 import ExpansionIcon from '@/common/ExpansionIcon'
 import { usePop } from '@/context/Pop'
@@ -23,6 +25,7 @@ import { getDesktopMenus } from '@/common/expansionPackage'
 type NavItem = {
   Icon: React.ReactNode
   className: string
+  title: string
   onClick: () => void
 }
 
@@ -35,11 +38,13 @@ const MenuButton = () => {
   const expansions = useSelector((state: RootState) => state.expansions)
   const dispatch = useDispatch()
   const { setPopValue } = usePop()
+  const [expanded, setExpanded] = useState(false)
 
   const viewMenus = useMemo(() => {
     const navList: NavItem[] = [
       {
         Icon: <AppstoreAddOutlined size={20} />,
+        title: '扩展管理',
         className: 'steps-6',
         onClick: () => {
           navigate('/npm-exp-list')
@@ -47,6 +52,7 @@ const MenuButton = () => {
       },
       {
         Icon: <AppstoreOutlined size={20} />,
+        title: '应用管理',
         className: classNames('steps-7', {
           'opacity-50': !expansions.runStatus
         }),
@@ -71,6 +77,7 @@ const MenuButton = () => {
       },
       {
         Icon: <ProfileOutlined size={20} />,
+        title: '机器人配置',
         className: 'steps-config',
         onClick: () => {
           navigate('/config')
@@ -78,6 +85,7 @@ const MenuButton = () => {
       },
       {
         Icon: <RobotOutlined size={20} />,
+        title: 'AI 设置',
         className: 'steps-ai',
         onClick: () => {
           navigate('/ai-settings')
@@ -92,25 +100,99 @@ const MenuButton = () => {
   const goHome = () => {
     navigate('/')
   }
+
+  const renderItemContent = (item: NavItem | ViewMenuItem) => {
+    const title = isNavItem(item) ? item.title : item.name
+
+    return (
+      <>
+        <span className="flex size-8 shrink-0 items-center justify-center">
+          {isNavItem(item) ? item.Icon : (
+            <ExpansionIcon
+              name={item.name}
+              icon={item.icon}
+              expansions_name={item.expansions_name}
+            />
+          )}
+        </span>
+        <span
+          className={classNames(
+            'overflow-hidden whitespace-nowrap text-sm transition-all ease-out',
+            expanded ? 'duration-700' : 'duration-1000',
+            expanded ? 'max-w-32 opacity-100' : 'max-w-0 opacity-0'
+          )}
+        >
+          {title}
+        </span>
+      </>
+    )
+  }
+
   return (
-    <aside className={classNames('flex flex-col justify-between items-center px-1 py-4')}>
-      <NavDiv className="p-1 flex-col rounded-full flex gap-4">
+    <aside
+      className={classNames(
+        'flex flex-col justify-between py-4 pl-1 pr-2 transition-all ease-out',
+        expanded ? 'duration-700' : 'duration-1000',
+        expanded ? 'w-36 items-stretch' : 'w-11 items-center'
+      )}
+    >
+      <NavDiv className="p-1 flex-col rounded-[1.25rem] flex gap-2">
         <BarDiv
           className={classNames(
-            'steps-4 size-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-700'
+            'h-8 rounded-full flex items-center cursor-pointer transition-all ease-out',
+            expanded ? 'duration-700' : 'duration-1000',
+            expanded ? 'w-full px-2 justify-start gap-2' : 'w-8 justify-center'
+          )}
+          onClick={() => setExpanded(value => !value)}
+        >
+          <span className="flex size-8 shrink-0 items-center justify-center">
+            {expanded ? <CaretLeftOutlined size={18} /> : <CaretRightOutlined size={18} />}
+          </span>
+          <span
+            className={classNames(
+              'overflow-hidden whitespace-nowrap text-sm transition-all ease-out',
+              expanded ? 'duration-700' : 'duration-1000',
+              expanded ? 'max-w-24 opacity-100' : 'max-w-0 opacity-0'
+            )}
+          >
+            {expanded ? '收起' : '展开'}
+          </span>
+        </BarDiv>
+        <BarDiv
+          className={classNames(
+            'steps-4 h-8 rounded-full flex items-center cursor-pointer transition-all ease-out',
+            expanded ? 'duration-700' : 'duration-1000',
+            expanded ? 'w-full px-2 justify-start' : 'w-8 justify-center'
           )}
           onClick={goHome}
         >
-          <HomeFilled size={20} />
+          <span className="flex size-8 shrink-0 items-center justify-center">
+            <HomeFilled size={20} />
+          </span>
+          <span
+            className={classNames(
+              'overflow-hidden whitespace-nowrap text-sm transition-all ease-out',
+              expanded ? 'duration-700' : 'duration-1000',
+              expanded ? 'max-w-24 opacity-100' : 'max-w-0 opacity-0'
+            )}
+          >
+            首页
+          </span>
         </BarDiv>
       </NavDiv>
-      <div className="flex-col max-h-56 items-center flex">
-        <Box type="nav" className='gap-1' rootClassName='rounded-full  px-1 py-4' >
+      <div className={classNames('flex-col max-h-56 flex', expanded ? 'items-stretch' : 'items-center')}>
+        <Box
+          type="nav"
+          className="gap-1"
+          rootClassName={classNames('rounded-[1.25rem] py-4', expanded ? 'px-2' : 'px-1')}
+        >
           {viewMenus.map((item, index) => (
             <BarDiv
               key={index}
               className={classNames(
-                'size-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-700',
+                'h-8 rounded-full flex items-center cursor-pointer transition-all ease-out',
+                expanded ? 'duration-700' : 'duration-1000',
+                expanded ? 'w-full px-2 justify-start ' : 'w-8 justify-center',
                 isNavItem(item) ? item.className : undefined
               )}
               onClick={() => {
@@ -124,13 +206,7 @@ const MenuButton = () => {
                 }
               }}
             >
-              {isNavItem(item) ? item.Icon : (
-                <ExpansionIcon
-                  name={item.name}
-                  icon={item.icon}
-                  expansions_name={item.expansions_name}
-                />
-              )}
+              {renderItemContent(item)}
             </BarDiv>
           ))}
         </Box>
@@ -139,13 +215,26 @@ const MenuButton = () => {
         <BarDiv
           className={classNames(
             'steps-8',
-            'size-8 rounded-full  flex items-center justify-center cursor-pointer transition-all duration-700'
+            'h-8 rounded-full flex items-center cursor-pointer transition-all ease-out',
+            expanded ? 'duration-700' : 'duration-1000',
+            expanded ? 'w-full px-2 justify-start' : 'w-8 justify-center'
           )}
           onClick={() => {
             navigate('/settings')
           }}
         >
-          <SettingFilled width={20} height={20} />
+          <span className="flex size-8 shrink-0 items-center justify-center">
+            <SettingFilled width={20} height={20} />
+          </span>
+          <span
+            className={classNames(
+              'overflow-hidden whitespace-nowrap text-sm transition-all ease-out',
+              expanded ? 'duration-700' : 'duration-1000',
+              expanded ? 'max-w-24 opacity-100' : 'max-w-0 opacity-0'
+            )}
+          >
+            设置
+          </span>
         </BarDiv>
       </NavDiv>
     </aside>

@@ -1,16 +1,17 @@
-import { memo, PropsWithChildren, ReactNode, useEffect } from 'react'
+import { memo, PropsWithChildren, ReactNode, useEffect, useState } from 'react'
 import classNames from 'classnames'
 import { HeaderDiv } from '@alemonjs/react-ui'
-import { Close, Maximize, Minimize } from '@/common/ui/Icons'
+import { Close, Maximize, Minimize, Restore } from '@/common/ui/Icons'
 import { GetVersions } from '@wailsjs/window/controller/app'
 
-import { Window } from '@wailsio/runtime'
+import { Events, Window } from '@wailsio/runtime'
 import { setAbout } from '@/store/about'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store'
 const WindowHide = Window.Hide
-const WindowMaximise = Window.Maximise
 const WindowMinimise = Window.Minimise
+const WindowIsMaximised = Window.IsMaximised
+const WindowToggleMaximise = Window.ToggleMaximise
 
 type HeaderProps = PropsWithChildren<{
   LeftSlot?: ReactNode
@@ -29,6 +30,16 @@ const WINDOWS = 'windows'
 export default memo(function Header({ children }: HeaderProps) {
   const about = useSelector((state: RootState) => state.about)
   const dispatch = useDispatch()
+  const [isMaximised, setIsMaximised] = useState(false)
+
+  const syncMaximiseState = () => {
+    WindowIsMaximised()
+      .then(setIsMaximised)
+      .catch(() => {
+        setIsMaximised(false)
+      })
+  }
+
   useEffect(() => {
     if (!about.platform) {
       GetVersions().then(res => {
@@ -40,20 +51,44 @@ export default memo(function Header({ children }: HeaderProps) {
           }))
       })
     }
+  }, [about.platform, dispatch])
+
+  useEffect(() => {
+    syncMaximiseState()
+
+    const unsubs = [
+      Events.On('common:WindowMaximise', syncMaximiseState),
+      Events.On('common:WindowUnMaximise', syncMaximiseState),
+      Events.On('common:WindowRestore', syncMaximiseState)
+    ]
+
+    return () => {
+      unsubs.forEach(unsub => unsub?.())
+    }
   }, [])
+
+  const toggleMaximise = () => {
+    WindowToggleMaximise().then(() => {
+      syncMaximiseState()
+    })
+  }
+
+  const handleTitleDoubleClick = () => {
+    toggleMaximise()
+  }
   
   return (
     <HeaderDiv className={classNames('h-[1.8rem] flex justify-center items-center z-50')}>
       {
         // left
       }
-      <div className="drag-area flex-1" >
+      <div className="drag-area flex-1" onDoubleClick={handleTitleDoubleClick}>
         &nbsp;
       </div>
       {
         // center
       }
-      {children ?? <div className="size-full drag-area" />}
+      {children ?? <div className="size-full drag-area" onDoubleClick={handleTitleDoubleClick} />}
       {
         // right
       }
@@ -62,7 +97,7 @@ export default memo(function Header({ children }: HeaderProps) {
           {
             // windows left
           }
-          <div className="flex-1 drag-area" />
+          <div className="flex-1 drag-area" onDoubleClick={handleTitleDoubleClick} />
           {
             // windows right
           }
@@ -79,9 +114,9 @@ export default memo(function Header({ children }: HeaderProps) {
               className={classNames(
                 'cursor-pointer hover:bg-slate-300  rounded-sm px-1  hover:text-gray-900 transition-all duration-300'
               )}
-              onClick={() => WindowMaximise()}
+              onClick={toggleMaximise}
             >
-              <Maximize />
+              {isMaximised ? <Restore /> : <Maximize />}
             </span>
             <span
               className={classNames(
@@ -94,7 +129,7 @@ export default memo(function Header({ children }: HeaderProps) {
           </div>
         </div>
       ) : (
-        <div className="drag-area flex-1" >&nbsp;</div>
+        <div className="drag-area flex-1" onDoubleClick={handleTitleDoubleClick}>&nbsp;</div>
       )}
     </HeaderDiv>
   )

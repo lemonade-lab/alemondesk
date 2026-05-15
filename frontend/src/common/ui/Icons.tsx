@@ -32,6 +32,27 @@ export const Maximize = (props: React.SVGProps<SVGSVGElement>) => {
   )
 }
 
+export const Restore = (props: React.SVGProps<SVGSVGElement>) => {
+  return (
+    <svg
+      viewBox="0 0 1024 1024"
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      {...props}
+    >
+      <path
+        d="M281.6 179.2h358.4a76.8 76.8 0 0 1 76.8 76.8v76.8h-51.2V256a25.6 25.6 0 0 0-25.6-25.6H281.6A25.6 25.6 0 0 0 256 256v358.4a25.6 25.6 0 0 0 25.6 25.6h76.8v51.2h-76.8a76.8 76.8 0 0 1-76.8-76.8V256a76.8 76.8 0 0 1 76.8-76.8z"
+        fill="currentColor"
+      ></path>
+      <path
+        d="M435.2 332.8h307.2A76.8 76.8 0 0 1 819.2 409.6v307.2a76.8 76.8 0 0 1-76.8 76.8H435.2a76.8 76.8 0 0 1-76.8-76.8V409.6a76.8 76.8 0 0 1 76.8-76.8z m0 51.2a25.6 25.6 0 0 0-25.6 25.6v307.2a25.6 25.6 0 0 0 25.6 25.6h307.2a25.6 25.6 0 0 0 25.6-25.6V409.6a25.6 25.6 0 0 0-25.6-25.6H435.2z"
+        fill="currentColor"
+      ></path>
+    </svg>
+  )
+}
+
 export const Close = (props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
