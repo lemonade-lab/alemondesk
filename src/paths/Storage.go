@@ -19,3 +19,12 @@ func GetStorageAIConfigFilePath() string {
 	filePath := filepath.Join(storagePath, "ai.config.json")
 	return filePath
 }
+
+func GetSkillsPath() string {
+	resourcePath := GetResourcePath()
+	return filepath.Join(resourcePath, "skills")
+}
+
+func GetSkillsSystemPath() string {
+	return filepath.Join(GetSkillsPath(), ".system")
+}

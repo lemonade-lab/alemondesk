@@ -4,6 +4,8 @@ import { Button, PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
 import { Input } from '@alemonjs/react-ui'
 import { ChatGetConfig, ChatSetConfig } from '@wailsjs/window/chat/app'
 import GuideAISettings from '@/views/Guide/AISettings'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store'
 
 interface AIConfig {
   apiEndpoint: string
@@ -61,8 +63,12 @@ function Field({
 
 const AISettings = () => {
   const notification = useNotification()
+  const app = useSelector((state: RootState) => state.app)
   const [config, setConfig] = useState<AIConfig>(defaultConfig)
   const [saved, setSaved] = useState(true)
+
+  const skillsRootPath = `${app.resourcePath}/skills`
+  const systemSkillsPath = `${skillsRootPath}/.system`
 
   useEffect(() => {
     ChatGetConfig()
@@ -145,6 +151,27 @@ const AISettings = () => {
               max="2"
               hint="值越高回答越随机，越低越确定（0-2）"
             />
+            <div className="rounded-xl border border-secondary-border dark:border-dark-secondary-border p-4 flex flex-col gap-3">
+              <div className="text-base font-medium">Skill 安装说明</div>
+              <div className="text-sm opacity-80">
+                桌面内置 agent skills 目录已经定义到应用资源目录下，推荐把 skill 按“一个目录 + 一个 SKILL.md”的结构放进去。
+              </div>
+              <div className="text-sm">
+                <div className="font-medium">Skills 根目录</div>
+                <div className="select-text break-all text-blue-500">{skillsRootPath}</div>
+              </div>
+              <div className="text-sm">
+                <div className="font-medium">内置 system skills 目录</div>
+                <div className="select-text break-all text-blue-500">{systemSkillsPath}</div>
+              </div>
+              <div className="text-xs opacity-70 leading-6">
+                1. 每个 skill 使用独立文件夹，例如 `your-skill-name/SKILL.md`
+                <br />
+                2. 内置技能放在 `.system` 目录，供系统级 agent 默认使用
+                <br />
+                3. 技能目录可按需包含 `references/`、`scripts/`、`assets/`
+              </div>
+            </div>
           </PrimaryDiv>
         </div>
       </SecondaryDiv>

@@ -99,7 +99,7 @@ jobs:
       - name: Build with Wails v3 (Linux)
         if: runner.os == 'Linux'
         run: |
-          wails3 task package
+          APP_VERSION=${{ github.ref_name }} wails3 task package
           cd ./bin
           rm -rf ${{env.APP_NAME}}
           rm -rf .gitignore
@@ -107,7 +107,7 @@ jobs:
       - name: Build with Wails v3 (macOS)
         if: runner.os == 'macOS'
         run: |
-          wails3 task package
+          APP_VERSION=${{ github.ref_name }} wails3 task package
           cd ./bin
           mv ${{env.APP_NAME}} ${{env.APP_NAME}}-macOS
           zip -r ${{env.APP_NAME}}-macOS.zip ${{env.APP_NAME}}.app
@@ -160,6 +160,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           $env:PATH = "C:\Program Files (x86)\NSIS;" + $env:PATH
+          $env:APP_VERSION = "${{ github.ref_name }}"
           wails3 task package
           Set-Location -Path ".\bin"
           Rename-Item -Path "${{env.APP_NAME}}.exe" -NewName "${{env.APP_NAME}}-Win.exe"

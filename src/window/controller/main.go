@@ -16,6 +16,8 @@ type App struct {
 	application *application.EventManager
 }
 
+var AppVersion = "0.0.0-dev"
+
 func NewApp() *App {
 	return &App{}
 }
@@ -62,7 +64,7 @@ func (a *App) GetVersions() Versions {
 	}
 	// info, _ := runtime.EnvironmentInfo(a.ctx)
 	return Versions{
-		Version:  "1.0.0",
+		Version:  AppVersion,
 		Node:     nodeVersion,
 		Platform: runtime.GOOS,      // 操作系统: darwin, linux, windows, freebsd 等
 		Arch:     runtime.GOARCH,    // 架构: amd64, arm64, 386 等
