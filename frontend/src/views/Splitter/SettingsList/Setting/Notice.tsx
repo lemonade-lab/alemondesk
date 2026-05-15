@@ -2,6 +2,16 @@ import { PrimaryDiv, SecondaryDiv } from '@alemonjs/react-ui'
 
 const data = [
   {
+    version: '1.1.8',
+    log: [
+      '优化窗口控制',
+      '支持加skill',
+      '支持检查更新',
+      '支持最小化提示',
+      '支持多应用打开',
+    ]
+  },
+  {
     version: '1.1.1',
     log: [
       '优化AI助手',

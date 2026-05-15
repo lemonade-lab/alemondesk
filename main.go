@@ -26,6 +26,7 @@ import (
 	"runtime"
 
 	"github.com/joho/godotenv"
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -182,6 +183,18 @@ func main() {
 	// 创建主窗口
 	// app.Window.NewWithOptions(windowOptions)
 	window := app.Window.NewWithOptions(windowOptions)
+	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+		if runtime.GOOS != "darwin" {
+			return
+		}
+		if wApp.ShouldAllowClose() {
+			return
+		}
+		e.Cancel()
+		app.Event.Emit("window-close-requested", map[string]interface{}{
+			"source": "system",
+		})
+	})
 
 	sysImg := NewImgVendor()
 	icon, _ := sysImg.GetImg("appicon.png")

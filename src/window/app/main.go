@@ -8,6 +8,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -16,6 +17,8 @@ type App struct {
 	ctx         context.Context
 	application *application.EventManager
 	window      *application.WebviewWindow
+	mu          sync.Mutex
+	allowClose  bool
 }
 
 func NewApp() *App {
@@ -52,6 +55,25 @@ func (a *App) AppGetPathsState() PathsState {
 		PreloadPath:             paths.GetPreloadPath(),
 		ResourcePath:            paths.GetResourcePath(),
 	}
+}
+
+func (a *App) AppAllowNextCloseAndClose() {
+	a.mu.Lock()
+	a.allowClose = true
+	a.mu.Unlock()
+	if a.window != nil {
+		a.window.Close()
+	}
+}
+
+func (a *App) ShouldAllowClose() bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.allowClose {
+		a.allowClose = false
+		return true
+	}
+	return false
 }
 
 // ReadFiles 读取文件

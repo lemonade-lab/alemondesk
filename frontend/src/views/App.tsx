@@ -3,7 +3,14 @@ import { Outlet } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import useGoNavigate from '@/hook/useGoNavigate'
 import { setBotStatus } from '@/store/bot'
-import { clearWebviewCache, setCommand, setWebview, setWebviewCache } from '@/store/command'
+import {
+  clearWebviewCache,
+  clearWebviewTabs,
+  openWebviewTab,
+  setCommand,
+  setWebviewTabView,
+  setWebviewCache
+} from '@/store/command'
 import { setModulesStatus } from '@/store/modules'
 import { initPackage, setExpansionsStatus } from '@/store/expansions'
 import { RootState } from '@/store'
@@ -45,6 +52,7 @@ const EventsOn = Events.On
 type PendingWebviewRequest = {
   command: string
   mode: 'interactive' | 'preload'
+  tabId?: string
 }
 
 export default (function App() {
@@ -57,7 +65,7 @@ export default (function App() {
   const modulesRef = useRef(modules)
   const webviewCacheRef = useRef(command.webviewCache)
   const inflightWebviewRef = useRef<PendingWebviewRequest | null>(null)
-  const queuedInteractiveCommandRef = useRef<string | null>(null)
+  const queuedInteractiveRequestRef = useRef<PendingWebviewRequest | null>(null)
   const preloadQueueRef = useRef<string[]>([])
   const preloadTimerRef = useRef<number | null>(null)
   const { setPopValue, closePop } = usePop()
@@ -72,10 +80,15 @@ export default (function App() {
     }
   }
 
-  const sendWebviewCommand = (commandName: string, mode: PendingWebviewRequest['mode']) => {
+  const sendWebviewCommand = (
+    commandName: string,
+    mode: PendingWebviewRequest['mode'],
+    tabId?: string
+  ) => {
     inflightWebviewRef.current = {
       command: commandName,
-      mode
+      mode,
+      tabId
     }
     ExpansionsPostMessage({ type: 'command', data: commandName })
   }
@@ -84,7 +97,7 @@ export default (function App() {
     clearPreloadTimer()
     preloadTimerRef.current = window.setTimeout(() => {
       preloadTimerRef.current = null
-      if (inflightWebviewRef.current || queuedInteractiveCommandRef.current) return
+      if (inflightWebviewRef.current || queuedInteractiveRequestRef.current) return
       const nextCommand = preloadQueueRef.current.shift()
       if (!nextCommand) return
       if (webviewCacheRef.current[nextCommand]) {
@@ -224,16 +237,27 @@ export default (function App() {
             }
             inflightWebviewRef.current = null
             if (inflightRequest?.mode === 'preload') {
-              const nextInteractiveCommand = queuedInteractiveCommandRef.current
-              if (nextInteractiveCommand) {
-                queuedInteractiveCommandRef.current = null
-                sendWebviewCommand(nextInteractiveCommand, 'interactive')
+              const nextInteractiveRequest = queuedInteractiveRequestRef.current
+              if (nextInteractiveRequest) {
+                queuedInteractiveRequestRef.current = null
+                sendWebviewCommand(
+                  nextInteractiveRequest.command,
+                  'interactive',
+                  nextInteractiveRequest.tabId
+                )
               } else {
                 schedulePreload()
               }
               return
             }
-            dispatch(setWebview(db))
+            if (inflightRequest?.tabId) {
+              dispatch(
+                setWebviewTabView({
+                  tabId: inflightRequest.tabId,
+                  view: db
+                })
+              )
+            }
             dispatch(setViews({ key: 'application' }))
             navigate('/pkg-app-list')
             schedulePreload()
@@ -437,10 +461,11 @@ export default (function App() {
       ExpansionsPostMessage({ type: 'get-expansions' })
     } else {
       inflightWebviewRef.current = null
-      queuedInteractiveCommandRef.current = null
+      queuedInteractiveRequestRef.current = null
       preloadQueueRef.current = []
       clearPreloadTimer()
       dispatch(clearWebviewCache())
+      dispatch(clearWebviewTabs())
     }
   }, [expansions.runStatus])
 
@@ -490,23 +515,52 @@ export default (function App() {
         Events.Emit('app', { type: 'command', data: command.name })
         dispatch(setCommand(''))
       } else {
+        const activeTab = command.tabs.find(tab => tab.id === command.activeTabId)
+        if (!activeTab) {
+          const matchedSidebar = expansions.package
+            .flatMap(item => getDesktopSidebars(item))
+            .find(item => item.command === command.name)
+          if (matchedSidebar) {
+            const tabId = `tab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+            dispatch(
+              openWebviewTab({
+                id: tabId,
+                command: matchedSidebar.command,
+                title: matchedSidebar.name,
+                icon: matchedSidebar.icon,
+                expansionsName: matchedSidebar.expansions_name
+              })
+            )
+          }
+          dispatch(setCommand(''))
+          return
+        }
         const cachedView = command.webviewCache[command.name]
         if (cachedView) {
-          dispatch(setWebview(cachedView))
+          dispatch(
+            setWebviewTabView({
+              tabId: activeTab.id,
+              view: cachedView
+            })
+          )
           dispatch(setViews({ key: 'application' }))
           navigate('/pkg-app-list')
         }
         if (inflightWebviewRef.current?.mode === 'preload') {
-          queuedInteractiveCommandRef.current = command.name
+          queuedInteractiveRequestRef.current = {
+            command: command.name,
+            mode: 'interactive',
+            tabId: activeTab.id
+          }
         } else {
-          queuedInteractiveCommandRef.current = null
-          sendWebviewCommand(command.name, 'interactive')
+          queuedInteractiveRequestRef.current = null
+          sendWebviewCommand(command.name, 'interactive', activeTab.id)
         }
         // 发送之后。重新设置为空
         dispatch(setCommand(''))
       }
     }
-  }, [command.name, command.webviewCache])
+  }, [command.name, command.webviewCache, command.activeTabId, command.tabs, expansions.package])
 
   return (
     <Fragment>

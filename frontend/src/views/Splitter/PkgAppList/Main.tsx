@@ -1,7 +1,6 @@
 import React, { useCallback, Fragment } from 'react'
 import { Splitter } from 'antd'
 import Terminal from '@/views/Terminal/App'
-import GitExpList from './App'
 import Application from './Application/App'
 import GuidePkgApp from '@/views/Guide/PkgApp'
 
@@ -26,22 +25,15 @@ const PkgAppListMain: React.FC = () => {
 
   return (
     <Fragment>
-    <Splitter className="h-[calc(100vh-29.8px)] max-w-[calc(100vw-48px)]">
-      <Splitter.Panel>
-        <Splitter layout="vertical" onResizeEnd={onResizeEnd}>
-          <Splitter.Panel defaultSize={collapsed ? '100%' : '70%'} min="40%" collapsible>
-            <Application />
-          </Splitter.Panel>
-          <Splitter.Panel defaultSize={collapsed ? '0%' : '30%'} min="20%" collapsible>
-            <Terminal />
-          </Splitter.Panel>
-        </Splitter>
-      </Splitter.Panel>
-      <Splitter.Panel style={{overflow: 'hidden'}} collapsible defaultSize="30%" min="30%" max="45%">
-        <GitExpList />
-      </Splitter.Panel>
-    </Splitter>
-    <GuidePkgApp />
+      <Splitter className="h-[calc(100vh-29.8px)] max-w-[calc(100vw-48px)]" layout="vertical" onResizeEnd={onResizeEnd}>
+        <Splitter.Panel defaultSize={collapsed ? '100%' : '72%'} min="40%" collapsible>
+          <Application />
+        </Splitter.Panel>
+        <Splitter.Panel defaultSize={collapsed ? '0%' : '28%'} min="20%" collapsible>
+          <Terminal />
+        </Splitter.Panel>
+      </Splitter>
+      <GuidePkgApp />
     </Fragment>
   )
 }
